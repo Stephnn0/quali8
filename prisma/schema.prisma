@@ -1,0 +1,103 @@
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Session {
+  id            String    @id
+  shop          String
+  state         String
+  isOnline      Boolean   @default(false)
+  scope         String?
+  expires       DateTime?
+  accessToken   String
+  userId        BigInt?
+  firstName     String?
+  lastName      String?
+  email         String?
+  accountOwner  Boolean   @default(false)
+  locale        String?
+  collaborator  Boolean?  @default(false)
+  emailVerified Boolean?  @default(false)
+}
+
+
+model ShopifyStore {
+  id                   Int                   @id @default(autoincrement())
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @default(now()) @updatedAt
+  //
+  shop                 String                @unique
+  shopifyPlan          String? // TODO - Delete after all stores are using the new shopData
+  status               AppStatus
+  appVersion           String                @default("0.0.0")
+  //
+  qualifiers           Qualifiers[]
+  customers            Customers[]          
+}
+
+enum AppStatus {
+  INSTALLED
+  SETUP
+  UNINSTALLED
+}
+
+enum LogicType {
+  AND
+  OR
+}
+
+enum ConditionType {
+  EXAMPLE_TYPE_1
+  EXAMPLE_TYPE_2
+}
+
+enum ComparisonType {
+  GREATER_THAN
+  EQUAL
+  LESS_THAN
+}
+
+
+model Qualifiers {
+  id                   Int                   @id @default(autoincrement())
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @default(now()) @updatedAt
+  //
+  shop                 String
+  shopifyStore         ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
+  //
+  name               String
+  description        String
+  conditionLogicType LogicType
+  //
+  conditions         Conditions[] 
+  customers          Customers[]   @relation("CustomerQualifiers")
+}
+
+model Conditions {
+  id             Int            @id @default(autoincrement())
+  type           ConditionType? // optional
+  value          String?
+  comparisonType ComparisonType?
+  //
+  qualifierId    Int
+  qualifier      Qualifiers      @relation(fields: [qualifierId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model Customers {
+  id                   Int         @id @default(autoincrement())
+  email                String      @unique
+  firstName            String?
+  lastName             String?
+  qualifiers           Qualifiers[] @relation("CustomerQualifiers")
+  //
+  shop                 String
+  shopifyStore         ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
+
+}
