@@ -3,7 +3,7 @@
 client_id = "34da8696cbfc709d9fdc83cb99b19030"
 name = "quali8"
 handle = "quali8"
-application_url = "https://trunk-fo-indicating-trend.trycloudflare.com"
+application_url = "https://experts-lp-result-meaningful.trycloudflare.com"
 embedded = true
 
 [build]
@@ -28,9 +28,9 @@ scopes = "write_products"
 
 [auth]
 redirect_urls = [
-  "https://trunk-fo-indicating-trend.trycloudflare.com/auth/callback",
-  "https://trunk-fo-indicating-trend.trycloudflare.com/auth/shopify/callback",
-  "https://trunk-fo-indicating-trend.trycloudflare.com/api/auth/callback"
+  "https://experts-lp-result-meaningful.trycloudflare.com/auth/callback",
+  "https://experts-lp-result-meaningful.trycloudflare.com/auth/shopify/callback",
+  "https://experts-lp-result-meaningful.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]
