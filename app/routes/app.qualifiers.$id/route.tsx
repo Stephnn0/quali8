@@ -1,9 +1,9 @@
 import { Layout, Page, PageActions } from "@shopify/polaris";
 import { useQualifierForm } from "./hooks";
 import NameDescriptionQualifier from "./components/NameDescription";
-import ConditionsQualifier from "./components/Conditions";
 import { OperatorQualifier } from "./components/OperatorQualifier";
 import CustomersQueryQualifier from "./components/CustomersQueryQualifier";
+import NewCondtions from "./components/NewConditions";
 
 export default function QualifiersForm() {
   const form = useQualifierForm();
@@ -21,7 +21,7 @@ export default function QualifiersForm() {
           <OperatorQualifier />
         </Layout.Section>
         <Layout.Section>
-          <ConditionsQualifier form={form} />
+          <NewCondtions form={form} />
         </Layout.Section>
         <Layout.Section>
           <PageActions

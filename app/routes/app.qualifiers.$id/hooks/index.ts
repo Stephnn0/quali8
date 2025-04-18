@@ -27,6 +27,10 @@ export function useQualifierForm() {
     },
     makeCleanAfterSubmit: true,
     onSubmit: async (fieldValues) => {
+      console.log("---------- onSubmit ----------");
+
+      console.log(fieldValues, "fieldValues");
+
       const body = {
         name: fieldValues.name,
         description: fieldValues.description,
