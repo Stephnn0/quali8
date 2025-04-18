@@ -3,7 +3,7 @@
 client_id = "34da8696cbfc709d9fdc83cb99b19030"
 name = "quali8"
 handle = "quali8"
-application_url = "https://experts-lp-result-meaningful.trycloudflare.com"
+application_url = "https://available-compare-accepts-medical.trycloudflare.com"
 embedded = true
 
 [build]
@@ -24,13 +24,13 @@ api_version = "2025-04"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "write_products"
+scopes = "write_products, read_customers"
 
 [auth]
 redirect_urls = [
-  "https://experts-lp-result-meaningful.trycloudflare.com/auth/callback",
-  "https://experts-lp-result-meaningful.trycloudflare.com/auth/shopify/callback",
-  "https://experts-lp-result-meaningful.trycloudflare.com/api/auth/callback"
+  "https://available-compare-accepts-medical.trycloudflare.com/auth/callback",
+  "https://available-compare-accepts-medical.trycloudflare.com/auth/shopify/callback",
+  "https://available-compare-accepts-medical.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]

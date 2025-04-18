@@ -6,7 +6,7 @@ import {
   Select,
   TextField,
 } from "@shopify/polaris";
-import { QualifierForm } from "../hooks";
+import type { QualifierForm } from "../hooks";
 import { useState } from "react";
 
 type ConditionsQualifierProps = {

@@ -3,6 +3,7 @@ import { useQualifierForm } from "./hooks";
 import NameDescriptionQualifier from "./components/NameDescription";
 import ConditionsQualifier from "./components/Conditions";
 import { OperatorQualifier } from "./components/OperatorQualifier";
+import CustomersQueryQualifier from "./components/CustomersQueryQualifier";
 
 export default function QualifiersForm() {
   const form = useQualifierForm();
@@ -12,6 +13,9 @@ export default function QualifiersForm() {
       <Layout>
         <Layout.Section>
           <NameDescriptionQualifier form={form} />
+        </Layout.Section>
+        <Layout.Section>
+          <CustomersQueryQualifier form={form} />
         </Layout.Section>
         <Layout.Section>
           <OperatorQualifier />

@@ -1,9 +1,14 @@
-import type { Conditions, Customers } from "@prisma/client";
+import type { Conditions } from "@prisma/client";
 import { LogicType } from "@prisma/client";
 import { useFetcher, useNavigate } from "@remix-run/react";
 import { useField, useForm } from "@shopify/react-form";
 
 export type QualifierForm = ReturnType<typeof useQualifierForm>;
+
+type CustomerSegment = {
+  id: string;
+  firstName: string;
+};
 
 export function useQualifierForm() {
   const navigate = useNavigate();
@@ -15,7 +20,7 @@ export function useQualifierForm() {
       name: useField(""),
       description: useField(""),
       //
-      customers: useField<Customers[]>([]),
+      customers: useField<CustomerSegment[]>([]),
       ConditionLogicType: useField<LogicType>(LogicType.AND),
       //
       formConditions: useField<Conditions[]>([]),

@@ -38,7 +38,8 @@ model ShopifyStore {
   appVersion           String                @default("0.0.0")
   //
   qualifiers           Qualifiers[]
-  customers            Customers[]          
+  customers            Customers[]   
+  conditions           Conditions[]       
 }
 
 enum AppStatus {
@@ -53,8 +54,8 @@ enum LogicType {
 }
 
 enum ConditionType {
-  EXAMPLE_TYPE_1
-  EXAMPLE_TYPE_2
+  CART_TOTAL
+  PRODUCT_ITEM
 }
 
 enum ComparisonType {
@@ -82,12 +83,16 @@ model Qualifiers {
 
 model Conditions {
   id             Int            @id @default(autoincrement())
-  type           ConditionType? // optional
-  value          String?
-  comparisonType ComparisonType?
+  type           ConditionType 
+  comparisonType ComparisonType
+  value          String
+
   //
   qualifierId    Int
   qualifier      Qualifiers      @relation(fields: [qualifierId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  //
+  shop                 String
+  shopifyStore         ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model Customers {

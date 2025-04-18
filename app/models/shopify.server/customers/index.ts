@@ -11,8 +11,6 @@ export async function getCustomers(graphql: AdminGraphqlClient) {
 
     const data = await response.json();
 
-    console.log("customers", data?.data?.customers.edges);
-
     return data?.data?.customers.edges;
   } catch (error) {
     console.error("Error fetching customers:", error);

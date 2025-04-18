@@ -23,7 +23,9 @@ export default function App() {
         <Link to="/app" rel="home">
           Home
         </Link>
-        <Link to="/app/qualifiers">Qualifiers</Link>
+        <Link to="/app/qualifiers">qualifiers</Link>
+        <Link to="/app/actions">actions</Link>
+        <Link to="/app/settings">settings</Link>
       </NavMenu>
       <Outlet />
     </AppProvider>
