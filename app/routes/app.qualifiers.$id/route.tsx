@@ -4,9 +4,11 @@ import NameDescriptionQualifier from "./components/NameDescription";
 import { OperatorQualifier } from "./components/OperatorQualifier";
 import CustomersQueryQualifier from "./components/CustomersQueryQualifier";
 import NewCondtions from "./components/NewConditions";
+import { useFilterCustomersForm } from "./hooks/filterCustomers";
 
 export default function QualifiersForm() {
   const form = useQualifierForm();
+  const formFilterCustomers = useFilterCustomersForm();
 
   return (
     <Page title="Create Qualifier" backAction={{ url: "/app/qualifiers" }}>
@@ -15,13 +17,19 @@ export default function QualifiersForm() {
           <NameDescriptionQualifier form={form} />
         </Layout.Section>
         <Layout.Section>
-          <CustomersQueryQualifier form={form} />
+          <CustomersQueryQualifier
+            form={form}
+            formFilterCustomers={formFilterCustomers}
+          />
         </Layout.Section>
         <Layout.Section>
-          <OperatorQualifier />
+          <OperatorQualifier
+            form={form}
+            formFilterCustomers={formFilterCustomers}
+          />
         </Layout.Section>
         <Layout.Section>
-          <NewCondtions form={form} />
+          <NewCondtions form={form} formFilterCustomers={formFilterCustomers} />
         </Layout.Section>
         <Layout.Section>
           <PageActions

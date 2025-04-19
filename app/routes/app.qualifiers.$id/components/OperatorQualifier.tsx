@@ -1,7 +1,17 @@
-import { ButtonGroup, Button, Card } from "@shopify/polaris";
+import { ButtonGroup, Button, Card, InlineStack, Text } from "@shopify/polaris";
 import { useCallback, useState } from "react";
+import type { QualifierForm } from "../hooks";
+import type { FilterCustomersForm } from "../hooks/filterCustomers";
 
-export function OperatorQualifier() {
+type OperatorQualifierProps = {
+  form: QualifierForm;
+  formFilterCustomers: FilterCustomersForm;
+};
+
+export function OperatorQualifier({
+  form,
+  formFilterCustomers,
+}: OperatorQualifierProps) {
   const [activeButtonIndex, setActiveButtonIndex] = useState(0);
 
   const handleButtonClick = useCallback(
@@ -14,20 +24,30 @@ export function OperatorQualifier() {
 
   return (
     <Card>
-      <ButtonGroup variant="segmented">
-        <Button
-          pressed={activeButtonIndex === 0}
-          onClick={() => handleButtonClick(0)}
+      <InlineStack wrap={false}>
+        <div
+          style={{ paddingRight: "6px", display: "flex", alignItems: "center" }}
         >
-          All
-        </Button>
-        <Button
-          pressed={activeButtonIndex === 1}
-          onClick={() => handleButtonClick(1)}
-        >
-          Any
-        </Button>
-      </ButtonGroup>
+          <Text variant="bodyMd" as="p">
+            Apply filters when
+          </Text>
+        </div>
+
+        <ButtonGroup variant="segmented">
+          <Button
+            pressed={activeButtonIndex === 0}
+            onClick={() => handleButtonClick(0)}
+          >
+            All rules pass
+          </Button>
+          <Button
+            pressed={activeButtonIndex === 1}
+            onClick={() => handleButtonClick(1)}
+          >
+            Any rule passes
+          </Button>
+        </ButtonGroup>
+      </InlineStack>
     </Card>
   );
 }

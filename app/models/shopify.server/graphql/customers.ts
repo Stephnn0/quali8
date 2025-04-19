@@ -1,6 +1,6 @@
 export const GRAPHQL_QUERY_CUSTOMERS = `#graphql
-  query customers($first: Int) {
-    customers(first: $first) {
+  query customers($first: Int, $query: String) {
+    customers(first: $first, query: $query) {
       edges {
         node {
           id

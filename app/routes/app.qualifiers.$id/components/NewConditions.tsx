@@ -6,13 +6,16 @@ import {
   TextField,
   LegacyStack,
   Box,
+  Text,
 } from "@shopify/polaris";
 import { useState } from "react";
 import { DeleteIcon } from "@shopify/polaris-icons";
 import type { QualifierForm } from "../hooks";
+import type { FilterCustomersForm } from "../hooks/filterCustomers";
 
 type ConditionsQualifierProps = {
   form: QualifierForm;
+  formFilterCustomers: FilterCustomersForm;
 };
 
 // shared types and options
@@ -34,19 +37,23 @@ const comparisonTypeOptions = [
   { label: "is not equal to", value: "not-equals" },
 ];
 
-export default function NewConditions({ form }: ConditionsQualifierProps) {
+export default function NewConditions({
+  form,
+  formFilterCustomers,
+}: ConditionsQualifierProps) {
   const { fields } = form;
-
   const { formConditions } = fields;
 
-  const [conditions, setConditions] = useState<Condition[]>([
-    { type: "product-type", comparisonType: "equals", value: "" },
-  ]);
+  const { fields: formFilterCustomersConditions } = formFilterCustomers;
+  const { formConditions: FilterCustomerCondtions } =
+    formFilterCustomersConditions;
+
+  const [conditions, setConditions] = useState<Condition[]>([]);
 
   const addCondition = () => {
     setConditions((prev) => [
       ...prev,
-      { type: "product-type", comparisonType: "equals", value: "" },
+      { type: "", comparisonType: "", value: "" },
     ]);
   };
 
@@ -64,27 +71,44 @@ export default function NewConditions({ form }: ConditionsQualifierProps) {
     updated[index][field] = value;
     setConditions(updated);
     formConditions.value = updated as any[]; // Update the form conditions
+    FilterCustomerCondtions.value = updated as any[]; // Update the filter customers conditions
   };
 
   return (
-    <>
-      <Card>
-        <br />
+    <Card>
+      <Text variant="bodyMd" as="p" fontWeight="bold">
+        Conditions
+      </Text>
+      <br />
 
-        {conditions.map((condition, index) => (
-          <>
+      {conditions.length === 0 ? (
+        <Box padding="300" background="bg-surface">
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
+            <h2 style={{ paddingBottom: "7px" }}>No conditions added yet.</h2>
+            <br />
+            <br />
+
+            <Button variant="primary" onClick={addCondition}>
+              Add First Condition
+            </Button>
+          </div>
+        </Box>
+      ) : (
+        <>
+          {conditions.map((condition, index) => (
             <Box
               key={index}
               background="bg-fill-secondary"
               padding="300"
               borderRadius="200"
             >
-              <LegacyStack
-                key={index}
-                wrap={false}
-                alignment="leading"
-                spacing="loose"
-              >
+              <LegacyStack wrap={false} alignment="leading" spacing="loose">
                 <LegacyStack.Item fill>
                   <FormLayout>
                     <FormLayout.Group>
@@ -123,12 +147,11 @@ export default function NewConditions({ form }: ConditionsQualifierProps) {
                 />
               </LegacyStack>
             </Box>
-            <br />
-          </>
-        ))}
-        <br />
-        <Button onClick={addCondition}>Add Condition</Button>
-      </Card>
-    </>
+          ))}
+          <br />
+          <Button onClick={addCondition}>Add Condition</Button>
+        </>
+      )}
+    </Card>
   );
 }

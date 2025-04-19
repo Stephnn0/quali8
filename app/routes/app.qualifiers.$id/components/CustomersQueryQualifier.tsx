@@ -6,15 +6,17 @@ import {
   Text,
 } from "@shopify/polaris";
 import type { QualifierForm } from "../hooks";
-import { Form, useFetcher } from "@remix-run/react";
+import { Form } from "@remix-run/react";
 import { useEffect, useState } from "react";
 
 import type action from "../../api.shopifyCustomers/action";
+import type { FilterCustomersForm } from "../hooks/filterCustomers";
 
 export { action };
 
 type CustomersQueryQualifierProps = {
   form: QualifierForm;
+  formFilterCustomers: FilterCustomersForm;
 };
 type CustomerSegment = {
   id: string;
@@ -23,11 +25,11 @@ type CustomerSegment = {
 
 export default function CustomersQueryQualifier({
   form,
+  formFilterCustomers,
 }: CustomersQueryQualifierProps) {
-  const fetcher = useFetcher<typeof action>();
+  const { fetcher } = formFilterCustomers;
 
   const { fields } = form;
-
   const { customers } = fields;
 
   useEffect(() => {
@@ -57,21 +59,6 @@ export default function CustomersQueryQualifier({
 
   const { selectedResources, allResourcesSelected, handleSelectionChange } =
     useIndexResourceState(customerSegments);
-
-  const handleSubmit = () => {
-    try {
-      fetcher.submit(
-        {},
-        {
-          method: "post",
-          action: "/api/shopifyCustomers",
-          encType: "multipart/form-data",
-        },
-      );
-    } catch (error) {
-      console.error("Error submitting form:", error);
-    }
-  };
 
   const rowMarkup = customerSegments?.map(({ id, firstName }, index) => (
     <IndexTable.Row
@@ -106,8 +93,13 @@ export default function CustomersQueryQualifier({
 
       <br />
 
-      <Form onSubmit={handleSubmit}>
-        <Button submit>Run Query</Button>
+      <Form onSubmit={formFilterCustomers.submit}>
+        <Button
+          //  disabled={!formFilterCustomers.dirty}
+          submit
+        >
+          {fetcher.state === "submitting" ? "...loading" : "Run Query"}
+        </Button>
       </Form>
     </Card>
   );

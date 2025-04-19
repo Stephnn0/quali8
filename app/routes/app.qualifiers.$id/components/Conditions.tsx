@@ -8,9 +8,11 @@ import {
 } from "@shopify/polaris";
 import type { QualifierForm } from "../hooks";
 import { useState } from "react";
+import type { FilterCustomersForm } from "../hooks/filterCustomers";
 
 type ConditionsQualifierProps = {
   form: QualifierForm;
+  formFilterCustomers: FilterCustomersForm;
 };
 
 const typeOptions = [
@@ -26,6 +28,7 @@ const comparisonTypeOptions = [
 
 export default function ConditionsQualifier({
   form,
+  formFilterCustomers,
 }: ConditionsQualifierProps) {
   const { fields } = form;
 
