@@ -1,6 +1,8 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
+import { getQualifiersByShop } from "app/models/app.server/qualifiers/qualifier.server";
 import { getDeliveryProfiles } from "app/models/shopify.server/deliveryProfiles/deliveryProfiles.server";
 import { authenticate } from "app/shopify.server";
+import db from "app/db.server";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const context = await authenticate.admin(request);
@@ -19,7 +21,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
       });
     });
 
-    const qualifiers: any[] = [];
+    const qualifiers = await getQualifiersByShop(
+      {
+        where: {
+          shop: context.session.shop,
+        },
+      },
+      db,
+    );
 
     return {
       payload: qualifiers || [],

@@ -1,20 +1,27 @@
 import { useLoaderData } from "@remix-run/react";
 import {
+  Button,
   Card,
   InlineGrid,
   Layout,
   Page,
+  PageActions,
   Select,
   TextField,
 } from "@shopify/polaris";
 import { loader } from "./loader";
 import { useDiscountForm } from "./hooks";
 import { useState } from "react";
+import DateSelector from "./components/DateSelector";
+import { ShippingRates } from "./components/ShippingRates";
+import { PickQualifiers } from "./components/PickQualifiers";
 
 export { loader };
 
 export default function ActionDiscounts() {
   const loaderData = useLoaderData<typeof loader>();
+
+  console.log("Loader Data", loaderData);
 
   const form = useDiscountForm();
 
@@ -110,6 +117,60 @@ export default function ActionDiscounts() {
             </InlineGrid>
           </Card>
         </Layout.Section>
+        {/* =========================================================================== */}
+        {/* =========================== CODE OR AUTOMATIC ============================= */}
+        {/* =========================================================================== */}
+        {/* =========================================================================== */}
+        <Layout.Section>
+          {/* Toggle Buttons for AND/OR */}
+          <div style={{ display: "flex", gap: "10px" }}>
+            <Button
+              disabled={operator === "CODE"}
+              onClick={() => handleOperatorChange("CODE")}
+            >
+              Discount Code
+            </Button>
+
+            <Button
+              disabled={operator === "AUTOMATIC"}
+              onClick={() => handleOperatorChange("AUTOMATIC")}
+            >
+              Automatic Discount
+            </Button>
+          </div>
+        </Layout.Section>
+        {/* =========================================================================== */}
+        {/* =========================== ENABLE OR DISABLE ============================= */}
+        {/* =========================================================================== */}
+        {/* =========================================================================== */}
+
+        <Layout.Section>
+          <PickQualifiers mockQualifiers={loaderData?.payload} form={form} />
+        </Layout.Section>
+
+        <Layout.Section>
+          <ShippingRates shippingRates={loaderData?.rates} form={form} />
+        </Layout.Section>
+
+        {/* =========================================================================== */}
+        {/* =========================== ENABLE OR DISABLE ============================= */}
+        {/* =========================================================================== */}
+        {/* =========================================================================== */}
+        <Layout.Section>
+          <DateSelector form={form} />
+        </Layout.Section>
+
+        <Layout.Section>
+          <PageActions
+            primaryAction={{
+              content: "Save",
+              onAction: form.submit,
+              disabled: !form.dirty,
+            }}
+          />
+        </Layout.Section>
+
+        <br />
       </Layout>
     </Page>
   );

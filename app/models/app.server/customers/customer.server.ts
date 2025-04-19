@@ -1,6 +1,22 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
 import type { DefaultArgs } from "@prisma/client/runtime/binary";
 
+export async function getCustomersByIds(ids: number[], db: PrismaClient) {
+  try {
+    const customers = await db.customers.findMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
+    });
+    return customers;
+  } catch (error) {
+    console.error("Error fetching customers by IDs:", error);
+    throw error;
+  }
+}
+
 export async function createCustomer(
   prismaArgs: Prisma.CustomersCreateArgs<DefaultArgs>,
   db: PrismaClient,
