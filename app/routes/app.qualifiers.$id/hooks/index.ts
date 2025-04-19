@@ -27,10 +27,6 @@ export function useQualifierForm() {
     },
     makeCleanAfterSubmit: true,
     onSubmit: async (fieldValues) => {
-      console.log("---------- onSubmit index----------");
-
-      console.log(fieldValues, "fieldValues");
-
       const body = {
         name: fieldValues.name,
         description: fieldValues.description,
@@ -39,12 +35,8 @@ export function useQualifierForm() {
         conditionLogicType: fieldValues.ConditionLogicType,
       };
 
-      console.log(body, "body");
-
       try {
         if (isNew) {
-          console.log("post");
-
           fetcher.submit(
             { body: JSON.stringify(body) },
             {

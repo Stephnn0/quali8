@@ -26,6 +26,7 @@ type Condition = {
 };
 
 const typeOptions = [
+  { label: "Select a condition", value: "" }, // ⬅️ default placeholder
   { label: "Customer Tag", value: "customer_tag" },
   { label: "Customer Order Count", value: "customer_order_count" },
   { label: "Customer Email", value: "customer_email" },
@@ -33,6 +34,7 @@ const typeOptions = [
   { label: "Customer Amount Spent", value: "customer_amount_spent" },
 ];
 const comparisonTypeOptions = [
+  { label: "Select a value type", value: "" }, // ⬅️ default placeholder
   { label: "is equal to", value: "equals" },
   { label: "is not equal to", value: "not_equals" },
 ];
@@ -73,6 +75,8 @@ export default function NewConditions({
     formConditions.onChange(updated as any[]); // Update the form conditions
     FilterCustomerCondtions.onChange(updated as any[]); // Update the filter customers conditions
   };
+
+  // ------------------------------ ERROR HANDLING ------------------------------
 
   return (
     <Card>
@@ -115,14 +119,24 @@ export default function NewConditions({
                       <Select
                         labelHidden
                         label="Collection rule type"
-                        options={typeOptions}
+                        options={
+                          condition.type === ""
+                            ? typeOptions
+                            : typeOptions.filter((opt) => opt.value !== "")
+                        }
                         value={condition.type}
                         onChange={(value) => handleChange(index, "type", value)}
                       />
                       <Select
                         labelHidden
                         label="Collection rule condition"
-                        options={comparisonTypeOptions}
+                        options={
+                          condition.comparisonType === ""
+                            ? comparisonTypeOptions
+                            : comparisonTypeOptions.filter(
+                                (opt) => opt.value !== "",
+                              )
+                        }
                         value={condition.comparisonType}
                         onChange={(value) =>
                           handleChange(index, "comparisonType", value)

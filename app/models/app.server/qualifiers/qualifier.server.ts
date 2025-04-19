@@ -12,3 +12,15 @@ export async function createQualifier(
     console.error("Error creating qualifier:", error);
   }
 }
+
+export async function getQualifiersByShop(
+  prismaArgs: Prisma.QualifiersFindManyArgs<DefaultArgs>,
+  db: PrismaClient,
+) {
+  try {
+    const qualifiers = await db.qualifiers.findMany(prismaArgs);
+    return qualifiers;
+  } catch (error) {
+    console.error("Error fetching qualifiers:", error);
+  }
+}

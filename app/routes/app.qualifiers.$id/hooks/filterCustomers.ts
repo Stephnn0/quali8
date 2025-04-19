@@ -20,16 +20,10 @@ export function useFilterCustomersForm() {
     },
     makeCleanAfterSubmit: false,
     onSubmit: async (fieldValues) => {
-      console.log("---------- onSubmit ----------");
-
-      console.log(fieldValues, "fieldValues");
-
       const body = {
         conditions: fieldValues.formConditions,
         conditionLogicType: fieldValues.ConditionLogicTypeCustomer,
       };
-
-      console.log(body, "body");
 
       try {
         fetcher.submit(
