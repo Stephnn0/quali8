@@ -3,7 +3,7 @@
 client_id = "34da8696cbfc709d9fdc83cb99b19030"
 name = "quali8"
 handle = "quali8"
-application_url = "https://child-parameter-malta-belly.trycloudflare.com"
+application_url = "https://comfortable-advantages-shares-cell.trycloudflare.com"
 embedded = true
 
 [build]
@@ -24,13 +24,13 @@ api_version = "2025-04"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "write_products, read_customers"
+scopes = "write_products, read_customers, read_shipping, write_discounts"
 
 [auth]
 redirect_urls = [
-  "https://child-parameter-malta-belly.trycloudflare.com/auth/callback",
-  "https://child-parameter-malta-belly.trycloudflare.com/auth/shopify/callback",
-  "https://child-parameter-malta-belly.trycloudflare.com/api/auth/callback"
+  "https://comfortable-advantages-shares-cell.trycloudflare.com/auth/callback",
+  "https://comfortable-advantages-shares-cell.trycloudflare.com/auth/shopify/callback",
+  "https://comfortable-advantages-shares-cell.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]
