@@ -27,7 +27,7 @@ export function useQualifierForm() {
     },
     makeCleanAfterSubmit: true,
     onSubmit: async (fieldValues) => {
-      console.log("---------- onSubmit ----------");
+      console.log("---------- onSubmit index----------");
 
       console.log(fieldValues, "fieldValues");
 

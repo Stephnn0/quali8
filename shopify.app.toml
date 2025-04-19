@@ -3,7 +3,7 @@
 client_id = "34da8696cbfc709d9fdc83cb99b19030"
 name = "quali8"
 handle = "quali8"
-application_url = "https://ralph-telephone-ta-delay.trycloudflare.com"
+application_url = "https://obvious-rico-lights-marion.trycloudflare.com"
 embedded = true
 
 [build]
@@ -28,9 +28,9 @@ scopes = "write_products, read_customers"
 
 [auth]
 redirect_urls = [
-  "https://ralph-telephone-ta-delay.trycloudflare.com/auth/callback",
-  "https://ralph-telephone-ta-delay.trycloudflare.com/auth/shopify/callback",
-  "https://ralph-telephone-ta-delay.trycloudflare.com/api/auth/callback"
+  "https://obvious-rico-lights-marion.trycloudflare.com/auth/callback",
+  "https://obvious-rico-lights-marion.trycloudflare.com/auth/shopify/callback",
+  "https://obvious-rico-lights-marion.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]
