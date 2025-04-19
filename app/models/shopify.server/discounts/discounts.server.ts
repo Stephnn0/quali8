@@ -8,12 +8,12 @@ export async function createShippingDiscount(
 ) {
   try {
     const VARIABLES = {
-      functionId: "20b50cf7-29a2-4a71-8e85-e985fc3de5b8",
+      functionId: "92f98185-5407-46c4-85d9-11594cc32d07",
       title: code,
       startsAt: "2025-04-07",
       code: code,
       metafields: {
-        key: "app_discount",
+        key: "quali8_shipping_discounts",
         value: body,
         type: "string",
       },

@@ -57,7 +57,7 @@ export function useDiscountForm() {
             {
               method: "POST",
               encType: "multipart/form-data",
-              action: "/app/actions/discounts",
+              action: "/api/actions/discounts",
             },
           );
 

@@ -1,12 +1,12 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
 import type { DefaultArgs } from "@prisma/client/runtime/binary";
 
-export async function getCustomersByIds(ids: number[], db: PrismaClient) {
+export async function getCustomersByIds(emails: string[], db: PrismaClient) {
   try {
     const customers = await db.customers.findMany({
       where: {
-        id: {
-          in: ids,
+        email: {
+          in: emails,
         },
       },
     });

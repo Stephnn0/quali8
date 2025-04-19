@@ -1,6 +1,6 @@
 query RunInput {
   discountNode {
-    metafield(key: "app_discount") {
+    metafield(key: "quali8_shipping_discounts") {
       value
       jsonValue
       type

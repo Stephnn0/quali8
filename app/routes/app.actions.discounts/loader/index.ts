@@ -26,6 +26,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
         where: {
           shop: context.session.shop,
         },
+
+        include: {
+          customers: {
+            select: {
+              id: true,
+              email: true,
+            },
+          },
+        },
       },
       db,
     );

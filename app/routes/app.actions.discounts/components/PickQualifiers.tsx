@@ -59,6 +59,8 @@ export function PickQualifiers({ mockQualifiers, form }: PickQualifiersProps) {
       .filter((segment: any) => selectedResources.includes(segment.id))
       .flatMap((segment: any) => segment.customers);
 
+    console.log(selectedCustomers, "selectedCustomers");
+
     customers.value = selectedCustomers;
 
     // Update the 'customers' field in the form with the selected customers

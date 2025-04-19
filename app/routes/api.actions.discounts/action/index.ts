@@ -1,10 +1,11 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { getCustomersByIds } from "app/models/app.server/customers/customer.server";
-import { createShippingDiscount } from "app/models/shopify.server/discounts/discounts.server";
 import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
+import { createShippingDiscount } from "app/models/shopify.server/discounts/discounts.server";
 
-export async function action({ request }: ActionFunctionArgs) {
+export default async function action({ request }: ActionFunctionArgs) {
+  console.log("---------action app  actions discounts---------");
   const context = await authenticate.admin(request);
 
   const formData = await request.formData();
@@ -13,13 +14,20 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const parsedBody = JSON.parse(body);
 
+  console.log("parsedBody", parsedBody);
+
   try {
     if (request.method === "POST") {
       console.log("---------POST request received---------");
-      const customers = await getCustomersByIds(parsedBody.customers, db);
+      const customerEmails =
+        parsedBody.customers && parsedBody.customers.map((c: any) => c.email);
+
+      const customers = await getCustomersByIds(customerEmails, db);
+
+      console.log("customers", customers);
 
       if (parsedBody.automaticOrCode === "CODE") {
-        console.log("---------POST request received---------");
+        console.log("---------CODE---------");
 
         const metafieldData = {
           customers: customers,
