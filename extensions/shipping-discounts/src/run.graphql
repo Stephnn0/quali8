@@ -1,7 +1,31 @@
 query RunInput {
   discountNode {
-    metafield(namespace: "$app:shipping-discounts", key: "function-configuration") {
+    metafield(key: "app_discount") {
       value
+      jsonValue
+      type
+    }
+  }
+  cart {
+    cost {
+      totalAmount {
+        amount
+      }
+    }
+    deliveryGroups {
+      deliveryOptions {
+        title
+        handle
+      }
+    }
+    buyerIdentity {
+      isAuthenticated
+      customer {
+        id
+        firstName
+        lastName
+        email
+      }
     }
   }
 }

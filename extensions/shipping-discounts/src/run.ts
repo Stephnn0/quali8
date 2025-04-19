@@ -1,20 +1,109 @@
-import type {
-  RunInput,
-  FunctionRunResult
-} from "../generated/api";
-import {
-  DiscountApplicationStrategy,
-} from "../generated/api";
+import type { RunInput, FunctionRunResult, Target } from "../generated/api";
 
 const EMPTY_DISCOUNT: FunctionRunResult = {
   discounts: [],
 };
 
-type Configuration = {};
-
 export function run(input: RunInput): FunctionRunResult {
-  const configuration: Configuration = JSON.parse(
-    input?.discountNode?.metafield?.value ?? "{}"
+  console.log("----------------- function ran ------------------");
+
+  const parsedBody: ParsedBody = JSON.parse(
+    input.discountNode.metafield?.value as string,
   );
+
+  // ! testing
+  // console.log("parsedBody", JSON.stringify(parsedBody, null, 2));
+
+  console.log(
+    JSON.stringify(input.cart.deliveryGroups, null, 2),
+    "input.cart.deliveryGroups",
+  );
+
+  if (input.cart.buyerIdentity === null) {
+    return EMPTY_DISCOUNT;
+  }
+
+  const customerId = input.cart.buyerIdentity?.customer?.id;
+
+  const isCustomerInList = parsedBody.customers.some(
+    (customer: Customer) => customer.shopifyId === customerId,
+  );
+
+  if (isCustomerInList) {
+    console.log("customer is in list");
+    const deliveryOptions: Target[] = [];
+
+    if (parsedBody.shippingRateType === "ALL-RATES") {
+      for (const deliveryGroup of input.cart.deliveryGroups) {
+        for (const option of deliveryGroup.deliveryOptions) {
+          console.log("option", option);
+          deliveryOptions.push({
+            deliveryOption: {
+              handle: option.handle,
+            },
+          });
+        }
+      }
+    }
+
+    let discountValue;
+
+    switch (parsedBody.type) {
+      case "currency":
+        discountValue = {
+          fixedAmount: {
+            amount: parseFloat(parsedBody.value),
+          },
+        };
+        break;
+      case "percentage":
+        discountValue = {
+          percentage: {
+            value: parseFloat(parsedBody.value),
+          },
+        };
+        break;
+      default:
+        discountValue = {
+          fixedAmount: {
+            amount: 0,
+          },
+        };
+    }
+
+    return {
+      discounts: [
+        {
+          targets: deliveryOptions,
+          value: discountValue,
+        },
+      ],
+    };
+  }
+
   return EMPTY_DISCOUNT;
+}
+
+type Customer = {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  shopifyId: string;
+  createdAt: string; // ISO string date
+  updatedAt: string; // ISO string date
+  __v: number;
+};
+
+type ParsedBody = {
+  shippingRateType: "ALL-RATES" | "CUSTOM-RATES";
+  customers: Customer[];
+  shippingRates: any[]; // You can further define this if you have more details on its structure
+  startDate: string; // ISO string date
+  startTime: string; // Hour as a string
+  hasEndDate: boolean;
+  endDate: string; // ISO string date
+  endTime: string; // Hour as a string
+  code: string;
+  type: string;
+  value: string;
 };
