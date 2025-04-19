@@ -4,7 +4,6 @@ import { authenticate } from "app/shopify.server";
 import { buildCustomerQuery } from "app/utils/queryEngine";
 
 export default async function action({ request }: ActionFunctionArgs) {
-  console.log("------------- API Get Customers Action -----------------");
   const { admin } = await authenticate.admin(request);
 
   const formData = await request.formData();
@@ -15,12 +14,7 @@ export default async function action({ request }: ActionFunctionArgs) {
 
   const { conditions, conditionLogicType } = parsedBody;
 
-  console.log("Conditions:", conditions);
-  console.log("Condition Logic Type:", conditionLogicType);
-
   const query = buildCustomerQuery(conditions, conditionLogicType);
-
-  console.log("Built query:", query); // <-- helpful debug
 
   try {
     const customers = await getCustomers(admin.graphql, query);

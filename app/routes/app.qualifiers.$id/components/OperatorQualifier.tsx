@@ -27,8 +27,6 @@ export function OperatorQualifier({
 
       const logic = index === 0 ? "AND" : "OR";
 
-      console.log(logic, "logic");
-
       // ✅ Update both forms
       ConditionLogicType.onChange(logic);
       ConditionLogicTypeCustomer.onChange(logic);

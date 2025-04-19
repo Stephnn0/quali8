@@ -24,3 +24,37 @@ export async function createManyCustomers(
     console.error("Error creating many customer:", error);
   }
 }
+
+export async function upsertCustomer(
+  db: PrismaClient,
+  customer: {
+    email: string;
+    firstName?: string;
+    lastName?: string;
+    shop: string;
+    qualifierId: number;
+  },
+) {
+  try {
+    const result = await db.customers.upsert({
+      where: { email: customer.email },
+      update: {
+        firstName: customer.firstName,
+        lastName: customer.lastName,
+        shopifyStore: { connect: { shop: customer.shop } },
+        qualifiers: { connect: { id: customer.qualifierId } },
+      },
+      create: {
+        email: customer.email,
+        firstName: customer.firstName,
+        lastName: customer.lastName,
+        shopifyStore: { connect: { shop: customer.shop } },
+        qualifiers: { connect: { id: customer.qualifierId } },
+      },
+    });
+
+    return result;
+  } catch (error) {
+    console.error("Error upserting customer:", error);
+  }
+}

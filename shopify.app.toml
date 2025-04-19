@@ -3,7 +3,7 @@
 client_id = "34da8696cbfc709d9fdc83cb99b19030"
 name = "quali8"
 handle = "quali8"
-application_url = "https://obvious-rico-lights-marion.trycloudflare.com"
+application_url = "https://child-parameter-malta-belly.trycloudflare.com"
 embedded = true
 
 [build]
@@ -28,9 +28,9 @@ scopes = "write_products, read_customers"
 
 [auth]
 redirect_urls = [
-  "https://obvious-rico-lights-marion.trycloudflare.com/auth/callback",
-  "https://obvious-rico-lights-marion.trycloudflare.com/auth/shopify/callback",
-  "https://obvious-rico-lights-marion.trycloudflare.com/api/auth/callback"
+  "https://child-parameter-malta-belly.trycloudflare.com/auth/callback",
+  "https://child-parameter-malta-belly.trycloudflare.com/auth/shopify/callback",
+  "https://child-parameter-malta-belly.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]
