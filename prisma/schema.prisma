@@ -54,14 +54,17 @@ enum LogicType {
 }
 
 enum ConditionType {
-  CART_TOTAL
-  PRODUCT_ITEM
+  customer_tag
+  customer_order_count
+  customer_email
+  customer_country
+  customer_amount_spent
 }
 
 enum ComparisonType {
-  GREATER_THAN
-  EQUAL
-  LESS_THAN
+  equals
+  not_equals
+
 }
 
 

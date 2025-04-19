@@ -17,7 +17,7 @@ export function buildCustomerQuery(
       return `${field}:${comparison}${value}`;
     })
     .filter(Boolean)
-    .join(logic === "AND" ? " " : " OR"); // space for AND, OR for OR
+    .join(logic === "AND" ? " " : " OR "); // space for AND, OR for OR
 }
 
 type Condition = {
@@ -27,17 +27,17 @@ type Condition = {
 };
 
 const typeMapping: Record<string, string> = {
-  "customer-tag": "tag",
-  "customer-order-count": "orders_count",
-  "customer-email": "email",
-  "customer-cities": "city",
-  "customer-amount-spent": "amount_spent",
+  customer_tag: "tag",
+  customer_order_count: "orders_count",
+  customer_email: "email",
+  customer_country: "country",
+  customer_amount_spent: "total_spent",
 };
 
 const comparisonMapping: Record<string, string> = {
   equals: "",
-  "greater-than": ">",
-  "less-than": "<",
-  "greater-than-equals": ">=",
-  "less-than-equals": "<=",
+  greater_than: ">",
+  less_than: "<",
+  greater_than_equals: ">=",
+  less_than_equals: "<=",
 };

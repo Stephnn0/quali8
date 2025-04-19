@@ -34,7 +34,7 @@ export default function CustomersQueryQualifier({
 
   useEffect(() => {
     if (fetcher.data?.payload) {
-      const customersRefactor = fetcher.data.payload.map(({ node }) => ({
+      const customersRefactor = fetcher.data.payload.map(({ node }: any) => ({
         id: node.id,
         firstName: node.firstName ?? "",
         lastName: node.lastName ?? "",

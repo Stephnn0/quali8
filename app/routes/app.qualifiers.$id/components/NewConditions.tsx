@@ -26,15 +26,15 @@ type Condition = {
 };
 
 const typeOptions = [
-  { label: "Customer Tag", value: "customer-tag" },
-  { label: "Customer Order Count", value: "customer-order-count" },
-  { label: "Customer Email", value: "customer-email" },
-  { label: "Customer Cities", value: "customer-cities" },
-  { label: "Customer Amount Spent", value: "customer-amount-spent" },
+  { label: "Customer Tag", value: "customer_tag" },
+  { label: "Customer Order Count", value: "customer_order_count" },
+  { label: "Customer Email", value: "customer_email" },
+  { label: "Customer Cities", value: "customer_country" },
+  { label: "Customer Amount Spent", value: "customer_amount_spent" },
 ];
 const comparisonTypeOptions = [
   { label: "is equal to", value: "equals" },
-  { label: "is not equal to", value: "not-equals" },
+  { label: "is not equal to", value: "not_equals" },
 ];
 
 export default function NewConditions({
@@ -70,8 +70,8 @@ export default function NewConditions({
     const updated = [...conditions];
     updated[index][field] = value;
     setConditions(updated);
-    formConditions.value = updated as any[]; // Update the form conditions
-    FilterCustomerCondtions.value = updated as any[]; // Update the filter customers conditions
+    formConditions.onChange(updated as any[]); // Update the form conditions
+    FilterCustomerCondtions.onChange(updated as any[]); // Update the filter customers conditions
   };
 
   return (

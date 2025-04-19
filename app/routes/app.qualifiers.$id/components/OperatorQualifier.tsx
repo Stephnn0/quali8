@@ -12,14 +12,28 @@ export function OperatorQualifier({
   form,
   formFilterCustomers,
 }: OperatorQualifierProps) {
+  const { fields } = form;
+  const { ConditionLogicType } = fields;
+
+  const { fields: filterCustomersFields } = formFilterCustomers;
+  const { ConditionLogicTypeCustomer } = filterCustomersFields;
+
   const [activeButtonIndex, setActiveButtonIndex] = useState(0);
 
   const handleButtonClick = useCallback(
     (index: number) => {
       if (activeButtonIndex === index) return;
       setActiveButtonIndex(index);
+
+      const logic = index === 0 ? "AND" : "OR";
+
+      console.log(logic, "logic");
+
+      // ✅ Update both forms
+      ConditionLogicType.onChange(logic);
+      ConditionLogicTypeCustomer.onChange(logic);
     },
-    [activeButtonIndex],
+    [ConditionLogicType, ConditionLogicTypeCustomer, activeButtonIndex],
   );
 
   return (

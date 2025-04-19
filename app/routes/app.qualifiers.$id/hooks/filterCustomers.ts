@@ -14,11 +14,11 @@ export function useFilterCustomersForm() {
   const form = useForm({
     fields: {
       //
-      ConditionLogicType: useField<LogicType>(LogicType.AND),
+      ConditionLogicTypeCustomer: useField<LogicType>(LogicType.AND),
       //
       formConditions: useField<Conditions[]>([]),
     },
-    makeCleanAfterSubmit: true,
+    makeCleanAfterSubmit: false,
     onSubmit: async (fieldValues) => {
       console.log("---------- onSubmit ----------");
 
@@ -26,7 +26,7 @@ export function useFilterCustomersForm() {
 
       const body = {
         conditions: fieldValues.formConditions,
-        conditionLogicType: fieldValues.ConditionLogicType,
+        conditionLogicType: fieldValues.ConditionLogicTypeCustomer,
       };
 
       console.log(body, "body");

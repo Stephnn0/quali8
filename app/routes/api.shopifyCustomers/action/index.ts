@@ -13,9 +13,10 @@ export default async function action({ request }: ActionFunctionArgs) {
 
   const parsedBody = JSON.parse(body);
 
-  console.log("parse body", JSON.stringify(parsedBody, null, 2));
-
   const { conditions, conditionLogicType } = parsedBody;
+
+  console.log("Conditions:", conditions);
+  console.log("Condition Logic Type:", conditionLogicType);
 
   const query = buildCustomerQuery(conditions, conditionLogicType);
 
