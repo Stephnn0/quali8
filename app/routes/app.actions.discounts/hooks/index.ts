@@ -16,8 +16,9 @@ export function useDiscountForm() {
       valueType: useField(""),
 
       customers: useField<string[]>([]),
+      qualifiersIds: useField<string[]>([]),
       //
-      shippingRateType: useField("ALL-RATES"),
+      shippingRateType: useField("ALL_RATES"),
       shippingRatesIds: useField<string[]>([]),
       //
       startDate: useField(""),
@@ -28,10 +29,9 @@ export function useDiscountForm() {
     },
     makeCleanAfterSubmit: true,
     onSubmit: async (fieldValues) => {
-      console.log("---------------onSubmit--------------------");
       const body = {
         automaticOrCode: fieldValues.automaticOrCode,
-        code: fieldValues.code,
+        codeOrName: fieldValues.code,
         type: fieldValues.type,
         value: fieldValues.valueType,
         customers: fieldValues.customers,
@@ -45,8 +45,6 @@ export function useDiscountForm() {
         endDate: fieldValues.endDate,
         endTime: fieldValues.endTime,
       };
-
-      console.log(body, "body");
 
       try {
         if (isNew) {

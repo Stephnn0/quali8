@@ -3,6 +3,8 @@ import { getCustomersByIds } from "app/models/app.server/customers/customer.serv
 import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
 import { createShippingDiscount } from "app/models/shopify.server/discounts/discounts.server";
+import { createAction } from "app/models/app.server/actions/actions.server";
+import { createActionShippingDiscount } from "app/models/app.server/actionShippingDiscounts/actionShippingDiscounts.server";
 
 export default async function action({ request }: ActionFunctionArgs) {
   console.log("---------action app  actions discounts---------");
@@ -38,7 +40,7 @@ export default async function action({ request }: ActionFunctionArgs) {
           endDate: parsedBody.endDate,
           endTime: parsedBody.endTime,
           //
-          code: parsedBody.code,
+          code: parsedBody.codeOrName,
           type: parsedBody.type,
           value: parsedBody.value,
           //
@@ -46,13 +48,64 @@ export default async function action({ request }: ActionFunctionArgs) {
           shippingRatesIds: parsedBody.shippingRatesIds,
         };
 
+        console.log("metafieldData", metafieldData);
+
         const [shippingDiscount] = await Promise.all([
           createShippingDiscount(
             context.admin.graphql,
-            parsedBody!.code,
+            parsedBody!.codeOrName,
             JSON.stringify(metafieldData),
           ),
         ]);
+
+        console.log("shippingDiscount ", shippingDiscount);
+
+        console.log("------------------create action------------------");
+
+        const action = await createAction(
+          {
+            data: {
+              type: "SHIPPING_DISCOUNTS",
+              createdAt: new Date(),
+              shopifyStore: { connect: { shop: context.session.shop } },
+            },
+          },
+          db,
+        );
+
+        console.log("action", action);
+
+        console.log(
+          "------------------create shipping discount db------------------",
+        );
+        if (action) {
+          await createActionShippingDiscount(
+            {
+              data: {
+                marketingActionId: action?.id,
+                //
+                automaticOrCode: parsedBody.automaticOrCode,
+                codeOrName: parsedBody.codeOrName,
+                type: parsedBody.type,
+                value: parsedBody.value,
+                //
+                shippingRateType: parsedBody.shippingRateType,
+                shippingRatesIds: parsedBody.shippingRatesIds,
+                //
+                startDate: parsedBody.startDate
+                  ? new Date(parsedBody.startDate)
+                  : undefined,
+                startTime: parsedBody.startTime,
+                hasEndDate: parsedBody.hasEndDate,
+                endDate: parsedBody.endDate
+                  ? new Date(parsedBody.endDate)
+                  : undefined,
+                endTime: parsedBody.endTime,
+              },
+            },
+            db,
+          );
+        }
 
         return { payload: shippingDiscount };
       } else if (parsedBody.automaticOrCode === "AUTOMATIC") {

@@ -18,10 +18,15 @@ type DateSelectorProps = {
 export default function DateSelector({ form }: DateSelectorProps) {
   const [selectedHour, setSelectedHour] = useState("12");
 
-  const hourOptions = Array.from({ length: 24 }, (_, i) => ({
-    label: `${i + 1}`,
-    value: `${i + 1}`,
-  }));
+  const hourOptions = Array.from({ length: 24 }, (_, i) => {
+    const hour = i % 12 === 0 ? 12 : i % 12;
+    const suffix = i < 12 ? "AM" : "PM";
+    const formatted = `${hour} ${suffix}`;
+    return {
+      label: formatted,
+      value: String(i), // still use 0–23 internally
+    };
+  });
 
   const [selectedDate, setSelectedDate] = useState(new Date());
 

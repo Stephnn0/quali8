@@ -39,7 +39,8 @@ model ShopifyStore {
   //
   qualifiers           Qualifiers[]
   customers            Customers[]   
-  conditions           Conditions[]       
+  conditions           Conditions[]      
+  actions              Actions[] 
 }
 
 enum AppStatus {
@@ -82,6 +83,8 @@ model Qualifiers {
   //
   conditions         Conditions[] 
   customers          Customers[]   @relation("CustomerQualifiers")
+  //
+  actions            Actions[]     @relation("MarketingActions")
 }
 
 model Conditions {
@@ -107,5 +110,58 @@ model Customers {
   //
   shop                 String
   shopifyStore         ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
+  //
+}
 
+
+
+model Actions {
+  id             Int                  @id @default(autoincrement())
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @default(now()) @updatedAt
+  //
+  type           MarketingActionType
+  //
+  shop           String
+  shopifyStore   ShopifyStore         @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
+  //
+  //
+  qualifiers     Qualifiers[]     @relation("MarketingActions")
+  //
+  shippingDiscount ShippingDiscountAction?
+}
+
+model ShippingDiscountAction {
+  id               Int               @id @default(autoincrement())
+  marketingAction  Actions           @relation(fields: [marketingActionId], references: [id], onDelete: Cascade)
+  marketingActionId Int              @unique
+  //
+  automaticOrCode  String             // 'CODE' or 'AUTOMATIC'
+  codeOrName       String  
+  type             DiscountType       // percentage or fixed 
+  value            String
+  //            
+  shippingRateType ShippingRateType
+  shippingRatesIds String[]          //! fixed this maybe by handle or name
+  //
+  startDate      DateTime?
+  startTime      String?
+  hasEndDate     Boolean              @default(false)
+  endDate        DateTime?
+  endTime        String?
+}
+
+enum MarketingActionType {
+  SHIPPING_DISCOUNTS
+  // Add more like FREE_GIFT, PERCENTAGE_DISCOUNT, etc.
+}
+
+enum DiscountType {
+  percentage
+  fixed
+}
+
+enum ShippingRateType {
+  ALL_RATES
+  SELECTED_RATES
 }

@@ -55,7 +55,7 @@ export default function ActionDiscounts() {
 
   return (
     <Page
-      title="Marketing Actions"
+      title="Shipping Discounts"
       backAction={{ content: "Back", url: "/app/actions" }}
     >
       {/* =========================================================================== */}
