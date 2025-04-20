@@ -47,6 +47,10 @@ export function useDiscountForm() {
         endTime: fieldValues.endTime,
       };
 
+      console.log("---------hook-------------");
+
+      console.log(body, "body");
+
       try {
         if (isNew) {
           console.log("post");

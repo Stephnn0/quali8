@@ -1,6 +1,10 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
 import type { DefaultArgs } from "@prisma/client/runtime/binary";
 
+export type ShippingDiscountAction = Awaited<
+  ReturnType<typeof createActionShippingDiscount>
+>;
+
 export async function createActionShippingDiscount(
   prismaArgs: Prisma.ShippingDiscountActionCreateArgs<DefaultArgs>,
   db: PrismaClient,

@@ -107,3 +107,21 @@ type ParsedBody = {
   type: string;
   value: string;
 };
+
+// 3:35:28 │        shipping-discounts │ │ ----------------- function ran ------------------
+// 13:35:28 │        shipping-discounts │ │ [
+// 13:35:28 │        shipping-discounts │ │   {
+// 13:35:28 │        shipping-discounts │ │     "deliveryOptions": [
+// 13:35:28 │        shipping-discounts │ │       {
+// 13:35:28 │        shipping-discounts │ │         "title": "Economy",
+// 13:35:28 │        shipping-discounts │ │         "handle":
+// "01d2cd592dd79aa18b0e0810c3fbd83b-7705a2ea0c5efd1128ea4819f74d6808"
+// 13:35:28 │        shipping-discounts │ │       },
+// 13:35:28 │        shipping-discounts │ │       {
+// 13:35:28 │        shipping-discounts │ │         "title": "Standard",
+// 13:35:28 │        shipping-discounts │ │         "handle":
+// "01d2cd592dd79aa18b0e0810c3fbd83b-6d5a64f58240381019fc074473bab3ab"
+// 13:35:28 │        shipping-discounts │ │       }
+// 13:35:28 │        shipping-discounts │ │     ]
+// 13:35:28 │        shipping-discounts │ │   }
+// 13:35:28 │        shipping-discounts │ │ ] input.cart.deliveryGroups

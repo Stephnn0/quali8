@@ -14,17 +14,25 @@ type PickShippingRatesProps = {
   form: DiscountForm;
 };
 
+enum ShippingRatesType {
+  ALL_RATES = "ALL_RATES",
+  SELECTED_RATES = "SELECTED_RATES",
+}
+
 export function ShippingRates({ shippingRates, form }: PickShippingRatesProps) {
+  console.log("ShippingRates", shippingRates);
   const { fields } = form;
 
   const { shippingRateType, shippingRatesIds } = fields;
 
-  const [operator, setOperator] = useState<"ALL_RATES" | "CUSTOM_RATES">(
-    "ALL_RATES",
-  );
+  const [operator, setOperator] = useState<
+    ShippingRatesType.ALL_RATES | ShippingRatesType.SELECTED_RATES
+  >(ShippingRatesType.ALL_RATES);
 
   const handleOperatorChange = (
-    selectedOperator: "ALL_RATES" | "CUSTOM_RATES",
+    selectedOperator:
+      | ShippingRatesType.ALL_RATES
+      | ShippingRatesType.SELECTED_RATES,
   ) => {
     setOperator(selectedOperator);
     shippingRateType.value = selectedOperator;
@@ -44,7 +52,7 @@ export function ShippingRates({ shippingRates, form }: PickShippingRatesProps) {
     useIndexResourceState(rateNames);
 
   useEffect(() => {
-    if (operator === "CUSTOM_RATES") {
+    if (operator === ShippingRatesType.SELECTED_RATES) {
       shippingRatesIds.value = selectedResources;
     }
   }, [selectedResources, operator, shippingRatesIds]);
@@ -70,15 +78,17 @@ export function ShippingRates({ shippingRates, form }: PickShippingRatesProps) {
         {/* Toggle Buttons for AND/OR */}
         <div style={{ display: "flex", gap: "10px" }}>
           <Button
-            disabled={operator === "ALL_RATES"}
-            onClick={() => handleOperatorChange("ALL_RATES")}
+            disabled={operator === ShippingRatesType.ALL_RATES}
+            onClick={() => handleOperatorChange(ShippingRatesType.ALL_RATES)}
           >
             All Rates
           </Button>
 
           <Button
-            disabled={operator === "CUSTOM_RATES"}
-            onClick={() => handleOperatorChange("CUSTOM_RATES")}
+            disabled={operator === ShippingRatesType.SELECTED_RATES}
+            onClick={() =>
+              handleOperatorChange(ShippingRatesType.SELECTED_RATES)
+            }
           >
             Custom Rates
           </Button>
@@ -86,7 +96,7 @@ export function ShippingRates({ shippingRates, form }: PickShippingRatesProps) {
       </Layout.Section>
 
       <Layout.Section>
-        {operator === "ALL_RATES" ? (
+        {operator === ShippingRatesType.ALL_RATES ? (
           <Card>
             <Text variant="bodyMd" as="p">
               All shipping rates will be applied.

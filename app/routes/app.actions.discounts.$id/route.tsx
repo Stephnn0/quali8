@@ -1,5 +1,6 @@
 import { useLoaderData } from "@remix-run/react";
 import {
+  Banner,
   Button,
   Card,
   InlineGrid,
@@ -150,6 +151,14 @@ export default function ActionDiscounts() {
 
         <Layout.Section>
           <ShippingRates shippingRates={loaderData?.rates} form={form} />
+        </Layout.Section>
+        <Layout.Section>
+          <Banner onDismiss={() => {}}>
+            <p>
+              When applying discounts on specific shipping rates, make sure they
+              have a unique name to avoid conflicts with other discounts.
+            </p>
+          </Banner>
         </Layout.Section>
 
         {/* =========================================================================== */}

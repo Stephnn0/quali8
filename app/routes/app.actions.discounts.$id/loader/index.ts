@@ -10,6 +10,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
   try {
     const delivery = await getDeliveryProfiles(context.admin.graphql);
 
+    console.log(JSON.stringify(delivery, null, 2), "delivery");
+
     const methodDefinitions: any = [];
     delivery?.nodes.forEach((node) => {
       node.profileLocationGroups.forEach((group) => {

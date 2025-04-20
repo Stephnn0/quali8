@@ -13,9 +13,16 @@ query RunInput {
       }
     }
     deliveryGroups {
+      id
       deliveryOptions {
         title
         handle
+        deliveryMethodType
+        code
+        description
+        cost {
+          amount
+        }
       }
     }
     buyerIdentity {

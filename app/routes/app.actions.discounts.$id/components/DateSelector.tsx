@@ -16,7 +16,8 @@ type DateSelectorProps = {
 };
 
 export default function DateSelector({ form }: DateSelectorProps) {
-  const [selectedHour, setSelectedHour] = useState("12");
+  const [selectedStartHour, setSelectedStartHour] = useState("12");
+  const [selectedEndHour, setSelectedEndHour] = useState("12");
 
   const hourOptions = Array.from({ length: 24 }, (_, i) => {
     const hour = i % 12 === 0 ? 12 : i % 12;
@@ -44,15 +45,6 @@ export default function DateSelector({ form }: DateSelectorProps) {
     [startDate],
   );
 
-  const handleStartTimeChange = useCallback(
-    (newTime: string) => {
-      setSelectedHour(newTime);
-
-      startTime.onChange(newTime);
-    },
-    [startTime],
-  );
-
   const handleEndDateChange = useCallback(
     (newDate: Date) => {
       setSelectedEndDate(newDate);
@@ -61,10 +53,17 @@ export default function DateSelector({ form }: DateSelectorProps) {
     [endDate],
   );
 
+  const handleStartTimeChange = useCallback(
+    (newTime: string) => {
+      setSelectedStartHour(newTime);
+      startTime.onChange(newTime);
+    },
+    [startTime],
+  );
+
   const handleEndTimeChange = useCallback(
     (newTime: string) => {
-      setSelectedHour(newTime);
-
+      setSelectedEndHour(newTime);
       endTime.onChange(newTime);
     },
     [endTime],
@@ -89,7 +88,7 @@ export default function DateSelector({ form }: DateSelectorProps) {
                 <Select
                   label="Start time (EDT)"
                   options={hourOptions}
-                  value={selectedHour}
+                  value={selectedStartHour}
                   onChange={handleStartTimeChange}
                 />
               </div>
@@ -119,7 +118,7 @@ export default function DateSelector({ form }: DateSelectorProps) {
                   <Select
                     label="Start time (EDT)"
                     options={hourOptions}
-                    value={selectedHour}
+                    value={selectedEndHour}
                     onChange={handleEndTimeChange}
                   />
                 </div>

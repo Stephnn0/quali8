@@ -44,7 +44,7 @@ export default async function action({ request }: ActionFunctionArgs) {
           value: parsedBody.value,
           //
           shippingRateType: parsedBody.shippingRateType,
-          shippingRatesIds: parsedBody.shippingRatesIds,
+          shippingRatesIds: parsedBody.shippingRatesIds, // ! fixed shipping rates
         };
 
         const [shippingDiscount] = await Promise.all([
@@ -108,6 +108,7 @@ export default async function action({ request }: ActionFunctionArgs) {
 
         return { payload: shippingDiscount };
       } else if (parsedBody.automaticOrCode === "AUTOMATIC") {
+        console.log("AUTOMATIC..");
         return { payload: null };
       }
 
