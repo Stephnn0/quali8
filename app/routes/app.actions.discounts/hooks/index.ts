@@ -35,10 +35,11 @@ export function useDiscountForm() {
         type: fieldValues.type,
         value: fieldValues.valueType,
         customers: fieldValues.customers,
+        qualifiersIds: fieldValues.qualifiersIds,
         //
         shippingRateType: fieldValues.shippingRateType,
         shippingRatesIds: fieldValues.shippingRatesIds,
-
+        //
         startDate: fieldValues.startDate,
         startTime: fieldValues.startTime,
         hasEndDate: fieldValues.hasEndDate,

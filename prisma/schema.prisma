@@ -149,6 +149,8 @@ model ShippingDiscountAction {
   hasEndDate     Boolean              @default(false)
   endDate        DateTime?
   endTime        String?
+  //
+  shopifyDiscountId  String           @unique
 }
 
 enum MarketingActionType {

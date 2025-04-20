@@ -19,9 +19,11 @@ type Qualifier = {
 };
 
 export function PickQualifiers({ mockQualifiers, form }: PickQualifiersProps) {
+  console.log("mockQualifiers", mockQualifiers);
+
   const { fields } = form;
 
-  const { customers } = fields;
+  const { customers, qualifiersIds } = fields;
 
   const customerSegments = mockQualifiers.map(
     (qualifier: Qualifier, index: any) => ({
@@ -55,16 +57,21 @@ export function PickQualifiers({ mockQualifiers, form }: PickQualifiersProps) {
   ));
 
   useEffect(() => {
-    const selectedCustomers = customerSegments
-      .filter((segment: any) => selectedResources.includes(segment.id))
-      .flatMap((segment: any) => segment.customers);
+    const selectedCustomerSegments = customerSegments.filter((segment: any) =>
+      selectedResources.includes(segment.id),
+    );
 
-    console.log(selectedCustomers, "selectedCustomers");
+    const selectedCustomers = selectedCustomerSegments.flatMap(
+      (segment: any) => segment.customers,
+    );
+
+    const selectedQualifierIds = selectedCustomerSegments.map(
+      (segment: any) => segment.id,
+    );
 
     customers.value = selectedCustomers;
-
-    // Update the 'customers' field in the form with the selected customers
-  }, [selectedResources, customerSegments, customers]);
+    qualifiersIds.value = selectedQualifierIds;
+  }, [selectedResources, customerSegments, customers, qualifiersIds]);
 
   return (
     <Card>

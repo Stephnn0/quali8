@@ -19,12 +19,12 @@ export function ShippingRates({ shippingRates, form }: PickShippingRatesProps) {
 
   const { shippingRateType, shippingRatesIds } = fields;
 
-  const [operator, setOperator] = useState<"ALL-RATES" | "CUSTOM-RATES">(
-    "ALL-RATES",
+  const [operator, setOperator] = useState<"ALL_RATES" | "CUSTOM_RATES">(
+    "ALL_RATES",
   );
 
   const handleOperatorChange = (
-    selectedOperator: "ALL-RATES" | "CUSTOM-RATES",
+    selectedOperator: "ALL_RATES" | "CUSTOM_RATES",
   ) => {
     setOperator(selectedOperator);
     shippingRateType.value = selectedOperator;
@@ -44,7 +44,7 @@ export function ShippingRates({ shippingRates, form }: PickShippingRatesProps) {
     useIndexResourceState(rateNames);
 
   useEffect(() => {
-    if (operator === "CUSTOM-RATES") {
+    if (operator === "CUSTOM_RATES") {
       shippingRatesIds.value = selectedResources;
     }
   }, [selectedResources, operator, shippingRatesIds]);
@@ -70,15 +70,15 @@ export function ShippingRates({ shippingRates, form }: PickShippingRatesProps) {
         {/* Toggle Buttons for AND/OR */}
         <div style={{ display: "flex", gap: "10px" }}>
           <Button
-            disabled={operator === "ALL-RATES"}
-            onClick={() => handleOperatorChange("ALL-RATES")}
+            disabled={operator === "ALL_RATES"}
+            onClick={() => handleOperatorChange("ALL_RATES")}
           >
             All Rates
           </Button>
 
           <Button
-            disabled={operator === "CUSTOM-RATES"}
-            onClick={() => handleOperatorChange("CUSTOM-RATES")}
+            disabled={operator === "CUSTOM_RATES"}
+            onClick={() => handleOperatorChange("CUSTOM_RATES")}
           >
             Custom Rates
           </Button>
@@ -86,7 +86,7 @@ export function ShippingRates({ shippingRates, form }: PickShippingRatesProps) {
       </Layout.Section>
 
       <Layout.Section>
-        {operator === "ALL-RATES" ? (
+        {operator === "ALL_RATES" ? (
           <Card>
             <Text variant="bodyMd" as="p">
               All shipping rates will be applied.

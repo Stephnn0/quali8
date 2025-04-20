@@ -26,13 +26,12 @@ export default async function action({ request }: ActionFunctionArgs) {
 
       const customers = await getCustomersByIds(customerEmails, db);
 
-      console.log("customers", customers);
-
       if (parsedBody.automaticOrCode === "CODE") {
         console.log("---------CODE---------");
 
         const metafieldData = {
           customers: customers,
+          qualifiersIds: parsedBody.qualifiersIds,
           //
           startDate: parsedBody.startDate,
           startTime: parsedBody.startTime,
@@ -48,8 +47,6 @@ export default async function action({ request }: ActionFunctionArgs) {
           shippingRatesIds: parsedBody.shippingRatesIds,
         };
 
-        console.log("metafieldData", metafieldData);
-
         const [shippingDiscount] = await Promise.all([
           createShippingDiscount(
             context.admin.graphql,
@@ -58,9 +55,7 @@ export default async function action({ request }: ActionFunctionArgs) {
           ),
         ]);
 
-        console.log("shippingDiscount ", shippingDiscount);
-
-        console.log("------------------create action------------------");
+        console.log("shippingDiscount", shippingDiscount);
 
         const action = await createAction(
           {
@@ -68,17 +63,19 @@ export default async function action({ request }: ActionFunctionArgs) {
               type: "SHIPPING_DISCOUNTS",
               createdAt: new Date(),
               shopifyStore: { connect: { shop: context.session.shop } },
+              qualifiers: {
+                connect: parsedBody.qualifiersIds.map((id: number) => ({ id })),
+              },
             },
           },
           db,
         );
 
-        console.log("action", action);
+        if (action && shippingDiscount) {
+          const shopifyDiscountId =
+            shippingDiscount?.discountCodeAppCreate?.codeAppDiscount
+              ?.discountId;
 
-        console.log(
-          "------------------create shipping discount db------------------",
-        );
-        if (action) {
           await createActionShippingDiscount(
             {
               data: {
@@ -101,6 +98,8 @@ export default async function action({ request }: ActionFunctionArgs) {
                   ? new Date(parsedBody.endDate)
                   : undefined,
                 endTime: parsedBody.endTime,
+                //
+                shopifyDiscountId: shopifyDiscountId!,
               },
             },
             db,
