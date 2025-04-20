@@ -1,10 +1,14 @@
-import type { Prisma, PrismaClient } from "@prisma/client";
+import type {
+  Prisma,
+  PrismaClient,
+  ShippingDiscountAction,
+} from "@prisma/client";
 import type { DefaultArgs } from "@prisma/client/runtime/binary";
 
 export type Action = Awaited<ReturnType<typeof createAction>>;
 
 export type ActionWithShippingDiscount = Action & {
-  shippingDiscount: {};
+  shippingDiscount: ShippingDiscountAction;
 };
 
 export async function createAction(
@@ -29,5 +33,17 @@ export async function getActionsByShop(
     return actions;
   } catch (error) {
     console.error("Error getting actions:", error);
+  }
+}
+
+export async function deleteAction(
+  prismaArgs: Prisma.ActionsDeleteArgs<DefaultArgs>,
+  db: PrismaClient,
+) {
+  try {
+    const action = await db.actions.delete(prismaArgs);
+    return action;
+  } catch (error) {
+    console.error("Error deleting action:", error);
   }
 }

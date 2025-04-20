@@ -1,4 +1,4 @@
-import { Link, useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData, useSubmit } from "@remix-run/react";
 import {
   IndexTable,
   Page,
@@ -9,10 +9,11 @@ import {
   ButtonGroup,
 } from "@shopify/polaris";
 import { loader } from "./loader";
+import { action } from "./action";
 
 import { DeleteIcon, EditIcon } from "@shopify/polaris-icons";
 
-export { loader };
+export { loader, action };
 
 export default function AllActions() {
   const loaderData = useLoaderData<typeof loader>();
@@ -25,17 +26,59 @@ export default function AllActions() {
       type: data.type,
       discountMethod: data.automaticOrCode,
       value: data.value,
+      shopifyDiscountId: data.shopifyDiscountId,
+      marketingActionId: data.marketingActionId,
+      //
+      automaticOrCode: data.automaticOrCode,
     })) || [];
 
   const resourceName = {
     singular: "Discount Action",
     plural: "Discount Actions",
   };
-  const { selectedResources, allResourcesSelected, handleSelectionChange } =
+  const { selectedResources, allResourcesSelected } =
     useIndexResourceState(discountActions);
 
+  const submit = useSubmit();
+
+  const handleDelete = (
+    actionId: string,
+    shopifyDiscountId: string,
+    marketingActionId: string,
+    automaticOrCode: string,
+  ) => {
+    const body = {
+      shippingDiscountId: actionId,
+      shopifyDiscountId: shopifyDiscountId,
+      marketingActionId: marketingActionId,
+      automaticOrCode: automaticOrCode,
+    };
+    submit(
+      {
+        body: JSON.stringify(body),
+      },
+      {
+        method: "DELETE",
+        encType: "multipart/form-data",
+        action: `/app/actions/discounts`,
+      },
+    );
+  };
+
   const rowMarkup = discountActions?.map(
-    ({ id, codeOrName, type, discountMethod, value }, index) => (
+    (
+      {
+        id,
+        codeOrName,
+        type,
+        discountMethod,
+        value,
+        shopifyDiscountId,
+        marketingActionId,
+        automaticOrCode,
+      },
+      index,
+    ) => (
       <IndexTable.Row
         id={String(id)}
         key={id}
@@ -78,7 +121,17 @@ export default function AllActions() {
             <Link to={`/app/actions/${id}/edit`}>
               <Button icon={EditIcon}></Button>
             </Link>
-            <Button icon={DeleteIcon}></Button>
+            <Button
+              onClick={() =>
+                handleDelete(
+                  id,
+                  shopifyDiscountId,
+                  marketingActionId,
+                  automaticOrCode,
+                )
+              }
+              icon={DeleteIcon}
+            ></Button>
           </ButtonGroup>
         </IndexTable.Cell>
       </IndexTable.Row>

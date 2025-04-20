@@ -24,3 +24,29 @@ export const GRAPHQL_MUTATION_CREATE_DISCOUNT = `#graphql
     }
   }
 `;
+
+export const GRAPHQL_MUTATION_DELETE_CODE_DISCOUNT = `#graphql
+  mutation discountCodeAppDelete($ID: ID!) {
+    discountCodeDelete(id: $ID) {
+      deletedCodeDiscountId
+      userErrors {
+        field
+        code
+        message
+      }
+    }
+  }
+`;
+
+export const GRAPHQL_MUTATION_DELETE_AUTOMATIC_DISCOUNT = `#graphql
+  mutation discountAutomaticAppDelete($ID: ID!) {
+    discountAutomaticDelete(id: $ID) {
+      deletedAutomaticDiscountId
+      userErrors {
+        field
+        code
+        message
+      }
+    }
+  }
+`;

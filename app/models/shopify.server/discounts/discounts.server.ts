@@ -1,5 +1,9 @@
 import type { AdminGraphqlClient } from "@shopify/shopify-app-remix/server";
-import { GRAPHQL_MUTATION_CREATE_DISCOUNT } from "../graphql/discounts";
+import {
+  GRAPHQL_MUTATION_CREATE_DISCOUNT,
+  GRAPHQL_MUTATION_DELETE_AUTOMATIC_DISCOUNT,
+  GRAPHQL_MUTATION_DELETE_CODE_DISCOUNT,
+} from "../graphql/discounts";
 
 export async function createShippingDiscount(
   graphql: AdminGraphqlClient,
@@ -20,6 +24,48 @@ export async function createShippingDiscount(
     };
 
     const response = await graphql(GRAPHQL_MUTATION_CREATE_DISCOUNT, {
+      variables: VARIABLES,
+    });
+
+    const { data: adminData } = await response.json();
+
+    return adminData;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function deleteShippingCodeDiscount(
+  graphql: AdminGraphqlClient,
+  discountId: string,
+) {
+  try {
+    const VARIABLES = {
+      ID: discountId,
+    };
+
+    const response = await graphql(GRAPHQL_MUTATION_DELETE_CODE_DISCOUNT, {
+      variables: VARIABLES,
+    });
+
+    const { data: adminData } = await response.json();
+
+    return adminData;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export async function deleteShippingAutomaticDiscount(
+  graphql: AdminGraphqlClient,
+  discountId: string,
+) {
+  try {
+    const VARIABLES = {
+      ID: discountId,
+    };
+
+    const response = await graphql(GRAPHQL_MUTATION_DELETE_AUTOMATIC_DISCOUNT, {
       variables: VARIABLES,
     });
 

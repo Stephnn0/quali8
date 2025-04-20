@@ -26,6 +26,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
       )
       .map((action: any) => action.shippingDiscount);
 
+    console.log("ShippingDiscounts", ShippingDiscounts);
+
     return {
       payload: ShippingDiscounts,
     };

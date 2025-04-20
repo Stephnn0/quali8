@@ -17,3 +17,16 @@ export async function createActionShippingDiscount(
     console.error("Error creating shippingDiscountAction:", error);
   }
 }
+
+export async function deleteActionShippingDiscount(
+  prismaArgs: Prisma.ShippingDiscountActionDeleteArgs<DefaultArgs>,
+  db: PrismaClient,
+) {
+  try {
+    const shippingDiscountAction =
+      await db.shippingDiscountAction.delete(prismaArgs);
+    return shippingDiscountAction;
+  } catch (error) {
+    console.error("Error deleting shippingDiscountAction:", error);
+  }
+}
