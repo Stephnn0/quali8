@@ -12,9 +12,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
         where: {
           shop: session.shop,
         },
+        include: {
+          customers: true,
+        },
       },
       db,
     );
+
+    console.log("Qualifiers", qualifiers);
 
     return {
       payload: qualifiers,

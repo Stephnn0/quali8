@@ -18,6 +18,8 @@ export async function setupApp(store: string) {
     if (!shop) {
       console.error("Shop not found");
 
+      // ! get function api and save it inside shopify store
+
       const newShop = await createShopifyStore(
         {
           data: {

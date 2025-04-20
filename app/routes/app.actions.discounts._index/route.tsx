@@ -118,7 +118,7 @@ export default function AllActions() {
         </IndexTable.Cell>
         <IndexTable.Cell>
           <ButtonGroup>
-            <Link to={`/app/actions/${id}/edit`}>
+            <Link to={`/app/actions/discounts/${id}`}>
               <Button icon={EditIcon}></Button>
             </Link>
             <Button

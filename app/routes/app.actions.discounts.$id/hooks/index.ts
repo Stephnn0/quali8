@@ -64,7 +64,7 @@ export function useDiscountForm() {
             },
           );
 
-          navigate("/app/actions");
+          navigate("/app/actions/discounts");
         } else {
           console.log("update");
         }

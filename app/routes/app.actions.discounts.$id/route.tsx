@@ -43,9 +43,9 @@ export default function ActionDiscounts() {
 
   const [discountValue, setDiscountValue] = useState<number | "">("");
 
-  const [discountUnit, setDiscountUnit] = useState<
-    "percentage" | "currency" | ""
-  >("");
+  const [discountUnit, setDiscountUnit] = useState<"percentage" | "fixed" | "">(
+    "",
+  );
 
   const [operator, setOperator] = useState<"CODE" | "AUTOMATIC">("CODE");
 
@@ -57,7 +57,7 @@ export default function ActionDiscounts() {
   return (
     <Page
       title="Shipping Discounts"
-      backAction={{ content: "Back", url: "/app/actions" }}
+      backAction={{ content: "Back", url: "/app/actions/discounts" }}
     >
       {/* =========================================================================== */}
       {/* =================================== REWARDS =============================== */}
@@ -87,11 +87,11 @@ export default function ActionDiscounts() {
                 label="Discount Type"
                 options={[
                   { label: "Percentage", value: "percentage" },
-                  { label: "Value", value: "currency" },
+                  { label: "Value", value: "fixed" },
                 ]}
                 onChange={(selected) => {
-                  setDiscountUnit(selected as "percentage" | "currency" | "");
-                  type.value = selected as "percentage" | "currency";
+                  setDiscountUnit(selected as "percentage" | "fixed" | "");
+                  type.value = selected as "percentage" | "fixed";
                 }}
                 value={discountUnit}
               />

@@ -25,6 +25,31 @@ export const GRAPHQL_MUTATION_CREATE_DISCOUNT = `#graphql
   }
 `;
 
+export const GRAPHQL_MUTATION_CREATE_AUTOMATIC_DISCOUNT = `#graphql
+  mutation discountAutomaticAppCreate(
+   $functionId: String!
+   $title: String!
+   $startsAt: DateTime!
+   $metafields: [MetafieldInput!]!
+  ) {
+    discountAutomaticAppCreate(
+      automaticAppDiscount: {
+        functionId: $functionId
+        title: $title
+        startsAt: $startsAt
+        metafields: $metafields
+      }
+    ) {
+      automaticAppDiscount {
+        discountId
+      }
+      userErrors {
+        message
+      }
+    }
+  }
+`;
+
 export const GRAPHQL_MUTATION_DELETE_CODE_DISCOUNT = `#graphql
   mutation discountCodeAppDelete($ID: ID!) {
     discountCodeDelete(id: $ID) {
