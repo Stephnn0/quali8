@@ -7,11 +7,15 @@ import {
   Card,
   Button,
   ButtonGroup,
+  TextContainer,
+  Modal,
+  Frame,
 } from "@shopify/polaris";
 import { loader } from "./loader";
 import { action } from "./action";
 
 import { DeleteIcon, EditIcon } from "@shopify/polaris-icons";
+import { useCallback, useState } from "react";
 
 export { loader, action };
 
@@ -40,30 +44,6 @@ export default function AllActions() {
     useIndexResourceState(discountActions);
 
   const submit = useSubmit();
-
-  const handleDelete = (
-    actionId: string,
-    shopifyDiscountId: string,
-    marketingActionId: string,
-    automaticOrCode: string,
-  ) => {
-    const body = {
-      shippingDiscountId: actionId,
-      shopifyDiscountId: shopifyDiscountId,
-      marketingActionId: marketingActionId,
-      automaticOrCode: automaticOrCode,
-    };
-    submit(
-      {
-        body: JSON.stringify(body),
-      },
-      {
-        method: "DELETE",
-        encType: "multipart/form-data",
-        action: `/app/actions/discounts`,
-      },
-    );
-  };
 
   const rowMarkup = discountActions?.map(
     (
@@ -123,7 +103,7 @@ export default function AllActions() {
             </Link>
             <Button
               onClick={() =>
-                handleDelete(
+                handleDeleteClick(
                   id,
                   shopifyDiscountId,
                   marketingActionId,
@@ -137,6 +117,61 @@ export default function AllActions() {
       </IndexTable.Row>
     ),
   );
+
+  const [selectedShippingDiscount, setSelectedShippingDiscount] = useState<{
+    id: number;
+    shopifyDiscountId: string;
+    marketingActionId: string;
+    automaticOrCode: string;
+  } | null>(null);
+
+  const [modalActive, setModalActive] = useState(false);
+
+  const handleModalChange = useCallback(
+    () => setModalActive((prev) => !prev),
+    [],
+  );
+
+  const handleDeleteClick = (
+    id: number,
+    shopifyDiscountId: string,
+    marketingActionId: string,
+    automaticOrCode: string,
+  ) => {
+    setSelectedShippingDiscount({
+      id,
+      shopifyDiscountId,
+      marketingActionId,
+      automaticOrCode,
+    });
+    setModalActive(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    setModalActive(false);
+
+    if (!selectedShippingDiscount) return;
+    try {
+      const body = {
+        shippingDiscountId: selectedShippingDiscount.id,
+        shopifyDiscountId: selectedShippingDiscount.shopifyDiscountId,
+        marketingActionId: selectedShippingDiscount.marketingActionId,
+        automaticOrCode: selectedShippingDiscount.automaticOrCode,
+      };
+      submit(
+        {
+          body: JSON.stringify(body),
+        },
+        {
+          method: "DELETE",
+          encType: "multipart/form-data",
+          action: `/app/actions/discounts`,
+        },
+      );
+    } catch (error) {
+      console.log("Error deleting qualifier", error);
+    }
+  };
 
   return (
     <Page
@@ -174,6 +209,33 @@ export default function AllActions() {
           {rowMarkup}
         </IndexTable>
       </Card>
+      <Frame>
+        <Modal
+          open={modalActive}
+          onClose={handleModalChange}
+          title="Are you sure you want to delete this Shipping Discount?"
+          primaryAction={{
+            content: "Delete",
+            destructive: true,
+            onAction: handleDeleteConfirm,
+          }}
+          secondaryActions={[
+            {
+              content: "Cancel",
+              onAction: handleModalChange,
+            },
+          ]}
+        >
+          <Modal.Section>
+            <TextContainer>
+              <p>
+                This action cannot be undone. Are you sure you want to delete
+                this Shipping Discount?
+              </p>
+            </TextContainer>
+          </Modal.Section>
+        </Modal>
+      </Frame>
     </Page>
   );
 }

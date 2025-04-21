@@ -25,3 +25,27 @@ export async function getConditionByQualiferId(
     return null;
   }
 }
+
+export async function deleteCondition(
+  prismaArgs: Prisma.ConditionsDeleteArgs<DefaultArgs>,
+  db: PrismaClient,
+) {
+  try {
+    const condition = await db.conditions.delete(prismaArgs);
+    return condition;
+  } catch (error) {
+    console.error("Error deleting condition:", error);
+  }
+}
+
+export async function deleteManyConditions(
+  prismaArgs: Prisma.ConditionsDeleteManyArgs<DefaultArgs>,
+  db: PrismaClient,
+) {
+  try {
+    const conditions = await db.conditions.deleteMany(prismaArgs);
+    return conditions;
+  } catch (error) {
+    console.error("Error deleting many conditions:", error);
+  }
+}

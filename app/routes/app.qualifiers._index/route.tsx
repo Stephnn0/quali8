@@ -1,4 +1,4 @@
-import { Link, useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData, useSubmit } from "@remix-run/react";
 import {
   Button,
   IndexTable,
@@ -9,15 +9,26 @@ import {
   ButtonGroup,
   Layout,
   MediaCard,
+  Modal,
+  TextContainer,
+  Frame,
 } from "@shopify/polaris";
 import { loader } from "./loader";
 import { DeleteIcon, EditIcon } from "@shopify/polaris-icons";
 import image from "app/assets/qualifiers.png";
+import { useCallback, useState } from "react";
+import { action } from "./action";
 
-export { loader };
+export { loader, action };
 
 export default function Qualifiers() {
   const loaderData = useLoaderData<typeof loader>();
+  const [selectedQualifier, setSelectedQualifier] = useState<{
+    id: number;
+    conditionIds: number[];
+  } | null>(null);
+
+  console.log("loaderData", loaderData);
 
   const qualifiers =
     loaderData?.payload?.map((data) => ({
@@ -26,6 +37,7 @@ export default function Qualifiers() {
       description: data.description,
       conditionLogicType: data.conditionLogicType,
       customers: data.customers.length || 0,
+      conditionIds: data.conditions?.map((condition) => condition.id) || [],
     })) || [];
 
   const resourceName = {
@@ -37,7 +49,10 @@ export default function Qualifiers() {
     useIndexResourceState(qualifiers);
 
   const rowMarkup = qualifiers?.map(
-    ({ id, name, description, conditionLogicType, customers }, index) => (
+    (
+      { id, name, description, conditionLogicType, customers, conditionIds },
+      index,
+    ) => (
       <IndexTable.Row
         id={String(id)}
         key={id}
@@ -70,12 +85,53 @@ export default function Qualifiers() {
             <Link to={`/app/qualifiers/${id}`}>
               <Button icon={EditIcon}></Button>
             </Link>
-            <Button icon={DeleteIcon}></Button>
+            <Button
+              icon={DeleteIcon}
+              onClick={() => handleDeleteClick(id, conditionIds)}
+            ></Button>
           </ButtonGroup>
         </IndexTable.Cell>
       </IndexTable.Row>
     ),
   );
+
+  const [modalActive, setModalActive] = useState(false);
+
+  const handleModalChange = useCallback(
+    () => setModalActive((prev) => !prev),
+    [],
+  );
+
+  const handleDeleteClick = (id: number, conditionIds: number[]) => {
+    setSelectedQualifier({ id, conditionIds });
+    setModalActive(true);
+  };
+
+  const submit = useSubmit();
+
+  const handleDeleteConfirm = () => {
+    setModalActive(false);
+
+    if (!selectedQualifier) return;
+    try {
+      const body = {
+        qualifierId: selectedQualifier.id,
+        conditionIds: selectedQualifier.conditionIds,
+      };
+      submit(
+        {
+          body: JSON.stringify(body),
+        },
+        {
+          method: "DELETE",
+          encType: "multipart/form-data",
+          action: `/app/qualifiers`,
+        },
+      );
+    } catch (error) {
+      console.log("Error deleting qualifier", error);
+    }
+  };
 
   return (
     <Page
@@ -131,6 +187,33 @@ export default function Qualifiers() {
           </Card>
         </Layout.Section>
       </Layout>
+      <Frame>
+        <Modal
+          open={modalActive}
+          onClose={handleModalChange}
+          title="Are you sure you want to delete this qualifier?"
+          primaryAction={{
+            content: "Delete",
+            destructive: true,
+            onAction: handleDeleteConfirm,
+          }}
+          secondaryActions={[
+            {
+              content: "Cancel",
+              onAction: handleModalChange,
+            },
+          ]}
+        >
+          <Modal.Section>
+            <TextContainer>
+              <p>
+                This action cannot be undone. Are you sure you want to delete
+                this qualifier?
+              </p>
+            </TextContainer>
+          </Modal.Section>
+        </Modal>
+      </Frame>
     </Page>
   );
 }

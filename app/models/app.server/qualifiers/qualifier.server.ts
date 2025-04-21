@@ -36,3 +36,15 @@ export async function getQualifierById(
     console.error("Error fetching qualifier:", error);
   }
 }
+
+export async function deleteQualifier(
+  prismaArgs: Prisma.QualifiersDeleteArgs<DefaultArgs>,
+  db: PrismaClient,
+) {
+  try {
+    const qualifier = await db.qualifiers.delete(prismaArgs);
+    return qualifier;
+  } catch (error) {
+    console.error("Error deleting qualifier:", error);
+  }
+}

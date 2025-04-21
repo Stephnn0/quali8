@@ -14,10 +14,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
         },
         include: {
           customers: true,
+          conditions: true,
         },
       },
       db,
     );
+
+    console.log("qualifiers", qualifiers);
 
     return {
       payload: qualifiers,
