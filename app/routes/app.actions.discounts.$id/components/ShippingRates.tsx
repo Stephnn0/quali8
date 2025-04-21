@@ -1,14 +1,15 @@
 import {
+  Banner,
   Button,
   ButtonGroup,
   Card,
-  IndexTable,
   InlineStack,
   Layout,
+  OptionList,
+  Popover,
   Text,
-  useIndexResourceState,
 } from "@shopify/polaris";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { DiscountForm } from "../hooks";
 
 type PickShippingRatesProps = {
@@ -25,7 +26,7 @@ export function ShippingRates({ shippingRates, form }: PickShippingRatesProps) {
   console.log("ShippingRates", shippingRates);
   const { fields } = form;
 
-  const { shippingRateType, shippingRatesIds } = fields;
+  const { shippingRateType, shippingRatesNames } = fields;
 
   const [operator, setOperator] = useState<
     ShippingRatesType.ALL_RATES | ShippingRatesType.SELECTED_RATES
@@ -45,34 +46,24 @@ export function ShippingRates({ shippingRates, form }: PickShippingRatesProps) {
     name: rate.name,
   }));
 
-  const resourceName = {
-    singular: "rate",
-    plural: "rates",
-  };
+  const [selected, setSelected] = useState<string[]>([]);
+  const [popoverActive, setPopoverActive] = useState(false);
 
-  const { selectedResources, allResourcesSelected, handleSelectionChange } =
-    useIndexResourceState(rateNames);
+  const togglePopoverActive = useCallback(
+    () => setPopoverActive((popoverActive) => !popoverActive),
+    [],
+  );
+
+  const handleSelectionChange = (selectedValues: string[]) => {
+    setSelected(selectedValues);
+  };
 
   useEffect(() => {
     if (operator === ShippingRatesType.SELECTED_RATES) {
-      shippingRatesIds.value = selectedResources;
+      console.log("selected", selected);
+      shippingRatesNames.value = selected;
     }
-  }, [selectedResources, operator, shippingRatesIds]);
-
-  const rowMarkup = rateNames?.map(({ id, name }: any, index: any) => (
-    <IndexTable.Row
-      id={id}
-      key={id}
-      selected={selectedResources.includes(id)}
-      position={index}
-    >
-      <IndexTable.Cell>
-        <Text variant="bodyMd" fontWeight="bold" as="span">
-          {name}
-        </Text>
-      </IndexTable.Cell>
-    </IndexTable.Row>
-  ));
+  }, [selected, operator, shippingRatesNames]);
 
   return (
     <Layout>
@@ -106,18 +97,38 @@ export function ShippingRates({ shippingRates, form }: PickShippingRatesProps) {
           </Card>
         ) : (
           <Card>
-            <IndexTable
-              resourceName={resourceName}
-              itemCount={rateNames?.length || 0}
-              selectedItemsCount={
-                allResourcesSelected ? "All" : selectedResources.length
+            <Popover
+              active={popoverActive}
+              activator={
+                <Button onClick={togglePopoverActive}>
+                  Click to select one or more shipping rates
+                </Button>
               }
-              onSelectionChange={handleSelectionChange}
-              headings={[{ title: "Name" }]}
+              onClose={togglePopoverActive}
+              fullWidth
             >
-              {rowMarkup}
-            </IndexTable>
+              <OptionList
+                title=""
+                onChange={handleSelectionChange}
+                options={rateNames.map((rate: any) => ({
+                  label: rate.name,
+                  value: rate.name,
+                }))}
+                selected={selected}
+                allowMultiple
+              />
+            </Popover>
           </Card>
+        )}
+      </Layout.Section>
+      <Layout.Section>
+        {operator === ShippingRatesType.SELECTED_RATES && (
+          <Banner>
+            <p>
+              When applying discounts on specific shipping rates, make sure they
+              have a unique name to avoid conflicts with other discounts.
+            </p>
+          </Banner>
         )}
       </Layout.Section>
     </Layout>

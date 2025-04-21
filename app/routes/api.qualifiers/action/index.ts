@@ -49,7 +49,7 @@ export default async function action({ request }: ActionFunctionArgs) {
 
         for (const customer of customers) {
           await upsertCustomer(db, {
-            email: customer.email ?? `${customer.id}`,
+            shopifyId: customer.id,
             firstName: customer.firstName,
             lastName: customer.lastName,
             shop: session.shop,

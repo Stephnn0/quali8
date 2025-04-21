@@ -19,7 +19,7 @@ export function useDiscountForm() {
       qualifiersIds: useField<string[]>([]),
       //
       shippingRateType: useField("ALL_RATES"),
-      shippingRatesIds: useField<string[]>([]),
+      shippingRatesNames: useField<string[]>([]),
       //
       startDate: useField(""),
       startTime: useField(""),
@@ -38,7 +38,7 @@ export function useDiscountForm() {
         qualifiersIds: fieldValues.qualifiersIds,
         //
         shippingRateType: fieldValues.shippingRateType,
-        shippingRatesIds: fieldValues.shippingRatesIds,
+        shippingRatesNames: fieldValues.shippingRatesNames,
         //
         startDate: fieldValues.startDate,
         startTime: fieldValues.startTime,
@@ -46,10 +46,6 @@ export function useDiscountForm() {
         endDate: fieldValues.endDate,
         endTime: fieldValues.endTime,
       };
-
-      console.log("---------hook-------------");
-
-      console.log(body, "body");
 
       try {
         if (isNew) {

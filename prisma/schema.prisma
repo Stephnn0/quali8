@@ -103,7 +103,8 @@ model Conditions {
 
 model Customers {
   id                   Int         @id @default(autoincrement())
-  email                String      @unique
+  shopifyId            String      @unique
+  email                String?     
   firstName            String?
   lastName             String?
   qualifiers           Qualifiers[] @relation("CustomerQualifiers")

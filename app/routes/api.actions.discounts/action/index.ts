@@ -21,10 +21,11 @@ export default async function action({ request }: ActionFunctionArgs) {
   try {
     if (request.method === "POST") {
       console.log("---------POST request received---------");
-      const customerEmails =
-        parsedBody.customers && parsedBody.customers.map((c: any) => c.email);
+      const customerShopifyIds =
+        parsedBody.customers &&
+        parsedBody.customers.map((c: any) => c.shopifyId);
 
-      const customers = await getCustomersByIds(customerEmails, db);
+      const customers = await getCustomersByIds(customerShopifyIds, db);
 
       if (parsedBody.automaticOrCode === "CODE") {
         console.log("---------CODE---------");
@@ -44,7 +45,7 @@ export default async function action({ request }: ActionFunctionArgs) {
           value: parsedBody.value,
           //
           shippingRateType: parsedBody.shippingRateType,
-          shippingRatesIds: parsedBody.shippingRatesIds, // ! fixed shipping rates
+          shippingRatesNames: parsedBody.shippingRatesNames, // ! fixed shipping rates
         };
 
         const [shippingDiscount] = await Promise.all([

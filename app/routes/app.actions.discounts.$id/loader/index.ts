@@ -10,8 +10,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   try {
     const delivery = await getDeliveryProfiles(context.admin.graphql);
 
-    console.log(JSON.stringify(delivery, null, 2), "delivery");
-
     const methodDefinitions: any = [];
     delivery?.nodes.forEach((node) => {
       node.profileLocationGroups.forEach((group) => {
@@ -23,6 +21,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
       });
     });
 
+    // Filter out empty rateProviders and duplicate names
+    const filteredMethodDefinitions = methodDefinitions
+      .filter((method: any) => {
+        return (
+          method.rateProvider && Object.keys(method.rateProvider).length > 0
+        );
+      })
+      .filter((method: any, index: any, self: any) => {
+        return self.findIndex((m: any) => m.name === method.name) === index;
+      });
+
     const qualifiers = await getQualifiersByShop(
       {
         where: {
@@ -33,7 +42,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
           customers: {
             select: {
               id: true,
-              email: true,
+              shopifyId: true,
             },
           },
         },
@@ -43,7 +52,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     return {
       payload: qualifiers || [],
-      rates: methodDefinitions,
+      rates: filteredMethodDefinitions,
     };
   } catch (error) {
     console.log(error);

@@ -1,6 +1,5 @@
 import { useLoaderData } from "@remix-run/react";
 import {
-  Banner,
   Button,
   ButtonGroup,
   Card,
@@ -24,24 +23,11 @@ export { loader };
 export default function ActionDiscounts() {
   const loaderData = useLoaderData<typeof loader>();
 
-  console.log("Loader Data", loaderData);
-
   const form = useDiscountForm();
 
   const { fields } = form;
 
-  const {
-    code,
-    type,
-    valueType,
-    automaticOrCode,
-    // startTime,
-    // startDate,
-    // endDate,
-    // endTime,
-    // hasEndDate,
-    // customers,
-  } = fields;
+  const { code, type, valueType, automaticOrCode } = fields;
 
   const [discountValue, setDiscountValue] = useState<number | "">("");
 
@@ -156,14 +142,6 @@ export default function ActionDiscounts() {
 
         <Layout.Section>
           <ShippingRates shippingRates={loaderData?.rates} form={form} />
-        </Layout.Section>
-        <Layout.Section>
-          <Banner onDismiss={() => {}}>
-            <p>
-              When applying discounts on specific shipping rates, make sure they
-              have a unique name to avoid conflicts with other discounts.
-            </p>
-          </Banner>
         </Layout.Section>
 
         {/* =========================================================================== */}

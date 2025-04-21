@@ -5,19 +5,23 @@ const EMPTY_DISCOUNT: FunctionRunResult = {
 };
 
 export function run(input: RunInput): FunctionRunResult {
-  console.log("----------------- function ran ------------------");
+  console.log("... function executed ...");
 
   const parsedBody: ParsedBody = JSON.parse(
     input.discountNode.metafield?.value as string,
   );
 
-  // ! testing
+  //!  ------------------------------ TESTING -----------------------------------
   // console.log("parsedBody", JSON.stringify(parsedBody, null, 2));
-
-  console.log(
-    JSON.stringify(input.cart.deliveryGroups, null, 2),
-    "input.cart.deliveryGroups",
-  );
+  // console.log(
+  //   JSON.stringify(input.cart.deliveryGroups, null, 2),
+  //   "input.cart.deliveryGroups",
+  // );
+  // console.log(
+  //   "input.cart.buyerIdentity",
+  //   JSON.stringify(input.cart.buyerIdentity, null, 2),
+  // );
+  //!  ------------------------------ TESTING END-----------------------------------
 
   if (input.cart.buyerIdentity === null) {
     return EMPTY_DISCOUNT;
@@ -33,10 +37,18 @@ export function run(input: RunInput): FunctionRunResult {
     console.log("customer is in list");
     const deliveryOptions: Target[] = [];
 
-    if (parsedBody.shippingRateType === "ALL-RATES") {
+    // ! TODO: check date and time
+
+    // =============================================================== DECIDE IF ALL SHIIPING RATES APPLY OR A CUSTOM
+    // ===============================================================
+    // ===============================================================
+    // ===============================================================
+
+    if (parsedBody.shippingRateType === "ALL_RATES") {
+      console.log("... ALL_RATES ...");
+
       for (const deliveryGroup of input.cart.deliveryGroups) {
         for (const option of deliveryGroup.deliveryOptions) {
-          console.log("option", option);
           deliveryOptions.push({
             deliveryOption: {
               handle: option.handle,
@@ -46,10 +58,35 @@ export function run(input: RunInput): FunctionRunResult {
       }
     }
 
+    if (parsedBody.shippingRateType === "SELECTED_RATES") {
+      console.log("... CUSTOM_RATES ...");
+      for (const deliveryGroup of input.cart.deliveryGroups) {
+        for (const option of deliveryGroup.deliveryOptions) {
+          if (
+            option.title &&
+            parsedBody.shippingRatesNames.includes(option.title)
+          ) {
+            deliveryOptions.push({
+              deliveryOption: {
+                handle: option.handle,
+              },
+            });
+          }
+        }
+      }
+    }
+
     let discountValue;
 
+    // =============================================================== DECIDE IF APPLY PERCENTAGE OR FIXED
+    // ===============================================================
+    // ===============================================================
+    // ===============================================================
+
     switch (parsedBody.type) {
-      case "currency":
+      case "fixed":
+        console.log("... fixed ...");
+
         discountValue = {
           fixedAmount: {
             amount: parseFloat(parsedBody.value),
@@ -57,6 +94,8 @@ export function run(input: RunInput): FunctionRunResult {
         };
         break;
       case "percentage":
+        console.log("... percentage ...");
+
         discountValue = {
           percentage: {
             value: parseFloat(parsedBody.value),
@@ -85,43 +124,27 @@ export function run(input: RunInput): FunctionRunResult {
 }
 
 type Customer = {
-  _id: string;
+  id: string;
+  shopifyId: string;
+  email: string;
   firstName: string;
   lastName: string;
-  shopifyId: string;
   createdAt: string; // ISO string date
   updatedAt: string; // ISO string date
-  __v: number;
 };
 
 type ParsedBody = {
-  shippingRateType: "ALL-RATES" | "CUSTOM-RATES";
+  shippingRateType: "ALL_RATES" | "SELECTED_RATES";
+  type: "percentage" | "fixed"; // "currency" | "percentage"
+  code: string;
+  value: string;
+  //
   customers: Customer[];
-  shippingRates: any[]; // You can further define this if you have more details on its structure
+  shippingRatesNames: string[];
+  //
   startDate: string; // ISO string date
   startTime: string; // Hour as a string
   hasEndDate: boolean;
   endDate: string; // ISO string date
   endTime: string; // Hour as a string
-  code: string;
-  type: string;
-  value: string;
 };
-
-// 3:35:28 │        shipping-discounts │ │ ----------------- function ran ------------------
-// 13:35:28 │        shipping-discounts │ │ [
-// 13:35:28 │        shipping-discounts │ │   {
-// 13:35:28 │        shipping-discounts │ │     "deliveryOptions": [
-// 13:35:28 │        shipping-discounts │ │       {
-// 13:35:28 │        shipping-discounts │ │         "title": "Economy",
-// 13:35:28 │        shipping-discounts │ │         "handle":
-// "01d2cd592dd79aa18b0e0810c3fbd83b-7705a2ea0c5efd1128ea4819f74d6808"
-// 13:35:28 │        shipping-discounts │ │       },
-// 13:35:28 │        shipping-discounts │ │       {
-// 13:35:28 │        shipping-discounts │ │         "title": "Standard",
-// 13:35:28 │        shipping-discounts │ │         "handle":
-// "01d2cd592dd79aa18b0e0810c3fbd83b-6d5a64f58240381019fc074473bab3ab"
-// 13:35:28 │        shipping-discounts │ │       }
-// 13:35:28 │        shipping-discounts │ │     ]
-// 13:35:28 │        shipping-discounts │ │   }
-// 13:35:28 │        shipping-discounts │ │ ] input.cart.deliveryGroups

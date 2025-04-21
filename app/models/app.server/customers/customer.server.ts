@@ -1,12 +1,15 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
 import type { DefaultArgs } from "@prisma/client/runtime/binary";
 
-export async function getCustomersByIds(emails: string[], db: PrismaClient) {
+export async function getCustomersByIds(
+  shopifyIds: string[],
+  db: PrismaClient,
+) {
   try {
     const customers = await db.customers.findMany({
       where: {
-        email: {
-          in: emails,
+        shopifyId: {
+          in: shopifyIds,
         },
       },
     });
@@ -44,7 +47,7 @@ export async function createManyCustomers(
 export async function upsertCustomer(
   db: PrismaClient,
   customer: {
-    email: string;
+    shopifyId: string;
     firstName?: string;
     lastName?: string;
     shop: string;
@@ -53,7 +56,7 @@ export async function upsertCustomer(
 ) {
   try {
     const result = await db.customers.upsert({
-      where: { email: customer.email },
+      where: { shopifyId: customer.shopifyId },
       update: {
         firstName: customer.firstName,
         lastName: customer.lastName,
@@ -61,7 +64,7 @@ export async function upsertCustomer(
         qualifiers: { connect: { id: customer.qualifierId } },
       },
       create: {
-        email: customer.email,
+        shopifyId: customer.shopifyId,
         firstName: customer.firstName,
         lastName: customer.lastName,
         shopifyStore: { connect: { shop: customer.shop } },
