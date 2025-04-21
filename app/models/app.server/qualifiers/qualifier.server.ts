@@ -24,3 +24,15 @@ export async function getQualifiersByShop(
     console.error("Error fetching qualifiers:", error);
   }
 }
+
+export async function getQualifierById(
+  prismaArgs: Prisma.QualifiersFindUniqueArgs<DefaultArgs>,
+  db: PrismaClient,
+) {
+  try {
+    const qualifier = await db.qualifiers.findUnique(prismaArgs);
+    return qualifier;
+  } catch (error) {
+    console.error("Error fetching qualifier:", error);
+  }
+}

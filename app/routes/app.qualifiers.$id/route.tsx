@@ -5,8 +5,18 @@ import { OperatorQualifier } from "./components/OperatorQualifier";
 import CustomersQueryQualifier from "./components/CustomersQueryQualifier";
 import NewCondtions from "./components/NewConditions";
 import { useFilterCustomersForm } from "./hooks/filterCustomers";
+import { useLoaderData } from "@remix-run/react";
+import { loader } from "./loader";
+
+export { loader };
 
 export default function QualifiersForm() {
+  const loaderData = useLoaderData<typeof loader>();
+
+  const qualifier = loaderData?.payload.qualifier;
+
+  const isNew = loaderData.payload?.qualifier === null;
+
   const form = useQualifierForm();
   const formFilterCustomers = useFilterCustomersForm();
 

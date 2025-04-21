@@ -1,7 +1,8 @@
 import type { Conditions } from "@prisma/client";
 import { LogicType } from "@prisma/client";
-import { useFetcher, useNavigate } from "@remix-run/react";
+import { useFetcher, useLoaderData, useNavigate } from "@remix-run/react";
 import { useField, useForm } from "@shopify/react-form";
+import type { loader } from "../loader";
 
 export type QualifierForm = ReturnType<typeof useQualifierForm>;
 
@@ -13,12 +14,17 @@ type CustomerSegment = {
 export function useQualifierForm() {
   const navigate = useNavigate();
   const fetcher = useFetcher();
-  const isNew = true;
+
+  const loaderData = useLoaderData<typeof loader>();
+
+  const qualifier = loaderData?.payload.qualifier;
+
+  const { name, description } = qualifier || {};
 
   const form = useForm({
     fields: {
-      name: useField(""),
-      description: useField(""),
+      name: useField(name || ""),
+      description: useField(description || ""),
       //
       customers: useField<CustomerSegment[]>([]),
       ConditionLogicType: useField<LogicType>(LogicType.AND),
@@ -27,16 +33,17 @@ export function useQualifierForm() {
     },
     makeCleanAfterSubmit: true,
     onSubmit: async (fieldValues) => {
-      const body = {
-        name: fieldValues.name,
-        description: fieldValues.description,
-        customers: fieldValues.customers,
-        conditions: fieldValues.formConditions,
-        conditionLogicType: fieldValues.ConditionLogicType,
-      };
-
       try {
-        if (isNew) {
+        if (!qualifier) {
+          const body = {
+            action: "CREATE",
+            name: fieldValues.name,
+            description: fieldValues.description,
+            customers: fieldValues.customers,
+            conditions: fieldValues.formConditions,
+            conditionLogicType: fieldValues.ConditionLogicType,
+          };
+
           fetcher.submit(
             { body: JSON.stringify(body) },
             {
@@ -49,6 +56,17 @@ export function useQualifierForm() {
           navigate("/app/qualifiers");
         } else {
           console.log("update");
+
+          const updateBody = {};
+
+          fetcher.submit(
+            { body: JSON.stringify(updateBody) },
+            {
+              method: "PUT",
+              encType: "multipart/form-data",
+              action: "/api/qualifiers",
+            },
+          );
         }
       } catch (error) {
         return { status: "success" };

@@ -12,6 +12,7 @@ import {
 } from "@shopify/polaris";
 import { loader } from "./loader";
 import { DeleteIcon, EditIcon } from "@shopify/polaris-icons";
+import image from "app/assets/qualifiers.png";
 
 export { loader };
 
@@ -104,7 +105,7 @@ export default function Qualifiers() {
                 objectFit: "cover",
                 objectPosition: "center",
               }}
-              src="https://burst.shopifycdn.com/photos/business-woman-smiling-in-office.jpg?width=1850"
+              src={image}
             />
           </MediaCard>
         </Layout.Section>

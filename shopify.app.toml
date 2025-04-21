@@ -3,7 +3,7 @@
 client_id = "34da8696cbfc709d9fdc83cb99b19030"
 name = "quali8"
 handle = "quali8"
-application_url = "https://generation-persons-variable-estimated.trycloudflare.com"
+application_url = "https://accused-weblogs-design-video.trycloudflare.com"
 embedded = true
 
 [build]
@@ -28,9 +28,9 @@ scopes = "write_products, read_customers, read_shipping, write_discounts"
 
 [auth]
 redirect_urls = [
-  "https://generation-persons-variable-estimated.trycloudflare.com/auth/callback",
-  "https://generation-persons-variable-estimated.trycloudflare.com/auth/shopify/callback",
-  "https://generation-persons-variable-estimated.trycloudflare.com/api/auth/callback"
+  "https://accused-weblogs-design-video.trycloudflare.com/auth/callback",
+  "https://accused-weblogs-design-video.trycloudflare.com/auth/shopify/callback",
+  "https://accused-weblogs-design-video.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]
