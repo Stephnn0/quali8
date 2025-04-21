@@ -3,6 +3,7 @@ import { LogicType } from "@prisma/client";
 import { useFetcher, useLoaderData, useNavigate } from "@remix-run/react";
 import { useField, useForm } from "@shopify/react-form";
 import type { loader } from "../loader";
+import { useAppBridge } from "@shopify/app-bridge-react";
 
 export type QualifierForm = ReturnType<typeof useQualifierForm>;
 
@@ -14,6 +15,8 @@ type CustomerSegment = {
 export function useQualifierForm() {
   const navigate = useNavigate();
   const fetcher = useFetcher();
+
+  const shopify = useAppBridge();
 
   const loaderData = useLoaderData<typeof loader>();
 
@@ -55,6 +58,8 @@ export function useQualifierForm() {
             },
           );
 
+          shopify.toast.show("Qualifier created");
+
           navigate("/app/qualifiers");
         } else {
           console.log("update");
@@ -88,5 +93,6 @@ export function useQualifierForm() {
 
   return {
     ...form,
+    fetcher,
   };
 }
