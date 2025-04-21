@@ -1,5 +1,8 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
-import { createQualifier } from "app/models/app.server/qualifiers/qualifier.server";
+import {
+  createQualifier,
+  updateQualifier,
+} from "app/models/app.server/qualifiers/qualifier.server";
 import db from "app/db.server";
 import { authenticate } from "app/shopify.server";
 import { createCondition } from "app/models/app.server/conditions/conditions.server";
@@ -18,43 +21,67 @@ export default async function action({ request }: ActionFunctionArgs) {
     const { name, description, customers, conditions, conditionLogicType } =
       parsedBody;
 
-    const data: Parameters<typeof createQualifier>[0]["data"] = {
-      name,
-      description,
-      conditionLogicType,
-      shopifyStore: { connect: { shop: session.shop } },
-    };
+    if (request.method === "POST") {
+      const data: Parameters<typeof createQualifier>[0]["data"] = {
+        name,
+        description,
+        conditionLogicType,
+        shopifyStore: { connect: { shop: session.shop } },
+      };
 
-    const qualifier = await createQualifier({ data }, db);
+      const qualifier = await createQualifier({ data }, db);
 
-    if (qualifier) {
-      for (const condition of conditions) {
-        await createCondition(
-          {
-            data: {
-              type: condition.type,
-              comparisonType: condition.comparisonType,
-              value: condition.value,
-              qualifier: { connect: { id: qualifier?.id } },
-              shopifyStore: { connect: { shop: session.shop } },
+      if (qualifier) {
+        for (const condition of conditions) {
+          await createCondition(
+            {
+              data: {
+                type: condition.type,
+                comparisonType: condition.comparisonType,
+                value: condition.value,
+                qualifier: { connect: { id: qualifier?.id } },
+                shopifyStore: { connect: { shop: session.shop } },
+              },
             },
-          },
-          db,
-        );
+            db,
+          );
+        }
+
+        for (const customer of customers) {
+          await upsertCustomer(db, {
+            email: customer.email ?? `${customer.id}`,
+            firstName: customer.firstName,
+            lastName: customer.lastName,
+            shop: session.shop,
+            qualifierId: qualifier?.id,
+          });
+        }
       }
 
-      for (const customer of customers) {
-        await upsertCustomer(db, {
-          email: customer.email ?? `${customer.id}`,
-          firstName: customer.firstName,
-          lastName: customer.lastName,
-          shop: session.shop,
-          qualifierId: qualifier?.id,
-        });
-      }
+      return { status: "success", qualifier };
     }
 
-    return { status: "success", qualifier };
+    if (request.method === "PUT") {
+      console.log("----------------- update qualifier -------------------");
+
+      const updatedQualifier = await updateQualifier(
+        {
+          where: { id: parsedBody.id, shop: session.shop },
+          data: {
+            name: parsedBody.name,
+            description: parsedBody.description,
+            conditionLogicType: parsedBody.conditionLogicType,
+            // conditions: {},
+            // customers: {},
+          },
+        },
+        db,
+      );
+
+      return { status: "updated", updatedQualifier };
+    }
+
+    return { status: "error" };
   } catch (error) {
     console.error("API Qualifiers Action Error: ", error);
   }

@@ -16,6 +16,7 @@ import type { FilterCustomersForm } from "../hooks/filterCustomers";
 type ConditionsQualifierProps = {
   form: QualifierForm;
   formFilterCustomers: FilterCustomersForm;
+  fetchedConditions: Condition[];
 };
 
 // shared types and options
@@ -42,6 +43,7 @@ const comparisonTypeOptions = [
 export default function NewConditions({
   form,
   formFilterCustomers,
+  fetchedConditions,
 }: ConditionsQualifierProps) {
   const { fields } = form;
   const { formConditions } = fields;
@@ -50,7 +52,9 @@ export default function NewConditions({
   const { formConditions: FilterCustomerCondtions } =
     formFilterCustomersConditions;
 
-  const [conditions, setConditions] = useState<Condition[]>([]);
+  const [conditions, setConditions] = useState<Condition[]>(
+    fetchedConditions || [],
+  );
 
   const addCondition = () => {
     setConditions((prev) => [

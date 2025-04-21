@@ -32,6 +32,10 @@ export default function CustomersQueryQualifier({
   const { fields } = form;
   const { customers } = fields;
 
+  const [customerSegments, setCustomerSegments] = useState<CustomerSegment[]>(
+    [],
+  );
+
   useEffect(() => {
     if (fetcher.data?.payload) {
       const customersRefactor = fetcher.data.payload.map(({ node }: any) => ({
@@ -47,10 +51,6 @@ export default function CustomersQueryQualifier({
       setCustomerSegments([]);
     }
   }, [customers, fetcher.data]);
-
-  const [customerSegments, setCustomerSegments] = useState<CustomerSegment[]>(
-    [],
-  );
 
   const resourceName = {
     singular: "customer",

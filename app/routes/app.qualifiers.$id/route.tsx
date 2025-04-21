@@ -20,6 +20,8 @@ export default function QualifiersForm() {
   const form = useQualifierForm();
   const formFilterCustomers = useFilterCustomersForm();
 
+  const { conditions } = qualifier || {};
+
   return (
     <Page title="Create Qualifier" backAction={{ url: "/app/qualifiers" }}>
       <Layout>
@@ -39,12 +41,16 @@ export default function QualifiersForm() {
           />
         </Layout.Section>
         <Layout.Section>
-          <NewCondtions form={form} formFilterCustomers={formFilterCustomers} />
+          <NewCondtions
+            form={form}
+            formFilterCustomers={formFilterCustomers}
+            fetchedConditions={conditions}
+          />
         </Layout.Section>
         <Layout.Section>
           <PageActions
             primaryAction={{
-              content: "Save",
+              content: isNew ? "Create" : "Update",
               onAction: form.submit,
               disabled: !form.dirty,
             }}

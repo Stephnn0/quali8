@@ -2,8 +2,10 @@ import { useLoaderData } from "@remix-run/react";
 import {
   Banner,
   Button,
+  ButtonGroup,
   Card,
   InlineGrid,
+  InlineStack,
   Layout,
   Page,
   PageActions,
@@ -122,24 +124,27 @@ export default function ActionDiscounts() {
         {/* =========================== CODE OR AUTOMATIC ============================= */}
         {/* =========================================================================== */}
         {/* =========================================================================== */}
-        <Layout.Section>
-          {/* Toggle Buttons for AND/OR */}
-          <div style={{ display: "flex", gap: "10px" }}>
-            <Button
-              disabled={operator === "CODE"}
-              onClick={() => handleOperatorChange("CODE")}
-            >
-              Discount Code
-            </Button>
+        {/* Toggle Buttons for AND/OR */}
 
-            <Button
-              disabled={operator === "AUTOMATIC"}
-              onClick={() => handleOperatorChange("AUTOMATIC")}
-            >
-              Automatic Discount
-            </Button>
-          </div>
+        <Layout.Section>
+          <InlineStack wrap={false}>
+            <ButtonGroup variant="segmented">
+              <Button
+                disabled={operator === "CODE"}
+                onClick={() => handleOperatorChange("CODE")}
+              >
+                Discount Code
+              </Button>
+              <Button
+                disabled={operator === "AUTOMATIC"}
+                onClick={() => handleOperatorChange("AUTOMATIC")}
+              >
+                Automatic Discount
+              </Button>
+            </ButtonGroup>
+          </InlineStack>
         </Layout.Section>
+
         {/* =========================================================================== */}
         {/* =========================== ENABLE OR DISABLE ============================= */}
         {/* =========================================================================== */}

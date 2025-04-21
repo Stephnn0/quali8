@@ -1,7 +1,9 @@
 import {
   Button,
+  ButtonGroup,
   Card,
   IndexTable,
+  InlineStack,
   Layout,
   Text,
   useIndexResourceState,
@@ -75,24 +77,24 @@ export function ShippingRates({ shippingRates, form }: PickShippingRatesProps) {
   return (
     <Layout>
       <Layout.Section>
-        {/* Toggle Buttons for AND/OR */}
-        <div style={{ display: "flex", gap: "10px" }}>
-          <Button
-            disabled={operator === ShippingRatesType.ALL_RATES}
-            onClick={() => handleOperatorChange(ShippingRatesType.ALL_RATES)}
-          >
-            All Rates
-          </Button>
-
-          <Button
-            disabled={operator === ShippingRatesType.SELECTED_RATES}
-            onClick={() =>
-              handleOperatorChange(ShippingRatesType.SELECTED_RATES)
-            }
-          >
-            Custom Rates
-          </Button>
-        </div>
+        <InlineStack wrap={false}>
+          <ButtonGroup variant="segmented">
+            <Button
+              disabled={operator === ShippingRatesType.ALL_RATES}
+              onClick={() => handleOperatorChange(ShippingRatesType.ALL_RATES)}
+            >
+              All Rates
+            </Button>
+            <Button
+              disabled={operator === ShippingRatesType.SELECTED_RATES}
+              onClick={() =>
+                handleOperatorChange(ShippingRatesType.SELECTED_RATES)
+              }
+            >
+              Custom Rates
+            </Button>
+          </ButtonGroup>
+        </InlineStack>
       </Layout.Section>
 
       <Layout.Section>

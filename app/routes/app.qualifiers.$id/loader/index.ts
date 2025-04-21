@@ -18,7 +18,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   try {
     const qualifier = await getQualifierById(
-      { where: { id: Number(params.id), shop: session.shop } },
+      {
+        include: {
+          customers: true,
+          conditions: true,
+        },
+        where: { id: Number(params.id), shop: session.shop },
+      },
       db,
     );
 

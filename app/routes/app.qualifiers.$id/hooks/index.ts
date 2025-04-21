@@ -19,7 +19,7 @@ export function useQualifierForm() {
 
   const qualifier = loaderData?.payload.qualifier;
 
-  const { name, description } = qualifier || {};
+  const { name, description, conditionLogicType, conditions } = qualifier || {};
 
   const form = useForm({
     fields: {
@@ -27,9 +27,11 @@ export function useQualifierForm() {
       description: useField(description || ""),
       //
       customers: useField<CustomerSegment[]>([]),
-      ConditionLogicType: useField<LogicType>(LogicType.AND),
+      ConditionLogicType: useField<LogicType>(
+        conditionLogicType || LogicType.AND,
+      ),
       //
-      formConditions: useField<Conditions[]>([]),
+      formConditions: useField<Conditions[]>(conditions || []),
     },
     makeCleanAfterSubmit: true,
     onSubmit: async (fieldValues) => {
@@ -57,7 +59,15 @@ export function useQualifierForm() {
         } else {
           console.log("update");
 
-          const updateBody = {};
+          const updateBody = {
+            action: "UPDATE",
+            id: qualifier.id,
+            name: fieldValues.name,
+            description: fieldValues.description,
+            customers: fieldValues.customers,
+            conditions: fieldValues.formConditions,
+            conditionLogicType: fieldValues.ConditionLogicType,
+          };
 
           fetcher.submit(
             { body: JSON.stringify(updateBody) },

@@ -10,12 +10,16 @@ import {
   TextContainer,
   Modal,
   Frame,
+  Layout,
+  MediaCard,
 } from "@shopify/polaris";
 import { loader } from "./loader";
 import { action } from "./action";
 
 import { DeleteIcon, EditIcon } from "@shopify/polaris-icons";
 import { useCallback, useState } from "react";
+
+import image from "app/assets/sd.png";
 
 export { loader, action };
 
@@ -183,32 +187,59 @@ export default function AllActions() {
         </Link>
       }
     >
-      <Card>
-        <Text variant="headingMd" as="h4">
-          Shipping Discounts
-        </Text>
-        <br />
+      <Layout>
+        <Layout.Section>
+          <MediaCard
+            title="Getting Started with Shipping Discounts?"
+            primaryAction={{
+              content: "Learn about getting started",
+              onAction: () => {},
+            }}
+            description="Watch this video to learn how to get started with Shipping Discounts."
+            popoverActions={[{ content: "Dismiss", onAction: () => {} }]}
+          >
+            <img
+              alt=""
+              width="100%"
+              height="100%"
+              style={{
+                objectFit: "cover",
+                objectPosition: "center",
+              }}
+              src={image}
+            />
+          </MediaCard>
+        </Layout.Section>
+        <Layout.Section>
+          <Card>
+            <Text variant="headingMd" as="h4">
+              Shipping Discounts
+            </Text>
+            <br />
 
-        <IndexTable
-          resourceName={resourceName}
-          itemCount={discountActions!.length}
-          selectedItemsCount={
-            allResourcesSelected ? "All" : selectedResources.length
-          }
-          // onSelectionChange={handleSelectionChange}
-          selectable={false}
-          headings={[
-            { title: "Status" },
-            { title: "Code" },
-            { title: "Type" },
-            { title: "Discount Method" },
-            { title: "Value" },
-            { title: "Actions" }, // 🔧 New Column
-          ]}
-        >
-          {rowMarkup}
-        </IndexTable>
-      </Card>
+            <IndexTable
+              resourceName={resourceName}
+              itemCount={discountActions!.length}
+              selectedItemsCount={
+                allResourcesSelected ? "All" : selectedResources.length
+              }
+              // onSelectionChange={handleSelectionChange}
+              selectable={false}
+              headings={[
+                { title: "Status" },
+                { title: "Code" },
+                { title: "Type" },
+                { title: "Discount Method" },
+                { title: "Value" },
+                { title: "Actions" }, // 🔧 New Column
+              ]}
+            >
+              {rowMarkup}
+            </IndexTable>
+          </Card>
+        </Layout.Section>
+      </Layout>
+
       <Frame>
         <Modal
           open={modalActive}

@@ -48,3 +48,15 @@ export async function deleteQualifier(
     console.error("Error deleting qualifier:", error);
   }
 }
+
+export async function updateQualifier(
+  prismaArgs: Prisma.QualifiersUpdateArgs<DefaultArgs>,
+  db: PrismaClient,
+) {
+  try {
+    const qualifier = await db.qualifiers.update(prismaArgs);
+    return qualifier;
+  } catch (error) {
+    console.error("Error updating qualifier:", error);
+  }
+}
