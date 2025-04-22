@@ -75,3 +75,7 @@ export const GRAPHQL_MUTATION_DELETE_AUTOMATIC_DISCOUNT = `#graphql
     }
   }
 `;
+
+// ! get discount: automatic discount node , code discount node
+
+// discountAutomaticAppUpdate , discountCodeAppUpdate

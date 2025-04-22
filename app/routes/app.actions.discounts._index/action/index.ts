@@ -19,7 +19,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
   try {
     if (request.method === "DELETE") {
-      console.log("-----------------delete------------");
+      console.log("...DELETE Request...");
 
       await Promise.all([
         deleteAction(

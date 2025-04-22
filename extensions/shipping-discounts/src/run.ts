@@ -1,4 +1,5 @@
 import type { RunInput, FunctionRunResult, Target } from "../generated/api";
+import type { Customer, ParsedBody } from "./types";
 
 const EMPTY_DISCOUNT: FunctionRunResult = {
   discounts: [],
@@ -34,7 +35,7 @@ export function run(input: RunInput): FunctionRunResult {
   );
 
   if (isCustomerInList) {
-    console.log("customer is in list");
+    console.log("... customer in list ...");
     const deliveryOptions: Target[] = [];
 
     // ! TODO: check date and time
@@ -122,29 +123,3 @@ export function run(input: RunInput): FunctionRunResult {
 
   return EMPTY_DISCOUNT;
 }
-
-type Customer = {
-  id: string;
-  shopifyId: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  createdAt: string; // ISO string date
-  updatedAt: string; // ISO string date
-};
-
-type ParsedBody = {
-  shippingRateType: "ALL_RATES" | "SELECTED_RATES";
-  type: "percentage" | "fixed"; // "currency" | "percentage"
-  code: string;
-  value: string;
-  //
-  customers: Customer[];
-  shippingRatesNames: string[];
-  //
-  startDate: string; // ISO string date
-  startTime: string; // Hour as a string
-  hasEndDate: boolean;
-  endDate: string; // ISO string date
-  endTime: string; // Hour as a string
-};
