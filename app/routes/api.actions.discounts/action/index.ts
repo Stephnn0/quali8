@@ -20,6 +20,11 @@ export default async function action({ request }: ActionFunctionArgs) {
 
   const parsedBody = JSON.parse(body);
 
+  const customerShopifyIds =
+    parsedBody.customers && parsedBody.customers.map((c: any) => c.shopifyId);
+
+  const customers = await getCustomersByIds(customerShopifyIds, db);
+
   console.log("parsedBody", parsedBody);
 
   try {
@@ -28,11 +33,6 @@ export default async function action({ request }: ActionFunctionArgs) {
 
     if (request.method === "POST") {
       console.log("...POST Request...");
-      const customerShopifyIds =
-        parsedBody.customers &&
-        parsedBody.customers.map((c: any) => c.shopifyId);
-
-      const customers = await getCustomersByIds(customerShopifyIds, db);
 
       const metafieldData = {
         customers: customers,
@@ -146,6 +146,37 @@ export default async function action({ request }: ActionFunctionArgs) {
     // ----------------------------------------------------------------
     if (request.method === "PUT") {
       console.log("...PUT Request...");
+      const metafieldDataUpdate = {
+        id: parsedBody.id,
+        shopifyDiscountId: parsedBody.shopifyDiscountId,
+        marketingActionId: parsedBody.marketingActionId,
+        //
+        customers: customers,
+        //
+        startDate: parsedBody.startDate,
+        startTime: parsedBody.startTime,
+        hasEndDate: parsedBody.hasEndDate,
+        endDate: parsedBody.endDate,
+        endTime: parsedBody.endTime,
+        //
+        code: parsedBody.codeOrName,
+        type: parsedBody.type, // percentage or fixed
+        value: parsedBody.value,
+        //
+        shippingRateType: parsedBody.shippingRateType, // ALL_RATES or CUSTOMED_RATES
+        shippingRatesNames: parsedBody.shippingRatesNames,
+      };
+      console.log("metafieldDataUpdate", metafieldDataUpdate);
+
+      if (parsedBody.automaticOrCode === "CODE") {
+        console.log("...CODE..");
+      }
+
+      if (parsedBody.automaticOrCode === "AUTOMATIC") {
+        console.log("...AUTOMATIC..");
+      }
+
+      // ! todo: update actionShippingDiscount
     }
 
     return { payload: null };

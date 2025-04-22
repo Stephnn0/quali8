@@ -1,5 +1,5 @@
 import { useImageLoader } from "app/hooks/useImageLoader";
-import image from "app/assets/banii.png";
+import image from "app/assets/ready2.png";
 import Skeleton from "./skeleton";
 import "./styles.css";
 
