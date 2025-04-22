@@ -138,7 +138,7 @@ export default function Qualifiers() {
       title="Qualifiers"
       primaryAction={
         <Link to="new">
-          <Button>Create Qualifier</Button>
+          <Button variant="primary">Create Qualifier</Button>
         </Link>
       }
     >

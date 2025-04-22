@@ -3,9 +3,12 @@ import { getQualifiersByShop } from "app/models/app.server/qualifiers/qualifier.
 import { getDeliveryProfiles } from "app/models/shopify.server/deliveryProfiles/deliveryProfiles.server";
 import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
+import { getActionShippingDiscount } from "app/models/app.server/actionShippingDiscounts/actionShippingDiscounts.server";
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   const context = await authenticate.admin(request);
+
+  const id = String(params.id || "");
 
   try {
     const delivery = await getDeliveryProfiles(context.admin.graphql);
@@ -50,9 +53,30 @@ export async function loader({ request }: LoaderFunctionArgs) {
       db,
     );
 
+    if (id === "new") {
+      return {
+        payload: {
+          payload: qualifiers || [],
+          rates: filteredMethodDefinitions,
+        },
+        code: "new",
+      };
+    }
+
+    const actionWithShippingDiscount = await getActionShippingDiscount(
+      {
+        where: { id: Number(id) },
+      },
+      db,
+    );
+
     return {
-      payload: qualifiers || [],
-      rates: filteredMethodDefinitions,
+      payload: {
+        payload: qualifiers || [],
+        rates: filteredMethodDefinitions,
+        action: actionWithShippingDiscount,
+      },
+      code: "loaded",
     };
   } catch (error) {
     console.log(error);

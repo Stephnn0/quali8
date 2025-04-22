@@ -23,6 +23,8 @@ export { loader };
 export default function ActionDiscounts() {
   const loaderData = useLoaderData<typeof loader>();
 
+  console.log("loaderData", loaderData);
+
   const form = useDiscountForm();
 
   const { fields } = form;
@@ -137,11 +139,17 @@ export default function ActionDiscounts() {
         {/* =========================================================================== */}
 
         <Layout.Section>
-          <PickQualifiers mockQualifiers={loaderData?.payload} form={form} />
+          <PickQualifiers
+            mockQualifiers={loaderData?.payload.payload}
+            form={form}
+          />
         </Layout.Section>
 
         <Layout.Section>
-          <ShippingRates shippingRates={loaderData?.rates} form={form} />
+          <ShippingRates
+            shippingRates={loaderData?.payload.rates}
+            form={form}
+          />
         </Layout.Section>
 
         {/* =========================================================================== */}

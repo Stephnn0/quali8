@@ -183,7 +183,7 @@ export default function AllActions() {
       title="My Actions"
       primaryAction={
         <Link to="new">
-          <Button>Create Shipping Discount</Button>
+          <Button variant="primary">Create Shipping Discount</Button>
         </Link>
       }
     >

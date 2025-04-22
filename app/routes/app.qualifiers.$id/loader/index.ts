@@ -28,8 +28,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       db,
     );
 
-    console.log("qualifier", qualifier);
-
     if (!qualifier)
       return { errors: ["Item not found"], code: "not-found", status: 404 };
 

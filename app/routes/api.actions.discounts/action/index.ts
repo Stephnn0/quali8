@@ -142,6 +142,11 @@ export default async function action({ request }: ActionFunctionArgs) {
 
       return { payload: shippingDiscount };
     }
+    // ---------------------------------------------------------------- PUT
+    // ----------------------------------------------------------------
+    if (request.method === "PUT") {
+      console.log("...PUT Request...");
+    }
 
     return { payload: null };
   } catch (error) {

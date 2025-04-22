@@ -36,6 +36,18 @@ export async function getActionsByShop(
   }
 }
 
+export async function getActionById(
+  prismaArgs: Prisma.ActionsFindUniqueArgs<DefaultArgs>,
+  db: PrismaClient,
+) {
+  try {
+    const action = await db.actions.findUnique(prismaArgs);
+    return action;
+  } catch (error) {
+    console.error("Error getting action by ID:", error);
+  }
+}
+
 export async function deleteAction(
   prismaArgs: Prisma.ActionsDeleteArgs<DefaultArgs>,
   db: PrismaClient,
