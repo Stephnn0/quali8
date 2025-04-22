@@ -1,13 +1,5 @@
 import { CalendarIcon } from "@shopify/polaris-icons";
-import {
-  BlockStack,
-  Box,
-  Card,
-  Popover,
-  DatePicker,
-  TextField,
-  Icon,
-} from "@shopify/polaris";
+import { Card, Popover, DatePicker, TextField, Icon } from "@shopify/polaris";
 import { useEffect, useState } from "react";
 
 type DatePickerProps = {
@@ -51,39 +43,35 @@ export default function CustomDatePicker({
   }, [selectedDate]);
 
   return (
-    <BlockStack inlineAlign="center" gap="400">
-      <Box minWidth="400px" padding={{ xs: "200" }}>
-        <Popover
-          active={visible}
-          autofocusTarget="none"
-          preferredAlignment="left"
-          fullWidth
-          preferInputActivator={false}
-          preferredPosition="below"
-          preventCloseOnChildOverlayClick
-          onClose={handleOnClose}
-          activator={
-            <TextField
-              role="combobox"
-              label={"Start Date"}
-              prefix={<Icon source={CalendarIcon} />}
-              onFocus={() => setVisible(true)}
-              value={formattedValue}
-              autoComplete="off"
-            />
-          }
-        >
-          <Card>
-            <DatePicker
-              month={month}
-              year={year}
-              selected={selectedDate}
-              onMonthChange={handleMonthChange}
-              onChange={handleDateChange}
-            />
-          </Card>
-        </Popover>
-      </Box>
-    </BlockStack>
+    <Popover
+      active={visible}
+      autofocusTarget="none"
+      preferredAlignment="left"
+      fullWidth
+      preferInputActivator={false}
+      preferredPosition="below"
+      preventCloseOnChildOverlayClick
+      onClose={handleOnClose}
+      activator={
+        <TextField
+          role="combobox"
+          label={"Start Date"}
+          prefix={<Icon source={CalendarIcon} />}
+          onFocus={() => setVisible(true)}
+          value={formattedValue}
+          autoComplete="off"
+        />
+      }
+    >
+      <Card>
+        <DatePicker
+          month={month}
+          year={year}
+          selected={selectedDate}
+          onMonthChange={handleMonthChange}
+          onChange={handleDateChange}
+        />
+      </Card>
+    </Popover>
   );
 }

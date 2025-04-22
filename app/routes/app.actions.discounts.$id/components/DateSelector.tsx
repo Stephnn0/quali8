@@ -1,13 +1,5 @@
 import { useCallback, useState } from "react";
-import {
-  InlineGrid,
-  Layout,
-  Text,
-  Box,
-  Card,
-  Select,
-  Checkbox,
-} from "@shopify/polaris";
+import { InlineGrid, Layout, Card, Select, Checkbox } from "@shopify/polaris";
 import CustomDatePicker from "./DatePicker";
 import type { DiscountForm } from "../hooks";
 
@@ -70,63 +62,52 @@ export default function DateSelector({ form }: DateSelectorProps) {
   );
 
   return (
-    <InlineGrid columns={{ xs: 1, sm: 1 }}>
-      <Box width="100%">
-        <Card padding="500">
-          <Layout.Section>
-            <Text as="h1" fontWeight="bold">
-              Active Dates
-            </Text>
+    <Card>
+      <Layout.Section>
+        <InlineGrid columns={2}>
+          <CustomDatePicker
+            selectedDate={selectedDate}
+            setSelectedDate={handleStartDateChange}
+          />
 
-            <InlineGrid columns={2}>
-              <CustomDatePicker
-                selectedDate={selectedDate}
-                setSelectedDate={handleStartDateChange}
-              />
-
-              <div style={{ paddingLeft: "10px", paddingTop: "8px" }}>
-                <Select
-                  label="Start time (EDT)"
-                  options={hourOptions}
-                  value={selectedStartHour}
-                  onChange={handleStartTimeChange}
-                />
-              </div>
-            </InlineGrid>
-          </Layout.Section>
-
-          <Layout.Section>
-            <Checkbox
-              label="Set end date"
-              checked={hasEndDate.value}
-              onChange={(val) => hasEndDate.onChange(val)}
+          <div style={{ paddingLeft: "10px" }}>
+            <Select
+              label="Start time (EDT)"
+              options={hourOptions}
+              value={selectedStartHour}
+              onChange={handleStartTimeChange}
             />
-          </Layout.Section>
+          </div>
+        </InlineGrid>
+      </Layout.Section>
 
-          {hasEndDate.value && (
-            <Layout.Section>
-              <Text as="h1" fontWeight="bold">
-                Active Dates
-              </Text>
-              <InlineGrid columns={2}>
-                <CustomDatePicker
-                  selectedDate={selectedEndDate}
-                  setSelectedDate={handleEndDateChange}
-                />
+      <Layout.Section>
+        <Checkbox
+          label="Set end date"
+          checked={hasEndDate.value}
+          onChange={(val) => hasEndDate.onChange(val)}
+        />
+      </Layout.Section>
 
-                <div style={{ paddingLeft: "10px", paddingTop: "8px" }}>
-                  <Select
-                    label="Start time (EDT)"
-                    options={hourOptions}
-                    value={selectedEndHour}
-                    onChange={handleEndTimeChange}
-                  />
-                </div>
-              </InlineGrid>
-            </Layout.Section>
-          )}
-        </Card>
-      </Box>
-    </InlineGrid>
+      {hasEndDate.value && (
+        <Layout.Section>
+          <InlineGrid columns={2}>
+            <CustomDatePicker
+              selectedDate={selectedEndDate}
+              setSelectedDate={handleEndDateChange}
+            />
+
+            <div style={{ paddingLeft: "10px" }}>
+              <Select
+                label="Start time (EDT)"
+                options={hourOptions}
+                value={selectedEndHour}
+                onChange={handleEndTimeChange}
+              />
+            </div>
+          </InlineGrid>
+        </Layout.Section>
+      )}
+    </Card>
   );
 }
