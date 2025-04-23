@@ -82,6 +82,10 @@ export function useQualifierForm() {
               action: "/api/qualifiers",
             },
           );
+
+          shopify.toast.show("Qualifier updated");
+
+          navigate("/app/qualifiers");
         }
       } catch (error) {
         return { status: "success" };

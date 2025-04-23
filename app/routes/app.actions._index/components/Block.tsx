@@ -1,5 +1,5 @@
 import { MediaCard } from "@shopify/polaris";
-import dateTimeBlockImg from "app/assets/sd.png";
+import dateTimeBlockImg from "app/assets/sds.png";
 
 export default function CheckoutBlock({ type }: { type: any }) {
   const primaryAction = {

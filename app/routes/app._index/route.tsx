@@ -16,44 +16,6 @@ export default function Index() {
       <br />
 
       <Layout>
-        {/* <Layout.Section>
-          <InlineGrid gap="400" columns={2}>
-            <Card>
-              <Text variant="bodyLg" fontWeight="medium" as="h1">
-                Marketing Actions
-              </Text>
-
-              <img src={image} alt="Banner" />
-
-              <p>
-                Vezzo is a powerful tool that helps you manage your store's
-                discounts and shipping rates.
-              </p>
-
-              <br />
-
-              <Button variant="primary">Get Started</Button>
-            </Card>
-            <Card>
-              <Text variant="bodyLg" fontWeight="medium" as="h1">
-                Smart Qualifiers
-              </Text>
-
-              <img src={image} alt="Banner" />
-
-              <br />
-
-              <p>
-                Vezzo is a powerful tool that helps you manage your store's
-                discounts and shipping rates.
-              </p>
-
-              <br />
-
-              <Button variant="primary">Get Started</Button>
-            </Card>
-          </InlineGrid>
-        </Layout.Section> */}
         <Layout.Section>
           <Banner onDismiss={() => {}}>
             <p>

@@ -5,6 +5,7 @@ import db from "app/db.server";
 import {
   createShippingAutomaticDiscount,
   createShippingDiscount,
+  deleteShippingAutomaticDiscount,
   deleteShippingCodeDiscount,
 } from "app/models/shopify.server/discounts/discounts.server";
 import { createAction } from "app/models/app.server/actions/actions.server";
@@ -224,9 +225,49 @@ export default async function action({ request }: ActionFunctionArgs) {
 
       if (parsedBody.automaticOrCode === "AUTOMATIC") {
         console.log("...AUTOMATIC..");
-      }
+        // ! delete old discount
+        await deleteShippingAutomaticDiscount(
+          context.admin.graphql,
+          parsedBody.shopifyDiscountId,
+        );
+        // ! create new discount
+        const newshippingDiscount = await createShippingAutomaticDiscount(
+          context.admin.graphql,
+          parsedBody!.codeOrName,
+          JSON.stringify(metafieldDataUpdate),
+          "92f98185-5407-46c4-85d9-11594cc32d07", // functionId
+          formatToYYYYMMDD(parsedBody.startDate),
+          formatToYYYYMMDD(parsedBody.endDate),
+          parsedBody.usageLimit, // number
+          parsedBody.appliesOncePerCustomer, // boolean
+        );
 
-      // ! todo: update actionShippingDiscount
+        // ! grab id
+        const newShopifyDiscountId =
+          newshippingDiscount?.discountAutomaticAppCreate?.automaticAppDiscount
+            ?.discountId;
+
+        await updateActionShippingDiscount(
+          {
+            where: { id: parsedBody.id },
+            data: {
+              codeOrName: parsedBody.codeOrName,
+              shopifyDiscountId: newShopifyDiscountId,
+              //
+              startDate: parsedBody.startDate
+                ? new Date(parsedBody.startDate)
+                : undefined,
+              startTime: parsedBody.startTime,
+              hasEndDate: parsedBody.hasEndDate,
+              endDate: parsedBody.endDate
+                ? new Date(parsedBody.endDate)
+                : undefined,
+              endTime: parsedBody.endTime,
+            },
+          },
+          db,
+        );
+      }
     }
 
     return { payload: null };

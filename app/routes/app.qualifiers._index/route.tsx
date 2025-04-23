@@ -1,4 +1,4 @@
-import { Link, useLoaderData, useSubmit } from "@remix-run/react";
+import { Link, useFetcher, useLoaderData } from "@remix-run/react";
 import {
   Button,
   IndexTable,
@@ -15,11 +15,16 @@ import {
 } from "@shopify/polaris";
 import { loader } from "./loader";
 import { DeleteIcon, EditIcon } from "@shopify/polaris-icons";
-import image from "app/assets/qualifiers.png";
+import image from "app/assets/ccc.png";
 import { useCallback, useState } from "react";
-import { action } from "./action";
+import type { ActionFunctionArgs } from "@remix-run/node";
+import { useAppBridge } from "@shopify/app-bridge-react";
 
-export { loader, action };
+export { loader };
+
+export async function action({ request }: ActionFunctionArgs) {
+  return null;
+}
 
 export default function Qualifiers() {
   const loaderData = useLoaderData<typeof loader>();
@@ -106,8 +111,9 @@ export default function Qualifiers() {
     setSelectedQualifier({ id, conditionIds });
     setModalActive(true);
   };
+  const shopify = useAppBridge();
 
-  const submit = useSubmit();
+  const fetcher = useFetcher();
 
   const handleDeleteConfirm = () => {
     setModalActive(false);
@@ -118,16 +124,17 @@ export default function Qualifiers() {
         qualifierId: selectedQualifier.id,
         conditionIds: selectedQualifier.conditionIds,
       };
-      submit(
+      fetcher.submit(
         {
           body: JSON.stringify(body),
         },
         {
           method: "DELETE",
           encType: "multipart/form-data",
-          action: `/app/qualifiers`,
+          action: `/api/qualifiers`,
         },
       );
+      shopify.toast.show("Qualifier deleted");
     } catch (error) {
       console.log("Error deleting qualifier", error);
     }

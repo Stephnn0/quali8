@@ -1,11 +1,15 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
 import {
   createQualifier,
+  deleteQualifier,
   updateQualifier,
 } from "app/models/app.server/qualifiers/qualifier.server";
 import db from "app/db.server";
 import { authenticate } from "app/shopify.server";
-import { createCondition } from "app/models/app.server/conditions/conditions.server";
+import {
+  createCondition,
+  deleteManyConditions,
+} from "app/models/app.server/conditions/conditions.server";
 import { upsertCustomer } from "app/models/app.server/customers/customer.server";
 
 export default async function action({ request }: ActionFunctionArgs) {
@@ -79,6 +83,34 @@ export default async function action({ request }: ActionFunctionArgs) {
       );
 
       return { status: "updated", updatedQualifier };
+    }
+
+    if (request.method === "DELETE") {
+      console.log("----------------- delete qualifier -------------------");
+
+      await Promise.all([
+        deleteQualifier(
+          {
+            where: {
+              id: parsedBody.qualifierId,
+            },
+          },
+          db,
+        ),
+
+        deleteManyConditions(
+          {
+            where: {
+              id: {
+                in: parsedBody.conditionIds,
+              },
+            },
+          },
+          db,
+        ),
+      ]);
+
+      return { payload: "deleted success" };
     }
 
     return { status: "error" };

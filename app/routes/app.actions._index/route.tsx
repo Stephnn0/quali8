@@ -1,7 +1,7 @@
 import { Page, Layout, InlineGrid } from "@shopify/polaris";
 import CheckoutBlock from "./components/Block";
 import ComingSoonBlock from "./sections/ComingSoon";
-import smart from "app/assets/sm.png";
+import smart from "app/assets/sss.png";
 
 export default function Actions() {
   return (

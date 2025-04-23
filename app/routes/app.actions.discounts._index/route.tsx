@@ -18,8 +18,8 @@ import { action } from "./action";
 
 import { DeleteIcon, EditIcon } from "@shopify/polaris-icons";
 import { useCallback, useState } from "react";
-
-import image from "app/assets/sd.png";
+import image from "app/assets/sds.png";
+import { useAppBridge } from "@shopify/app-bridge-react";
 
 export { loader, action };
 
@@ -151,6 +151,8 @@ export default function AllActions() {
     setModalActive(true);
   };
 
+  const shopify = useAppBridge();
+
   const handleDeleteConfirm = () => {
     setModalActive(false);
 
@@ -172,6 +174,7 @@ export default function AllActions() {
           action: `/app/actions/discounts`,
         },
       );
+      shopify.toast.show("Discount deleted");
     } catch (error) {
       console.log("Error deleting qualifier", error);
     }
