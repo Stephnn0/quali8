@@ -12,6 +12,22 @@ query RunInput {
         amount
       }
     }
+
+    lines {
+      id
+      quantity
+      merchandise {
+        ... on ProductVariant {
+          id
+          title
+          product {
+            id
+            title
+            vendor
+          }
+        }
+      }
+    }
     deliveryGroups {
       id
       deliveryOptions {

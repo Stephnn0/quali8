@@ -3,7 +3,7 @@
 client_id = "34da8696cbfc709d9fdc83cb99b19030"
 name = "quali8"
 handle = "quali8"
-application_url = "https://earnings-extends-miller-happens.trycloudflare.com"
+application_url = "https://fork-concern-suddenly-polish.trycloudflare.com"
 embedded = true
 
 [build]
@@ -28,9 +28,9 @@ scopes = "write_products, read_customers, read_shipping, write_discounts"
 
 [auth]
 redirect_urls = [
-  "https://earnings-extends-miller-happens.trycloudflare.com/auth/callback",
-  "https://earnings-extends-miller-happens.trycloudflare.com/auth/shopify/callback",
-  "https://earnings-extends-miller-happens.trycloudflare.com/api/auth/callback"
+  "https://fork-concern-suddenly-polish.trycloudflare.com/auth/callback",
+  "https://fork-concern-suddenly-polish.trycloudflare.com/auth/shopify/callback",
+  "https://fork-concern-suddenly-polish.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]

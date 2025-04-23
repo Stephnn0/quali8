@@ -1,19 +1,8 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
-import {
-  Banner,
-  Button,
-  Card,
-  FooterHelp,
-  InlineGrid,
-  Layout,
-  Link,
-  Page,
-  Text,
-} from "@shopify/polaris";
+import { Banner, FooterHelp, Layout, Link, Page } from "@shopify/polaris";
 import { authenticate } from "app/shopify.server";
 import Dashboardcomponent from "app/components/Dashboardbanner";
 
-import image from "app/assets/m.png";
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   await authenticate.admin(request);
 

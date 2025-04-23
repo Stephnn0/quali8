@@ -76,6 +76,49 @@ export const GRAPHQL_MUTATION_DELETE_AUTOMATIC_DISCOUNT = `#graphql
   }
 `;
 
-// ! get discount: automatic discount node , code discount node
+export const GRAPHQL_MUTATION_UPDATE_CODE_DISCOUNT = `#graphql
+  mutation discountCodeAppUpdate($codeAppDiscount: DiscountCodeAppInput!, $id: ID!) {
+    discountCodeAppUpdate(codeAppDiscount: $codeAppDiscount, id: $id) {
+      codeAppDiscount {
+        discountId
+        title
+        startsAt
+        endsAt
+        usageLimit
+        status
+        appliesOncePerCustomer
+        codes {
+          edges {
+            node {
+              code
+            }
+          }
+        }
+      }
+      userErrors {
+        field
+        code
+        message
+      }
+    }
+  }
+`;
 
-// discountAutomaticAppUpdate , discountCodeAppUpdate
+export const GRAPHQL_MUTATION_UPDATE_AUTOMATIC_DISCOUNT = `#graphql
+  mutation discountAutomaticAppUpdate($automaticAppDiscount: DiscountAutomaticAppInput!, $id: ID!) {
+    discountAutomaticAppUpdate(automaticAppDiscount: $automaticAppDiscount, id: $id) {
+      automaticAppDiscount {
+        discountId
+        title
+        startsAt
+        endsAt
+        status
+      }
+      userErrors {
+        field
+        code
+        message
+      }
+    }
+  }
+`;
