@@ -43,3 +43,16 @@ export async function getActionShippingDiscount(
     console.error("Error getting shippingDiscountAction:", error);
   }
 }
+
+export async function updateActionShippingDiscount(
+  prismaArgs: Prisma.ShippingDiscountActionUpdateArgs<DefaultArgs>,
+  db: PrismaClient,
+) {
+  try {
+    const shippingDiscountAction =
+      await db.shippingDiscountAction.update(prismaArgs);
+    return shippingDiscountAction;
+  } catch (error) {
+    console.error("Error updating shippingDiscountAction:", error);
+  }
+}

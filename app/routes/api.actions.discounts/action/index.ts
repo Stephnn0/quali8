@@ -5,9 +5,13 @@ import db from "app/db.server";
 import {
   createShippingAutomaticDiscount,
   createShippingDiscount,
+  deleteShippingCodeDiscount,
 } from "app/models/shopify.server/discounts/discounts.server";
 import { createAction } from "app/models/app.server/actions/actions.server";
-import { createActionShippingDiscount } from "app/models/app.server/actionShippingDiscounts/actionShippingDiscounts.server";
+import {
+  createActionShippingDiscount,
+  updateActionShippingDiscount,
+} from "app/models/app.server/actionShippingDiscounts/actionShippingDiscounts.server";
 import { formatToYYYYMMDD } from "app/utils/formatDate";
 
 export default async function action({ request }: ActionFunctionArgs) {
@@ -170,7 +174,53 @@ export default async function action({ request }: ActionFunctionArgs) {
 
       if (parsedBody.automaticOrCode === "CODE") {
         console.log("...CODE..");
+
+        // ! delete old discount
+        await deleteShippingCodeDiscount(
+          context.admin.graphql,
+          parsedBody.shopifyDiscountId,
+        );
+
+        // ! create new discount
+
+        const newshippingDiscount = await createShippingDiscount(
+          context.admin.graphql,
+          parsedBody!.codeOrName,
+          JSON.stringify(metafieldDataUpdate),
+        );
+
+        // ! grab id
+
+        const newShopifyDiscountId =
+          newshippingDiscount?.discountCodeAppCreate?.codeAppDiscount
+            ?.discountId;
+
+        // ! update id in prisma
+        // ! update fields in prisma
+
+        await updateActionShippingDiscount(
+          {
+            where: { id: parsedBody.id },
+            data: {
+              codeOrName: parsedBody.codeOrName,
+              shopifyDiscountId: newShopifyDiscountId,
+              //
+              startDate: parsedBody.startDate
+                ? new Date(parsedBody.startDate)
+                : undefined,
+              startTime: parsedBody.startTime,
+              hasEndDate: parsedBody.hasEndDate,
+              endDate: parsedBody.endDate
+                ? new Date(parsedBody.endDate)
+                : undefined,
+              endTime: parsedBody.endTime,
+            },
+          },
+          db,
+        );
       }
+
+      console.log("...SUCESSSSSSSSSSSSSS..");
 
       if (parsedBody.automaticOrCode === "AUTOMATIC") {
         console.log("...AUTOMATIC..");

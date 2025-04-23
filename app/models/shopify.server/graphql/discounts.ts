@@ -25,6 +25,35 @@ export const GRAPHQL_MUTATION_CREATE_DISCOUNT = `#graphql
   }
 `;
 
+export const GRAPHQL_MUTATION_CODE_UPDATE_DISCOUNT = `#graphql
+  mutation discountCodeAppUpdate(
+   $functionId: String!
+   $title: String!
+   $startsAt: DateTime!
+   $code: String!
+   $metafields: [MetafieldInput!]!
+   $ID: ID!
+  ) {
+    discountCodeAppUpdate(
+      id: $ID,
+      codeAppDiscount: {
+        functionId: $functionId
+        title: $title
+        startsAt: $startsAt
+        code: $code
+        metafields: $metafields
+      }
+    ) {
+      codeAppDiscount {
+        discountId
+      }
+      userErrors {
+        message
+      }
+    }
+  }
+`;
+
 export const GRAPHQL_MUTATION_CREATE_AUTOMATIC_DISCOUNT = `#graphql
   mutation discountAutomaticAppCreate(
    $functionId: String!
@@ -77,23 +106,22 @@ export const GRAPHQL_MUTATION_DELETE_AUTOMATIC_DISCOUNT = `#graphql
 `;
 
 export const GRAPHQL_MUTATION_UPDATE_CODE_DISCOUNT = `#graphql
-  mutation discountCodeAppUpdate($codeAppDiscount: DiscountCodeAppInput!, $id: ID!) {
-    discountCodeAppUpdate(codeAppDiscount: $codeAppDiscount, id: $id) {
+  mutation discountCodeAppUpdate($codeAppDiscount: DiscountCodeAppInput!, $ID: ID!) {
+    discountCodeAppUpdate(codeAppDiscount: $codeAppDiscount, id: $ID) {
       codeAppDiscount {
-        discountId
         title
         startsAt
         endsAt
-        usageLimit
+        # usageLimit
         status
         appliesOncePerCustomer
-        codes {
-          edges {
-            node {
-              code
-            }
-          }
-        }
+        # codes {
+        #   edges {
+        #     node {
+        #       code
+        #     }
+        #   }
+        # }
       }
       userErrors {
         field
@@ -105,14 +133,14 @@ export const GRAPHQL_MUTATION_UPDATE_CODE_DISCOUNT = `#graphql
 `;
 
 export const GRAPHQL_MUTATION_UPDATE_AUTOMATIC_DISCOUNT = `#graphql
-  mutation discountAutomaticAppUpdate($automaticAppDiscount: DiscountAutomaticAppInput!, $id: ID!) {
-    discountAutomaticAppUpdate(automaticAppDiscount: $automaticAppDiscount, id: $id) {
+  mutation discountAutomaticAppUpdate($automaticAppDiscount: DiscountAutomaticAppInput!, $ID: ID!) {
+    discountAutomaticAppUpdate(automaticAppDiscount: $automaticAppDiscount, id: $ID) {
       automaticAppDiscount {
-        discountId
         title
         startsAt
         endsAt
         status
+        
       }
       userErrors {
         field
