@@ -23,8 +23,6 @@ export { loader };
 export default function ActionDiscounts() {
   const loaderData = useLoaderData<typeof loader>();
 
-  console.log("loaderData", loaderData);
-
   const form = useDiscountForm();
 
   const { fields } = form;

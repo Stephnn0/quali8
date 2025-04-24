@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { InlineGrid, Layout, Card, Select, Checkbox } from "@shopify/polaris";
 import CustomDatePicker from "./DatePicker";
 import type { DiscountForm } from "../hooks";
@@ -7,27 +7,80 @@ type DateSelectorProps = {
   form: DiscountForm;
 };
 
-export default function DateSelector({ form }: DateSelectorProps) {
-  const [selectedStartHour, setSelectedStartHour] = useState("12");
-  const [selectedEndHour, setSelectedEndHour] = useState("12");
+const getCurrentTime = () => {
+  const now = new Date();
+  let hours = now.getHours();
+  const minutes = now.getMinutes();
+  const suffix = hours < 12 ? "AM" : "PM";
+  const hour12 = hours % 12 === 0 ? 12 : hours % 12;
+  const formatted = `${hour12}:${minutes.toString().padStart(2, "0")} ${suffix}`;
+  return formatted; // e.g., "9:04 PM"
+};
 
-  const hourOptions = Array.from({ length: 24 }, (_, i) => {
-    const hour = i % 12 === 0 ? 12 : i % 12;
-    const suffix = i < 12 ? "AM" : "PM";
-    const formatted = `${hour} ${suffix}`;
+export default function DateSelector({ form }: DateSelectorProps) {
+  const currentTime = getCurrentTime();
+
+  const [selectedStartHour, setSelectedStartHour] = useState(currentTime);
+  const [selectedEndHour, setSelectedEndHour] = useState(currentTime);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedEndDate, setSelectedEndDate] = useState(new Date());
+
+  const baseHourOptions = Array.from({ length: 24 * 2 }, (_, i) => {
+    const hour24 = Math.floor(i / 2);
+    const minutes = i % 2 === 0 ? "00" : "30";
+    const hour12 = hour24 % 12 === 0 ? 12 : hour24 % 12;
+    const suffix = hour24 < 12 ? "AM" : "PM";
+    const formatted = `${hour12}:${minutes} ${suffix}`;
+
     return {
       label: formatted,
-      value: String(i), // still use 0–23 internally
+      value: `${hour24}:${minutes}`, // e.g., "13:30"
     };
   });
 
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  // If current time isn't in base options, add it at the top
+  const isCurrentTimeInOptions = baseHourOptions.some(
+    (opt) => opt.value === currentTime,
+  );
 
-  const [selectedEndDate, setSelectedEndDate] = useState(new Date());
+  const hourOptions = isCurrentTimeInOptions
+    ? baseHourOptions
+    : [
+        {
+          label: `${currentTime}`,
+          value: currentTime,
+        },
+        ...baseHourOptions,
+      ];
 
   const { fields } = form;
-
   const { startDate, startTime, endDate, endTime, hasEndDate } = fields;
+
+  useEffect(() => {
+    if (!startDate.value) startDate.onChange(String(selectedDate));
+    if (!startTime.value) startTime.onChange(currentTime);
+
+    if (hasEndDate.value) {
+      if (!endDate.value) endDate.onChange(String(selectedEndDate));
+      if (!endTime.value) endTime.onChange(currentTime);
+    } else {
+      // Optionally clear these if hasEndDate is false
+      endDate.onChange("");
+      endTime.onChange("");
+    }
+  }, [
+    hasEndDate.value,
+    selectedDate,
+    selectedEndDate,
+    selectedEndHour,
+    selectedStartHour,
+  ]); // ! should be empty cause it causes a re-render infinite loop
+
+  console.log("hasEndDate.value", hasEndDate.value);
+  console.log("startDate.value", startDate.value);
+  console.log("startTime.value", startTime.value);
+  console.log("endDate.value", endDate.value);
+  console.log("endTime.value", endTime.value);
 
   const handleStartDateChange = useCallback(
     (newDate: Date) => {
@@ -68,6 +121,7 @@ export default function DateSelector({ form }: DateSelectorProps) {
           <CustomDatePicker
             selectedDate={selectedDate}
             setSelectedDate={handleStartDateChange}
+            label="Start date"
           />
 
           <div style={{ paddingLeft: "10px" }}>
@@ -95,11 +149,12 @@ export default function DateSelector({ form }: DateSelectorProps) {
             <CustomDatePicker
               selectedDate={selectedEndDate}
               setSelectedDate={handleEndDateChange}
+              label="End date"
             />
 
             <div style={{ paddingLeft: "10px" }}>
               <Select
-                label="Start time (EDT)"
+                label="End time (EDT)"
                 options={hourOptions}
                 value={selectedEndHour}
                 onChange={handleEndTimeChange}

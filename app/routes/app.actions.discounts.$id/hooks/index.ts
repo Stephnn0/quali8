@@ -74,15 +74,16 @@ export function useDiscountForm() {
       try {
         if (!shippingDiscount) {
           console.log("post");
+          console.log("----------------body--------------", body);
 
-          fetcher.submit(
-            { body: JSON.stringify(body) },
-            {
-              method: "POST",
-              encType: "multipart/form-data",
-              action: "/api/actions/discounts",
-            },
-          );
+          // fetcher.submit(
+          //   { body: JSON.stringify(body) },
+          //   {
+          //     method: "POST",
+          //     encType: "multipart/form-data",
+          //     action: "/api/actions/discounts",
+          //   },
+          // );
 
           navigate("/app/actions/discounts");
         } else {

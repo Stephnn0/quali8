@@ -5,11 +5,13 @@ import { useEffect, useState } from "react";
 type DatePickerProps = {
   selectedDate: Date;
   setSelectedDate: (date: Date) => void;
+  label: string;
 };
 
 export default function CustomDatePicker({
   selectedDate,
   setSelectedDate,
+  label,
 }: DatePickerProps) {
   const [visible, setVisible] = useState(false);
 
@@ -19,6 +21,11 @@ export default function CustomDatePicker({
   });
 
   const formattedValue = selectedDate.toISOString().slice(0, 10);
+
+  // Disable dates before today
+  const today = new Date();
+  today.setHours(0, 0, 0, 0); // Reset time to midnight for accurate comparison
+  const disableDatesBefore = today;
 
   function handleOnClose() {
     setVisible(false);
@@ -55,7 +62,7 @@ export default function CustomDatePicker({
       activator={
         <TextField
           role="combobox"
-          label={"Start Date"}
+          label={label}
           prefix={<Icon source={CalendarIcon} />}
           onFocus={() => setVisible(true)}
           value={formattedValue}
@@ -67,6 +74,7 @@ export default function CustomDatePicker({
         <DatePicker
           month={month}
           year={year}
+          disableDatesBefore={disableDatesBefore}
           selected={selectedDate}
           onMonthChange={handleMonthChange}
           onChange={handleDateChange}
