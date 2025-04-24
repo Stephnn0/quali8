@@ -3,16 +3,28 @@ export const GRAPHQL_MUTATION_CREATE_DISCOUNT = `#graphql
    $functionId: String!
    $title: String!
    $startsAt: DateTime!
+    $endsAt: DateTime
    $code: String!
    $metafields: [MetafieldInput!]!
+   $orderDiscounts: Boolean
+   $productDiscounts: Boolean
+   $shippingDiscounts: Boolean
+   $appliesOncePerCustomer: Boolean
   ) {
     discountCodeAppCreate(
       codeAppDiscount: {
         functionId: $functionId
         title: $title
         startsAt: $startsAt
+        endsAt: $endsAt
         code: $code
         metafields: $metafields
+        combinesWith:  {
+           orderDiscounts: $orderDiscounts
+           productDiscounts: $productDiscounts
+           shippingDiscounts: $shippingDiscounts
+        }
+        appliesOncePerCustomer: $appliesOncePerCustomer
       }
     ) {
       codeAppDiscount {

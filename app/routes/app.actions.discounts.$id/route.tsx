@@ -10,10 +10,13 @@ import {
   PageActions,
   Select,
   TextField,
+  Text,
+  Checkbox,
+  Divider,
 } from "@shopify/polaris";
 import { loader } from "./loader";
 import { useDiscountForm } from "./hooks";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import DateSelector from "./components/DateSelector";
 import { ShippingRates } from "./components/ShippingRates";
 import { PickQualifiers } from "./components/PickQualifiers";
@@ -42,6 +45,12 @@ export default function ActionDiscounts() {
     automaticOrCode.value = selectedOperator;
   };
 
+  const [checked, setChecked] = useState(false);
+  const handleChange = useCallback(
+    (newChecked: boolean) => setChecked(newChecked),
+    [],
+  );
+
   return (
     <Page
       title="Shipping Discounts"
@@ -55,6 +64,37 @@ export default function ActionDiscounts() {
       <Layout>
         <Layout.Section>
           <Card>
+            <Card>
+              <InlineGrid alignItems="center">
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <Text variant="bodyMd" as="p" fontWeight="bold">
+                    Discount is enabled
+                  </Text>
+                  <ButtonGroup variant="segmented">
+                    <Button
+                      disabled={operator === "CODE"}
+                      onClick={() => handleOperatorChange("CODE")}
+                    >
+                      On
+                    </Button>
+                    <Button
+                      disabled={operator === "AUTOMATIC"}
+                      onClick={() => handleOperatorChange("AUTOMATIC")}
+                    >
+                      Off
+                    </Button>
+                  </ButtonGroup>
+                </div>
+              </InlineGrid>
+            </Card>
+            <br />
+
             <TextField
               {...code}
               autoComplete="off"
@@ -70,6 +110,14 @@ export default function ActionDiscounts() {
               }
             />
             <br />
+            <Checkbox
+              label="Limit usage to one per customer"
+              checked={checked}
+              onChange={handleChange}
+            />
+            <Divider />
+            <br />
+
             <InlineGrid gap="400" columns={2}>
               <Select
                 label="Discount Type"
@@ -107,6 +155,37 @@ export default function ActionDiscounts() {
           </Card>
         </Layout.Section>
         {/* =========================================================================== */}
+        {/* ============  COMBINE DISCOUNT WITH PRODUCTS/ORDERS ======================= */}
+        {/* =========================================================================== */}
+        {/* =========================================================================== */}
+
+        <Layout.Section>
+          <Card>
+            <Text variant="bodyMd" as="p" fontWeight="bold">
+              Discount combination
+            </Text>
+            <br />
+            <Text variant="bodyMd" as="p">
+              This shipping discount can be combined with other product and
+              order discounts
+            </Text>
+            <br />
+            <InlineGrid>
+              <Checkbox
+                label="Product discounts"
+                checked={checked}
+                onChange={handleChange}
+              />
+              <Checkbox
+                label="Order discounts"
+                checked={checked}
+                onChange={handleChange}
+              />
+            </InlineGrid>
+          </Card>
+        </Layout.Section>
+
+        {/* =========================================================================== */}
         {/* =========================== CODE OR AUTOMATIC ============================= */}
         {/* =========================================================================== */}
         {/* =========================================================================== */}
@@ -138,7 +217,7 @@ export default function ActionDiscounts() {
 
         <Layout.Section>
           <PickQualifiers
-            mockQualifiers={loaderData?.payload.payload}
+            mockQualifiers={loaderData?.payload.qualifiers}
             form={form}
           />
         </Layout.Section>

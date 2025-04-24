@@ -91,12 +91,24 @@ export function ShippingRates({ shippingRates, form }: PickShippingRatesProps) {
       <Layout.Section>
         {operator === ShippingRatesType.ALL_RATES ? (
           <Card>
+            <Text variant="bodyMd" as="p" fontWeight="bold">
+              Shipping Rate Selector
+            </Text>
+            <br />
             <Text variant="bodyMd" as="p">
-              All shipping rates will be applied.
+              All shipping rates will be discounted.
             </Text>
           </Card>
         ) : (
           <Card>
+            <Text variant="bodyMd" as="p" fontWeight="bold">
+              Shipping Rate Selector
+            </Text>
+            <br />
+            <Text variant="bodyMd" as="p">
+              Choose the shipping rates that you would like to be discounted.
+            </Text>
+            <br />
             <Popover
               active={popoverActive}
               activator={

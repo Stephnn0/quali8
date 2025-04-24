@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import { InlineGrid, Layout, Card, Select, Checkbox } from "@shopify/polaris";
+import {
+  InlineGrid,
+  Layout,
+  Card,
+  Select,
+  Checkbox,
+  Text,
+} from "@shopify/polaris";
 import CustomDatePicker from "./DatePicker";
 import type { DiscountForm } from "../hooks";
 
@@ -116,6 +123,15 @@ export default function DateSelector({ form }: DateSelectorProps) {
 
   return (
     <Card>
+      <Layout.Section>
+        <Text variant="bodyMd" as="p" fontWeight="bold">
+          Date and Time Selector
+        </Text>
+        <br />
+        <Text variant="bodyMd" as="p" fontWeight="regular">
+          Select the start and end date and time for the discount.
+        </Text>
+      </Layout.Section>
       <Layout.Section>
         <InlineGrid columns={2}>
           <CustomDatePicker

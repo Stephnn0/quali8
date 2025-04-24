@@ -75,7 +75,14 @@ export function PickQualifiers({ mockQualifiers, form }: PickQualifiersProps) {
 
   return (
     <Card>
-      <p>Pick Qualifier Group</p>
+      <Text variant="bodyMd" as="p" fontWeight="bold">
+        Pick Qualifier Group
+      </Text>
+      <br />
+      <Text variant="bodyMd" as="p">
+        Select the customer segments that will be used to qualify for this
+      </Text>
+
       <br />
       <IndexTable
         resourceName={resourceName}

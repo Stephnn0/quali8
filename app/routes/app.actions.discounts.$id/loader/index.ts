@@ -4,6 +4,8 @@ import { getDeliveryProfiles } from "app/models/shopify.server/deliveryProfiles/
 import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
 import { getActionShippingDiscount } from "app/models/app.server/actionShippingDiscounts/actionShippingDiscounts.server";
+import { handleApiSuccess } from "app/utils/handleApiSuccess";
+import { ActionShippingDiscountLoaderData } from "../types";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const context = await authenticate.admin(request);
@@ -54,13 +56,21 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     );
 
     if (id === "new") {
-      return {
+      // return {
+      //   payload: {
+      //     payload: qualifiers || [],
+      //     rates: filteredMethodDefinitions,
+      //   },
+      //   code: "new",
+      // };
+
+      return handleApiSuccess<ActionShippingDiscountLoaderData>({
         payload: {
-          payload: qualifiers || [],
+          qualifiers: qualifiers || [],
           rates: filteredMethodDefinitions,
         },
         code: "new",
-      };
+      });
     }
 
     const actionWithShippingDiscount = await getActionShippingDiscount(
@@ -70,14 +80,14 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       db,
     );
 
-    return {
+    return handleApiSuccess<ActionShippingDiscountLoaderData>({
       payload: {
-        payload: qualifiers || [],
+        qualifiers: qualifiers || [],
         rates: filteredMethodDefinitions,
-        action: actionWithShippingDiscount,
+        shippingDiscount: actionWithShippingDiscount,
       },
       code: "loaded",
-    };
+    });
   } catch (error) {
     console.log(error);
   }

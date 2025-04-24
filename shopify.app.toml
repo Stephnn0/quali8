@@ -3,7 +3,7 @@
 client_id = "34da8696cbfc709d9fdc83cb99b19030"
 name = "quali8"
 handle = "quali8"
-application_url = "https://advanced-joshua-content-uv.trycloudflare.com"
+application_url = "https://graduates-et-exercise-awesome.trycloudflare.com"
 embedded = true
 
 [build]
@@ -28,9 +28,9 @@ scopes = "write_products, read_customers, read_shipping, write_discounts"
 
 [auth]
 redirect_urls = [
-  "https://advanced-joshua-content-uv.trycloudflare.com/auth/callback",
-  "https://advanced-joshua-content-uv.trycloudflare.com/auth/shopify/callback",
-  "https://advanced-joshua-content-uv.trycloudflare.com/api/auth/callback"
+  "https://graduates-et-exercise-awesome.trycloudflare.com/auth/callback",
+  "https://graduates-et-exercise-awesome.trycloudflare.com/auth/shopify/callback",
+  "https://graduates-et-exercise-awesome.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]

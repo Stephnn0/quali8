@@ -7,6 +7,7 @@ import {
   GRAPHQL_MUTATION_DELETE_CODE_DISCOUNT,
   GRAPHQL_MUTATION_UPDATE_AUTOMATIC_DISCOUNT,
 } from "../graphql/discounts";
+import { APP } from "app/constants/app.constants";
 
 export async function createShippingAutomaticDiscount(
   graphql: AdminGraphqlClient,
@@ -25,7 +26,7 @@ export async function createShippingAutomaticDiscount(
       startsAt: startDate,
       endsAt: endsAt,
       metafields: {
-        key: "quali8_shipping_discounts",
+        key: APP.FUNCTION_METAFIELD_KEY,
         value: metafieldData,
         type: "string",
       },
@@ -47,15 +48,24 @@ export async function createShippingDiscount(
   graphql: AdminGraphqlClient,
   code: string,
   body: string,
+  startDate: string, // 2019-09-07T15:50:00Z 2025-05-02T17:09:21Z
+  endDate: string,
 ) {
   try {
     const VARIABLES = {
       functionId: "92f98185-5407-46c4-85d9-11594cc32d07",
       title: code,
-      startsAt: "2025-04-07",
+      startsAt: `${startDate}T00:26:30Z`,
+      endsAt: `${"2025-04-15"}T00:00:00Z`,
       code: code,
+      combinesWith: {
+        orderDiscounts: false,
+        productDiscounts: false,
+        shippingDiscounts: false,
+      },
+      appliesOncePerCustomer: false,
       metafields: {
-        key: "quali8_shipping_discounts",
+        key: APP.FUNCTION_METAFIELD_KEY,
         value: body,
         type: "string",
       },

@@ -30,7 +30,7 @@ export default async function action({ request }: ActionFunctionArgs) {
 
   const customers = await getCustomersByIds(customerShopifyIds, db);
 
-  console.log("parsedBody", parsedBody);
+  console.log("------------------------------------parsedBody", parsedBody);
 
   try {
     // ---------------------------------------------------------------- POST
@@ -42,10 +42,10 @@ export default async function action({ request }: ActionFunctionArgs) {
       const metafieldData = {
         customers: customers,
         //
-        startDate: parsedBody.startDate,
+        startDate: formatToYYYYMMDD(parsedBody.startDate),
         startTime: parsedBody.startTime,
         hasEndDate: parsedBody.hasEndDate,
-        endDate: parsedBody.endDate,
+        endDate: formatToYYYYMMDD(parsedBody.endDate),
         endTime: parsedBody.endTime,
         //
         code: parsedBody.codeOrName,
@@ -70,6 +70,8 @@ export default async function action({ request }: ActionFunctionArgs) {
           context.admin.graphql,
           parsedBody!.codeOrName,
           JSON.stringify(metafieldData),
+          formatToYYYYMMDD(parsedBody.startDate),
+          formatToYYYYMMDD(parsedBody.endDate),
         );
 
         shopifyDiscountId =
@@ -158,10 +160,10 @@ export default async function action({ request }: ActionFunctionArgs) {
         //
         customers: customers,
         //
-        startDate: parsedBody.startDate,
+        startDate: formatToYYYYMMDD(parsedBody.startDate),
         startTime: parsedBody.startTime,
         hasEndDate: parsedBody.hasEndDate,
-        endDate: parsedBody.endDate,
+        endDate: formatToYYYYMMDD(parsedBody.endDate),
         endTime: parsedBody.endTime,
         //
         code: parsedBody.codeOrName,
@@ -187,6 +189,8 @@ export default async function action({ request }: ActionFunctionArgs) {
         const newshippingDiscount = await createShippingDiscount(
           context.admin.graphql,
           parsedBody!.codeOrName,
+          formatToYYYYMMDD(parsedBody.startDate),
+          formatToYYYYMMDD(parsedBody.endDate),
           JSON.stringify(metafieldDataUpdate),
         );
 
