@@ -42,13 +42,17 @@ export default function ActionDiscounts() {
     combinedWithProductDiscounts,
   } = fields;
 
-  const [discountValue, setDiscountValue] = useState<number | "">("");
-
-  const [discountUnit, setDiscountUnit] = useState<"percentage" | "fixed" | "">(
-    "",
+  const [discountValue, setDiscountValue] = useState<number | "">(
+    Number(valueType.value) || "",
   );
 
-  const [operator, setOperator] = useState<"CODE" | "AUTOMATIC">("CODE");
+  const [discountUnit, setDiscountUnit] = useState<"percentage" | "fixed" | "">(
+    type.value || "percentage",
+  );
+
+  const [operator, setOperator] = useState<"CODE" | "AUTOMATIC">(
+    automaticOrCode.value || "CODE",
+  );
 
   const handleOperatorChange = (selectedOperator: "CODE" | "AUTOMATIC") => {
     setOperator(selectedOperator);
@@ -56,7 +60,7 @@ export default function ActionDiscounts() {
   };
 
   const [discountState, setDiscountState] = useState<"ENABLED" | "DISABLED">(
-    "ENABLED",
+    shippingDiscountState.value || "ENABLED",
   );
 
   const handleDiscountStateChange = (

@@ -3,7 +3,7 @@
 client_id = "34da8696cbfc709d9fdc83cb99b19030"
 name = "quali8"
 handle = "quali8"
-application_url = "https://sullivan-horses-require-declare.trycloudflare.com"
+application_url = "https://topics-jj-victorian-replacing.trycloudflare.com"
 embedded = true
 
 [build]
@@ -28,9 +28,9 @@ scopes = "write_products, read_customers, read_shipping, write_discounts"
 
 [auth]
 redirect_urls = [
-  "https://sullivan-horses-require-declare.trycloudflare.com/auth/callback",
-  "https://sullivan-horses-require-declare.trycloudflare.com/auth/shopify/callback",
-  "https://sullivan-horses-require-declare.trycloudflare.com/api/auth/callback"
+  "https://topics-jj-victorian-replacing.trycloudflare.com/auth/callback",
+  "https://topics-jj-victorian-replacing.trycloudflare.com/auth/shopify/callback",
+  "https://topics-jj-victorian-replacing.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]

@@ -334,6 +334,13 @@ export default async function action({ request }: ActionFunctionArgs) {
                 ? new Date(parsedBody.endDate)
                 : undefined,
               endTime: parsedBody.endTime,
+              limitUsagePerOneCustomer: parsedBody.limitUsagePerOneCustomer,
+              combinedWithOrderDiscounts: parsedBody.combinedWithOrderDiscounts,
+              combinedWithProductDiscounts:
+                parsedBody.combinedWithProductDiscounts,
+              qualifiers: {
+                connect: parsedBody.qualifiersIds.map((id: number) => ({ id })),
+              },
             },
           },
           db,

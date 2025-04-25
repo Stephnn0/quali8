@@ -16,6 +16,8 @@ export function useDiscountForm() {
 
   const shippingDiscount = loaderData?.payload.shippingDiscount;
 
+  console.log(shippingDiscount, "shippingDiscount");
+
   const {
     id,
     shopifyDiscountId,
@@ -34,22 +36,30 @@ export function useDiscountForm() {
     hasEndDate,
     endDate,
     endTime,
+    //
+    shippingDiscountState,
+    limitUsagePerOneCustomer,
+    combinedWithOrderDiscounts,
+    combinedWithProductDiscounts,
   } = shippingDiscount || {};
 
   const navigate = useNavigate();
   const fetcher = useFetcher();
   const shopify = useAppBridge();
 
-  console.log(qualifierIds, "-----------------------------------");
   const form = useForm({
     fields: {
-      shippingDiscountState: useField("ENABLED"),
+      shippingDiscountState: useField(shippingDiscountState || "ENABLED"),
       //
-      limitUsagePerOneCustomer: useField(false),
-      combinedWithOrderDiscounts: useField(false),
-      combinedWithProductDiscounts: useField(false),
+      limitUsagePerOneCustomer: useField(limitUsagePerOneCustomer || false),
+      combinedWithOrderDiscounts: useField(combinedWithOrderDiscounts || false),
+      combinedWithProductDiscounts: useField(
+        combinedWithProductDiscounts || false,
+      ),
       //
-      automaticOrCode: useField(automaticOrCode || "CODE"),
+      automaticOrCode: useField<"AUTOMATIC" | "CODE">(
+        (automaticOrCode as "AUTOMATIC" | "CODE") || "CODE",
+      ),
       code: useField({
         value: codeOrName || "",
         validates: [notEmpty("Code is required")],
