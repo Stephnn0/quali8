@@ -5,7 +5,7 @@ import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
 import { getActionShippingDiscount } from "app/models/app.server/actionShippingDiscounts/actionShippingDiscounts.server";
 import { handleApiSuccess } from "app/utils/handleApiSuccess";
-import { ActionShippingDiscountLoaderData } from "../types";
+import type { ActionShippingDiscountLoaderData } from "../types";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const context = await authenticate.admin(request);
@@ -56,14 +56,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     );
 
     if (id === "new") {
-      // return {
-      //   payload: {
-      //     payload: qualifiers || [],
-      //     rates: filteredMethodDefinitions,
-      //   },
-      //   code: "new",
-      // };
-
       return handleApiSuccess<ActionShippingDiscountLoaderData>({
         payload: {
           qualifiers: qualifiers || [],

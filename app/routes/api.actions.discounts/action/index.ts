@@ -8,7 +8,6 @@ import {
   deleteShippingAutomaticDiscount,
   deleteShippingCodeDiscount,
 } from "app/models/shopify.server/discounts/discounts.server";
-import { createAction } from "app/models/app.server/actions/actions.server";
 import {
   createActionShippingDiscount,
   updateActionShippingDiscount,
@@ -42,12 +41,6 @@ export default async function action({ request }: ActionFunctionArgs) {
       const metafieldData = {
         customers: customers,
         //
-        startDate: formatToYYYYMMDD(parsedBody.startDate),
-        startTime: parsedBody.startTime,
-        hasEndDate: parsedBody.hasEndDate,
-        endDate: formatToYYYYMMDD(parsedBody.endDate),
-        endTime: parsedBody.endTime,
-        //
         code: parsedBody.codeOrName,
         type: parsedBody.type, // percentage or fixed
         value: parsedBody.value,
@@ -66,13 +59,17 @@ export default async function action({ request }: ActionFunctionArgs) {
       if (parsedBody.automaticOrCode === "CODE") {
         console.log("...CODE..");
 
-        shippingDiscount = await createShippingDiscount(
-          context.admin.graphql,
-          parsedBody!.codeOrName,
-          JSON.stringify(metafieldData),
-          formatToYYYYMMDD(parsedBody.startDate),
-          formatToYYYYMMDD(parsedBody.endDate),
-        );
+        shippingDiscount = await createShippingDiscount({
+          graphql: context.admin.graphql,
+          code: parsedBody.codeOrName,
+          body: JSON.stringify(metafieldData),
+          startDate: formatToYYYYMMDD(parsedBody.startDate),
+          endDate: formatToYYYYMMDD(parsedBody.endDate),
+          shippingDiscountState: parsedBody.shippingDiscountState,
+          limitUsagePerOneCustomer: parsedBody.limitUsagePerOneCustomer,
+          combinedWithOrderDiscounts: parsedBody.combinedWithOrderDiscounts,
+          combinedWithProductDiscounts: parsedBody.combinedWithProductDiscounts,
+        });
 
         shopifyDiscountId =
           shippingDiscount?.discountCodeAppCreate?.codeAppDiscount?.discountId;
@@ -102,25 +99,17 @@ export default async function action({ request }: ActionFunctionArgs) {
             ?.discountId;
       }
 
-      const action = await createAction(
-        {
-          data: {
-            type: "SHIPPING_DISCOUNTS",
-            createdAt: new Date(),
-            shopifyStore: { connect: { shop: context.session.shop } },
-            qualifiers: {
-              connect: parsedBody.qualifiersIds.map((id: number) => ({ id })),
-            },
-          },
-        },
-        db,
-      );
+      console.log("...shippingDiscount..............", shippingDiscount);
 
-      if (action && shippingDiscount) {
+      if (shippingDiscount) {
         await createActionShippingDiscount(
           {
             data: {
-              marketingActionId: action?.id,
+              qualifiers: {
+                connect: parsedBody.qualifiersIds.map((id: number) => ({ id })),
+              },
+
+              shop: context.session.shop,
               //
               automaticOrCode: parsedBody.automaticOrCode,
               codeOrName: parsedBody.codeOrName,
@@ -129,6 +118,7 @@ export default async function action({ request }: ActionFunctionArgs) {
               //
               shippingRateType: parsedBody.shippingRateType,
               shippingRatesIds: parsedBody.shippingRatesIds,
+              qualifierIds: parsedBody.qualifierIds,
               //
               startDate: parsedBody.startDate
                 ? new Date(parsedBody.startDate)
@@ -185,16 +175,29 @@ export default async function action({ request }: ActionFunctionArgs) {
         );
 
         // ! create new discount
-
-        const newshippingDiscount = await createShippingDiscount(
-          context.admin.graphql,
-          parsedBody!.codeOrName,
-          formatToYYYYMMDD(parsedBody.startDate),
-          formatToYYYYMMDD(parsedBody.endDate),
-          JSON.stringify(metafieldDataUpdate),
-        );
+        const newshippingDiscount = await createShippingDiscount({
+          graphql: context.admin.graphql,
+          code: parsedBody.codeOrName,
+          body: JSON.stringify(metafieldDataUpdate),
+          startDate: formatToYYYYMMDD(parsedBody.startDate),
+          endDate: formatToYYYYMMDD(parsedBody.endDate),
+          shippingDiscountState: parsedBody.shippingDiscountState,
+          limitUsagePerOneCustomer: parsedBody.limitUsagePerOneCustomer,
+          combinedWithOrderDiscounts: parsedBody.combinedWithOrderDiscounts,
+          combinedWithProductDiscounts: parsedBody.combinedWithProductDiscounts,
+        });
 
         // ! grab id
+
+        if (newshippingDiscount.discountCodeAppCreate.userErrors) {
+          console.log(
+            JSON.stringify(
+              newshippingDiscount.discountCodeAppCreate.userErrors,
+              null,
+              2,
+            ),
+          );
+        }
 
         const newShopifyDiscountId =
           newshippingDiscount?.discountCodeAppCreate?.codeAppDiscount
@@ -219,6 +222,9 @@ export default async function action({ request }: ActionFunctionArgs) {
                 ? new Date(parsedBody.endDate)
                 : undefined,
               endTime: parsedBody.endTime,
+              //
+              qualifierIds: parsedBody.qualifierIds,
+              qualifiers: { connect: parsedBody.qualifierIds },
             },
           },
           db,

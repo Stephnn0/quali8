@@ -1,4 +1,10 @@
 export function formatToYYYYMMDD(dateInput: string | Date): string {
+  console.log(dateInput, "-----------------------------------");
+
+  if (dateInput === "") {
+    return "";
+  }
+
   const date = new Date(dateInput);
 
   const year = date.getFullYear();

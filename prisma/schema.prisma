@@ -40,7 +40,7 @@ model ShopifyStore {
   qualifiers           Qualifiers[]
   customers            Customers[]   
   conditions           Conditions[]      
-  actions              Actions[] 
+  shippingDiscounts     ShippingDiscountAction[]
 }
 
 enum AppStatus {
@@ -84,7 +84,7 @@ model Qualifiers {
   conditions         Conditions[] 
   customers          Customers[]   @relation("CustomerQualifiers")
   //
-  actions            Actions[]     @relation("MarketingActions")
+  shippingDiscounts       ShippingDiscountAction[]     @relation("ShippingDiscounts")
 }
 
 model Conditions {
@@ -115,27 +115,8 @@ model Customers {
 }
 
 
-
-model Actions {
-  id             Int                  @id @default(autoincrement())
-  createdAt      DateTime             @default(now())
-  updatedAt      DateTime             @default(now()) @updatedAt
-  //
-  type           MarketingActionType
-  //
-  shop           String
-  shopifyStore   ShopifyStore         @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
-  //
-  //
-  qualifiers     Qualifiers[]     @relation("MarketingActions")
-  //
-  shippingDiscount ShippingDiscountAction?
-}
-
 model ShippingDiscountAction {
   id               Int               @id @default(autoincrement())
-  marketingAction  Actions           @relation(fields: [marketingActionId], references: [id], onDelete: Cascade)
-  marketingActionId Int              @unique
   //
   automaticOrCode  String             // 'CODE' or 'AUTOMATIC'
   codeOrName       String  
@@ -144,6 +125,7 @@ model ShippingDiscountAction {
   //            
   shippingRateType ShippingRateType
   shippingRatesIds String[]          //! fixed this maybe by handle or name
+  qualifierIds   Int[]
   //
   startDate      DateTime?
   startTime      String?
@@ -152,6 +134,14 @@ model ShippingDiscountAction {
   endTime        String?
   //
   shopifyDiscountId  String           @unique
+    //
+  shop           String
+  shopifyStore   ShopifyStore         @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
+  //
+  qualifiers     Qualifiers[]     @relation("ShippingDiscounts")
+  //
+  createdAt      DateTime             @default(now())
+  updatedAt      DateTime             @default(now()) @updatedAt
 }
 
 enum MarketingActionType {

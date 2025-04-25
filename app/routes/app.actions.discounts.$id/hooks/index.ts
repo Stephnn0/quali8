@@ -15,14 +15,8 @@ export function useDiscountForm() {
 
   const shippingDiscount = loaderData?.payload.shippingDiscount;
 
-  console.log(
-    "-------------shippingDiscount----------------",
-    shippingDiscount,
-  );
-
   const {
     id,
-    marketingActionId,
     shopifyDiscountId,
     //
     automaticOrCode,
@@ -32,6 +26,7 @@ export function useDiscountForm() {
     //
     shippingRateType,
     shippingRatesIds,
+    qualifierIds,
     //
     startDate,
     startTime,
@@ -43,8 +38,15 @@ export function useDiscountForm() {
   const navigate = useNavigate();
   const fetcher = useFetcher();
 
+  console.log(qualifierIds, "-----------------------------------");
   const form = useForm({
     fields: {
+      shippingDiscountState: useField("ENABLED"),
+      //
+      limitUsagePerOneCustomer: useField(false),
+      combinedWithOrderDiscounts: useField(false),
+      combinedWithProductDiscounts: useField(false),
+      //
       automaticOrCode: useField(automaticOrCode || "CODE"),
       code: useField({
         value: codeOrName || "",
@@ -61,7 +63,7 @@ export function useDiscountForm() {
         value: [],
         validates: [lengthMoreThan(0, "Customers is required")],
       }),
-      qualifiersIds: useField<string[]>([]),
+      qualifiersIds: useField<number[]>(qualifierIds || []),
       //
       shippingRateType: useField(shippingRateType || "ALL_RATES"),
       shippingRatesNames: useField<string[]>(shippingRatesIds || []),
@@ -75,6 +77,11 @@ export function useDiscountForm() {
     makeCleanAfterSubmit: true,
     onSubmit: async (fieldValues) => {
       const body = {
+        shippingDiscountState: fieldValues.shippingDiscountState,
+        limitUsagePerOneCustomer: fieldValues.limitUsagePerOneCustomer,
+        combinedWithOrderDiscounts: fieldValues.combinedWithOrderDiscounts,
+        combinedWithProductDiscounts: fieldValues.combinedWithProductDiscounts,
+        //
         automaticOrCode: fieldValues.automaticOrCode,
         codeOrName: fieldValues.code,
         type: fieldValues.type,
@@ -113,7 +120,6 @@ export function useDiscountForm() {
           const updateBody = {
             id: id,
             shopifyDiscountId: shopifyDiscountId,
-            marketingActionId: marketingActionId,
             //
             automaticOrCode: fieldValues.automaticOrCode,
             codeOrName: fieldValues.code,

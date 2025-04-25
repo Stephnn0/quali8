@@ -44,26 +44,52 @@ export async function createShippingAutomaticDiscount(
   }
 }
 
-export async function createShippingDiscount(
-  graphql: AdminGraphqlClient,
-  code: string,
-  body: string,
-  startDate: string, // 2019-09-07T15:50:00Z 2025-05-02T17:09:21Z
-  endDate: string,
-) {
+type CreateShippingDiscountParams = {
+  graphql: AdminGraphqlClient;
+  code: string;
+  body: string;
+  startDate: string;
+  endDate: string;
+  shippingDiscountState: "ENABLED" | "DISABLED";
+  limitUsagePerOneCustomer: boolean;
+  combinedWithOrderDiscounts: boolean;
+  combinedWithProductDiscounts: boolean;
+};
+
+export async function createShippingDiscount({
+  graphql,
+  code,
+  body,
+  startDate, // 2019-09-07T15:50:00Z 2025-05-02T17:09:21Z
+  endDate,
+  shippingDiscountState,
+  limitUsagePerOneCustomer,
+  combinedWithOrderDiscounts,
+  combinedWithProductDiscounts,
+}: CreateShippingDiscountParams) {
   try {
+    const simulatedStartDate =
+      shippingDiscountState === "DISABLED"
+        ? "2023-01-01T00:00:00Z"
+        : `${startDate}T00:00:00Z`;
+
+    const simulatedEndDate =
+      shippingDiscountState === "DISABLED"
+        ? "2023-11-01T00:00:00Z"
+        : `${endDate !== "" ? endDate : "2028-11-01"}T00:00:00Z`;
+
     const VARIABLES = {
       functionId: "92f98185-5407-46c4-85d9-11594cc32d07",
       title: code,
-      startsAt: `${startDate}T00:26:30Z`,
-      endsAt: `${"2025-04-15"}T00:00:00Z`,
+      startsAt: simulatedStartDate,
+      endsAt: simulatedEndDate,
       code: code,
       combinesWith: {
-        orderDiscounts: false,
-        productDiscounts: false,
+        orderDiscounts: combinedWithOrderDiscounts,
+        productDiscounts: combinedWithProductDiscounts,
         shippingDiscounts: false,
       },
-      appliesOncePerCustomer: false,
+      appliesOncePerCustomer: limitUsagePerOneCustomer,
       metafields: {
         key: APP.FUNCTION_METAFIELD_KEY,
         value: body,

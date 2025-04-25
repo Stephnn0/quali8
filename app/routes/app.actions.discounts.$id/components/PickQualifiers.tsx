@@ -13,25 +13,21 @@ type PickQualifiersProps = {
 };
 
 type Qualifier = {
-  id: string;
+  id: number;
   name: string;
   customers: string[];
 };
 
 export function PickQualifiers({ mockQualifiers, form }: PickQualifiersProps) {
-  console.log("mockQualifiers", mockQualifiers);
-
   const { fields } = form;
 
   const { customers, qualifiersIds } = fields;
 
-  const customerSegments = mockQualifiers.map(
-    (qualifier: Qualifier, index: any) => ({
-      id: qualifier.id,
-      name: qualifier.name,
-      customers: qualifier.customers, // Just use the array of IDs directly
-    }),
-  );
+  const qualifiers = mockQualifiers.map((qualifier: Qualifier) => ({
+    id: qualifier.id,
+    name: qualifier.name,
+    customers: qualifier.customers, // Just use the array of IDs directly
+  }));
 
   const resourceName = {
     singular: "qualifier",
@@ -39,9 +35,11 @@ export function PickQualifiers({ mockQualifiers, form }: PickQualifiersProps) {
   };
 
   const { selectedResources, allResourcesSelected, handleSelectionChange } =
-    useIndexResourceState(customerSegments);
+    useIndexResourceState(qualifiers, {
+      selectedResources: qualifiersIds.value as unknown as string[], // ! DANGEROUS 'as' FIX LATER
+    });
 
-  const rowMarkup = customerSegments?.map(({ id, name }: any, index: any) => (
+  const rowMarkup = qualifiers?.map(({ id, name }: any, index: any) => (
     <IndexTable.Row
       id={id}
       key={id}
@@ -57,21 +55,21 @@ export function PickQualifiers({ mockQualifiers, form }: PickQualifiersProps) {
   ));
 
   useEffect(() => {
-    const selectedCustomerSegments = customerSegments.filter((segment: any) =>
-      selectedResources.includes(segment.id),
+    const selectedQualifier = qualifiers.filter((qualifier: any) =>
+      selectedResources.includes(qualifier.id),
     );
 
-    const selectedCustomers = selectedCustomerSegments.flatMap(
-      (segment: any) => segment.customers,
+    const selectedCustomers = selectedQualifier.flatMap(
+      (qualifier: any) => qualifier.customers,
     );
 
-    const selectedQualifierIds = selectedCustomerSegments.map(
-      (segment: any) => segment.id,
+    const selectedQualifierIds = selectedQualifier.map(
+      (qualifier: any) => qualifier.id,
     );
 
     customers.value = selectedCustomers;
     qualifiersIds.value = selectedQualifierIds;
-  }, [selectedResources, customerSegments, customers, qualifiersIds]);
+  }, [selectedResources, qualifiers, customers, qualifiersIds]);
 
   return (
     <Card>
@@ -86,7 +84,7 @@ export function PickQualifiers({ mockQualifiers, form }: PickQualifiersProps) {
       <br />
       <IndexTable
         resourceName={resourceName}
-        itemCount={customerSegments?.length || 0}
+        itemCount={qualifiers?.length || 0}
         selectedItemsCount={
           allResourcesSelected ? "All" : selectedResources.length
         }

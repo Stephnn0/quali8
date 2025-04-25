@@ -16,7 +16,7 @@ import {
 } from "@shopify/polaris";
 import { loader } from "./loader";
 import { useDiscountForm } from "./hooks";
-import { useCallback, useState } from "react";
+import { useState } from "react";
 import DateSelector from "./components/DateSelector";
 import { ShippingRates } from "./components/ShippingRates";
 import { PickQualifiers } from "./components/PickQualifiers";
@@ -30,7 +30,17 @@ export default function ActionDiscounts() {
 
   const { fields } = form;
 
-  const { code, type, valueType, automaticOrCode } = fields;
+  const {
+    code,
+    type,
+    valueType,
+    automaticOrCode,
+    shippingDiscountState,
+
+    limitUsagePerOneCustomer,
+    combinedWithOrderDiscounts,
+    combinedWithProductDiscounts,
+  } = fields;
 
   const [discountValue, setDiscountValue] = useState<number | "">("");
 
@@ -45,11 +55,16 @@ export default function ActionDiscounts() {
     automaticOrCode.value = selectedOperator;
   };
 
-  const [checked, setChecked] = useState(false);
-  const handleChange = useCallback(
-    (newChecked: boolean) => setChecked(newChecked),
-    [],
+  const [discountState, setDiscountState] = useState<"ENABLED" | "DISABLED">(
+    "ENABLED",
   );
+
+  const handleDiscountStateChange = (
+    selectedDiscountState: "ENABLED" | "DISABLED",
+  ) => {
+    setDiscountState(selectedDiscountState);
+    shippingDiscountState.value = selectedDiscountState;
+  };
 
   return (
     <Page
@@ -78,14 +93,14 @@ export default function ActionDiscounts() {
                   </Text>
                   <ButtonGroup variant="segmented">
                     <Button
-                      disabled={operator === "CODE"}
-                      onClick={() => handleOperatorChange("CODE")}
+                      disabled={discountState === "ENABLED"}
+                      onClick={() => handleDiscountStateChange("ENABLED")}
                     >
                       On
                     </Button>
                     <Button
-                      disabled={operator === "AUTOMATIC"}
-                      onClick={() => handleOperatorChange("AUTOMATIC")}
+                      disabled={discountState === "DISABLED"}
+                      onClick={() => handleDiscountStateChange("DISABLED")}
                     >
                       Off
                     </Button>
@@ -112,8 +127,8 @@ export default function ActionDiscounts() {
             <br />
             <Checkbox
               label="Limit usage to one per customer"
-              checked={checked}
-              onChange={handleChange}
+              checked={limitUsagePerOneCustomer.value}
+              onChange={(value) => limitUsagePerOneCustomer.onChange(value)}
             />
             <Divider />
             <br />
@@ -173,13 +188,15 @@ export default function ActionDiscounts() {
             <InlineGrid>
               <Checkbox
                 label="Product discounts"
-                checked={checked}
-                onChange={handleChange}
+                checked={combinedWithProductDiscounts.value}
+                onChange={(value) =>
+                  combinedWithProductDiscounts.onChange(value)
+                }
               />
               <Checkbox
                 label="Order discounts"
-                checked={checked}
-                onChange={handleChange}
+                checked={combinedWithOrderDiscounts.value}
+                onChange={(value) => combinedWithOrderDiscounts.onChange(value)}
               />
             </InlineGrid>
           </Card>

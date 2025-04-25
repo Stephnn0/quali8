@@ -1,5 +1,4 @@
 import type { ActionFunctionArgs } from "@remix-run/node";
-import { deleteAction } from "app/models/app.server/actions/actions.server";
 import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
 import { deleteActionShippingDiscount } from "app/models/app.server/actionShippingDiscounts/actionShippingDiscounts.server";
@@ -22,15 +21,6 @@ export async function action({ request }: ActionFunctionArgs) {
       console.log("...DELETE Request...");
 
       await Promise.all([
-        deleteAction(
-          {
-            where: {
-              id: parsedBody.marketingActionId,
-            },
-          },
-          db,
-        ),
-
         deleteActionShippingDiscount(
           {
             where: {
