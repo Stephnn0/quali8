@@ -68,21 +68,11 @@ export async function createShippingDiscount({
   combinedWithProductDiscounts,
 }: CreateShippingDiscountParams) {
   try {
-    const simulatedStartDate =
-      shippingDiscountState === "DISABLED"
-        ? "2023-01-01T00:00:00Z"
-        : `${startDate}T00:00:00Z`;
-
-    const simulatedEndDate =
-      shippingDiscountState === "DISABLED"
-        ? "2023-11-01T00:00:00Z"
-        : `${endDate !== "" ? endDate : "2028-11-01"}T00:00:00Z`;
-
     const VARIABLES = {
       functionId: "92f98185-5407-46c4-85d9-11594cc32d07",
       title: code,
-      startsAt: simulatedStartDate,
-      endsAt: simulatedEndDate,
+      startsAt: startDate,
+      endsAt: endDate,
       code: code,
       combinesWith: {
         orderDiscounts: combinedWithOrderDiscounts,
@@ -96,6 +86,8 @@ export async function createShippingDiscount({
         type: "string",
       },
     };
+
+    console.log("------------------VARIABLES------------------", VARIABLES);
 
     const response = await graphql(GRAPHQL_MUTATION_CREATE_DISCOUNT, {
       variables: VARIABLES,

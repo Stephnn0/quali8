@@ -194,33 +194,31 @@ export default function Qualifiers() {
           </Card>
         </Layout.Section>
       </Layout>
-      <Frame>
-        <Modal
-          open={modalActive}
-          onClose={handleModalChange}
-          title="Are you sure you want to delete this qualifier?"
-          primaryAction={{
-            content: "Delete",
-            destructive: true,
-            onAction: handleDeleteConfirm,
-          }}
-          secondaryActions={[
-            {
-              content: "Cancel",
-              onAction: handleModalChange,
-            },
-          ]}
-        >
-          <Modal.Section>
-            <TextContainer>
-              <p>
-                This action cannot be undone. Are you sure you want to delete
-                this qualifier?
-              </p>
-            </TextContainer>
-          </Modal.Section>
-        </Modal>
-      </Frame>
+      <Modal
+        open={modalActive}
+        onClose={handleModalChange}
+        title="Are you sure you want to delete this qualifier?"
+        primaryAction={{
+          content: "Delete",
+          destructive: true,
+          onAction: handleDeleteConfirm,
+        }}
+        secondaryActions={[
+          {
+            content: "Cancel",
+            onAction: handleModalChange,
+          },
+        ]}
+      >
+        <Modal.Section>
+          <TextContainer>
+            <p>
+              This action cannot be undone. Are you sure you want to delete this
+              qualifier?
+            </p>
+          </TextContainer>
+        </Modal.Section>
+      </Modal>
     </Page>
   );
 }

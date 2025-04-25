@@ -9,9 +9,10 @@ import {
   ButtonGroup,
   TextContainer,
   Modal,
-  Frame,
   Layout,
   MediaCard,
+  Badge,
+  FooterHelp,
 } from "@shopify/polaris";
 import { loader } from "./loader";
 import { action } from "./action";
@@ -26,6 +27,8 @@ export { loader, action };
 export default function AllActions() {
   const loaderData = useLoaderData<typeof loader>();
 
+  console.log(loaderData, "loaderData");
+
   // ! refactor in the future since we will have more types of actions
   const discountActions =
     loaderData?.payload?.map((data) => ({
@@ -35,9 +38,10 @@ export default function AllActions() {
       discountMethod: data.automaticOrCode,
       value: data.value,
       shopifyDiscountId: data.shopifyDiscountId,
-      marketingActionId: data.marketingActionId,
       //
       automaticOrCode: data.automaticOrCode,
+      //
+      shippingDiscountState: data.shippingDiscountState,
     })) || [];
 
   const resourceName = {
@@ -58,8 +62,8 @@ export default function AllActions() {
         discountMethod,
         value,
         shopifyDiscountId,
-        marketingActionId,
         automaticOrCode,
+        shippingDiscountState,
       },
       index,
     ) => (
@@ -70,34 +74,18 @@ export default function AllActions() {
         position={index}
       >
         <IndexTable.Cell>
-          <Text variant="bodyMd" fontWeight="bold" as="span">
-            {" "}
-            DRAFT
-          </Text>
+          <Badge
+            tone={shippingDiscountState === "ENABLED" ? "success" : "critical"}
+          >
+            {shippingDiscountState}
+          </Badge>
         </IndexTable.Cell>
-        <IndexTable.Cell>
-          <Text variant="bodyMd" fontWeight="bold" as="span">
-            {" "}
-            {codeOrName}
-          </Text>
-        </IndexTable.Cell>
-        <IndexTable.Cell>
-          <Text variant="bodyMd" fontWeight="bold" as="span">
-            {" "}
-            {type}
-          </Text>
-        </IndexTable.Cell>
-        <IndexTable.Cell>
-          <Text variant="bodyMd" fontWeight="bold" as="span">
-            {" "}
-            {discountMethod}
-          </Text>
-        </IndexTable.Cell>
+        <IndexTable.Cell>{codeOrName}</IndexTable.Cell>
+        <IndexTable.Cell> {type}</IndexTable.Cell>
+        <IndexTable.Cell> {discountMethod}</IndexTable.Cell>
         <IndexTable.Cell>
           <IndexTable.Cell>
-            <Text variant="bodyMd" fontWeight="bold" as="span">
-              {type === "percentage" ? `${value}%` : `$${value}`}
-            </Text>
+            {type === "percentage" ? `${value}%` : `$${value}`}
           </IndexTable.Cell>
         </IndexTable.Cell>
         <IndexTable.Cell>
@@ -107,12 +95,7 @@ export default function AllActions() {
             </Link>
             <Button
               onClick={() =>
-                handleDeleteClick(
-                  id,
-                  shopifyDiscountId,
-                  marketingActionId,
-                  automaticOrCode,
-                )
+                handleDeleteClick(id, shopifyDiscountId, automaticOrCode)
               }
               icon={DeleteIcon}
             ></Button>
@@ -125,7 +108,6 @@ export default function AllActions() {
   const [selectedShippingDiscount, setSelectedShippingDiscount] = useState<{
     id: number;
     shopifyDiscountId: string;
-    marketingActionId: string;
     automaticOrCode: string;
   } | null>(null);
 
@@ -139,13 +121,11 @@ export default function AllActions() {
   const handleDeleteClick = (
     id: number,
     shopifyDiscountId: string,
-    marketingActionId: string,
     automaticOrCode: string,
   ) => {
     setSelectedShippingDiscount({
       id,
       shopifyDiscountId,
-      marketingActionId,
       automaticOrCode,
     });
     setModalActive(true);
@@ -161,7 +141,6 @@ export default function AllActions() {
       const body = {
         shippingDiscountId: selectedShippingDiscount.id,
         shopifyDiscountId: selectedShippingDiscount.shopifyDiscountId,
-        marketingActionId: selectedShippingDiscount.marketingActionId,
         automaticOrCode: selectedShippingDiscount.automaticOrCode,
       };
       submit(
@@ -241,35 +220,36 @@ export default function AllActions() {
             </IndexTable>
           </Card>
         </Layout.Section>
+        <Layout.Section>
+          <FooterHelp>All rights reserved. 8Instruments</FooterHelp>
+        </Layout.Section>
       </Layout>
 
-      <Frame>
-        <Modal
-          open={modalActive}
-          onClose={handleModalChange}
-          title="Are you sure you want to delete this Shipping Discount?"
-          primaryAction={{
-            content: "Delete",
-            destructive: true,
-            onAction: handleDeleteConfirm,
-          }}
-          secondaryActions={[
-            {
-              content: "Cancel",
-              onAction: handleModalChange,
-            },
-          ]}
-        >
-          <Modal.Section>
-            <TextContainer>
-              <p>
-                This action cannot be undone. Are you sure you want to delete
-                this Shipping Discount?
-              </p>
-            </TextContainer>
-          </Modal.Section>
-        </Modal>
-      </Frame>
+      <Modal
+        open={modalActive}
+        onClose={handleModalChange}
+        title="Are you sure you want to delete this Shipping Discount?"
+        primaryAction={{
+          content: "Delete",
+          destructive: true,
+          onAction: handleDeleteConfirm,
+        }}
+        secondaryActions={[
+          {
+            content: "Cancel",
+            onAction: handleModalChange,
+          },
+        ]}
+      >
+        <Modal.Section>
+          <TextContainer>
+            <p>
+              This action cannot be undone. Are you sure you want to delete this
+              Shipping Discount?
+            </p>
+          </TextContainer>
+        </Modal.Section>
+      </Modal>
     </Page>
   );
 }

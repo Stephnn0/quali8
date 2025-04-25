@@ -29,8 +29,6 @@ export default async function action({ request }: ActionFunctionArgs) {
 
   const customers = await getCustomersByIds(customerShopifyIds, db);
 
-  console.log("------------------------------------parsedBody", parsedBody);
-
   try {
     // ---------------------------------------------------------------- POST
     // ----------------------------------------------------------------
@@ -59,12 +57,28 @@ export default async function action({ request }: ActionFunctionArgs) {
       if (parsedBody.automaticOrCode === "CODE") {
         console.log("...CODE..");
 
+        const hasEndDate = parsedBody.hasEndDate;
+        const shippingDiscountState = parsedBody.shippingDiscountState;
+
+        let formattedStartDate = combineDateAndTime(
+          parsedBody.startDate,
+          parsedBody.startTime || "12:00 AM",
+        );
+        let formattedEndDate = hasEndDate
+          ? combineDateAndTime(parsedBody.endDate, parsedBody.endTime)
+          : "2028-11-01T00:00:00Z";
+
+        if (shippingDiscountState === "DISABLED") {
+          formattedStartDate = "2023-01-01T00:00:00Z";
+          formattedEndDate = "2023-11-01T00:00:00Z";
+        }
+
         shippingDiscount = await createShippingDiscount({
           graphql: context.admin.graphql,
           code: parsedBody.codeOrName,
           body: JSON.stringify(metafieldData),
-          startDate: formatToYYYYMMDD(parsedBody.startDate),
-          endDate: formatToYYYYMMDD(parsedBody.endDate),
+          startDate: formattedStartDate,
+          endDate: formattedEndDate,
           shippingDiscountState: parsedBody.shippingDiscountState,
           limitUsagePerOneCustomer: parsedBody.limitUsagePerOneCustomer,
           combinedWithOrderDiscounts: parsedBody.combinedWithOrderDiscounts,
@@ -99,12 +113,16 @@ export default async function action({ request }: ActionFunctionArgs) {
             ?.discountId;
       }
 
-      console.log("...shippingDiscount..............", shippingDiscount);
-
       if (shippingDiscount) {
         await createActionShippingDiscount(
           {
             data: {
+              shippingDiscountState: parsedBody.shippingDiscountState,
+              limitUsagePerOneCustomer: parsedBody.limitUsagePerOneCustomer,
+              combinedWithOrderDiscounts: parsedBody.combinedWithOrderDiscounts,
+              combinedWithProductDiscounts:
+                parsedBody.combinedWithProductDiscounts,
+
               qualifiers: {
                 connect: parsedBody.qualifiersIds.map((id: number) => ({ id })),
               },
@@ -150,12 +168,6 @@ export default async function action({ request }: ActionFunctionArgs) {
         //
         customers: customers,
         //
-        startDate: formatToYYYYMMDD(parsedBody.startDate),
-        startTime: parsedBody.startTime,
-        hasEndDate: parsedBody.hasEndDate,
-        endDate: formatToYYYYMMDD(parsedBody.endDate),
-        endTime: parsedBody.endTime,
-        //
         code: parsedBody.codeOrName,
         type: parsedBody.type, // percentage or fixed
         value: parsedBody.value,
@@ -168,13 +180,11 @@ export default async function action({ request }: ActionFunctionArgs) {
       if (parsedBody.automaticOrCode === "CODE") {
         console.log("...CODE..");
 
-        // ! delete old discount
         await deleteShippingCodeDiscount(
           context.admin.graphql,
           parsedBody.shopifyDiscountId,
         );
 
-        // ! create new discount
         const newshippingDiscount = await createShippingDiscount({
           graphql: context.admin.graphql,
           code: parsedBody.codeOrName,
@@ -186,8 +196,6 @@ export default async function action({ request }: ActionFunctionArgs) {
           combinedWithOrderDiscounts: parsedBody.combinedWithOrderDiscounts,
           combinedWithProductDiscounts: parsedBody.combinedWithProductDiscounts,
         });
-
-        // ! grab id
 
         if (newshippingDiscount.discountCodeAppCreate.userErrors) {
           console.log(
@@ -202,9 +210,6 @@ export default async function action({ request }: ActionFunctionArgs) {
         const newShopifyDiscountId =
           newshippingDiscount?.discountCodeAppCreate?.codeAppDiscount
             ?.discountId;
-
-        // ! update id in prisma
-        // ! update fields in prisma
 
         await updateActionShippingDiscount(
           {
@@ -224,7 +229,15 @@ export default async function action({ request }: ActionFunctionArgs) {
               endTime: parsedBody.endTime,
               //
               qualifierIds: parsedBody.qualifierIds,
-              qualifiers: { connect: parsedBody.qualifierIds },
+              shippingDiscountState: parsedBody.shippingDiscountState,
+              limitUsagePerOneCustomer: parsedBody.limitUsagePerOneCustomer,
+              combinedWithOrderDiscounts: parsedBody.combinedWithOrderDiscounts,
+              combinedWithProductDiscounts:
+                parsedBody.combinedWithProductDiscounts,
+
+              qualifiers: {
+                connect: parsedBody.qualifiersIds.map((id: number) => ({ id })),
+              },
             },
           },
           db,
@@ -235,12 +248,11 @@ export default async function action({ request }: ActionFunctionArgs) {
 
       if (parsedBody.automaticOrCode === "AUTOMATIC") {
         console.log("...AUTOMATIC..");
-        // ! delete old discount
+
         await deleteShippingAutomaticDiscount(
           context.admin.graphql,
           parsedBody.shopifyDiscountId,
         );
-        // ! create new discount
         const newshippingDiscount = await createShippingAutomaticDiscount(
           context.admin.graphql,
           parsedBody!.codeOrName,
@@ -252,7 +264,6 @@ export default async function action({ request }: ActionFunctionArgs) {
           parsedBody.appliesOncePerCustomer, // boolean
         );
 
-        // ! grab id
         const newShopifyDiscountId =
           newshippingDiscount?.discountAutomaticAppCreate?.automaticAppDiscount
             ?.discountId;
@@ -284,4 +295,18 @@ export default async function action({ request }: ActionFunctionArgs) {
   } catch (error) {
     console.error("API Get Customers Error: ", error);
   }
+}
+
+function combineDateAndTime(dateString: string, timeString: string): string {
+  const date = new Date(dateString);
+  const [time, modifier] = timeString.trim().split(" ");
+  let [hours, minutes] = time.split(":").map(Number);
+
+  if (modifier?.toLowerCase() === "pm" && hours < 12) hours += 12;
+  if (modifier?.toLowerCase() === "am" && hours === 12) hours = 0;
+
+  date.setHours(hours);
+  date.setMinutes(minutes || 0);
+  date.setSeconds(0);
+  return date.toISOString();
 }

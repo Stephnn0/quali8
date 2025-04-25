@@ -118,6 +118,11 @@ model Customers {
 model ShippingDiscountAction {
   id               Int               @id @default(autoincrement())
   //
+  shippingDiscountState          ShippingDiscountState
+  limitUsagePerOneCustomer       Boolean @default(false)
+  combinedWithOrderDiscounts     Boolean @default(false)
+  combinedWithProductDiscounts   Boolean @default(false)
+  //
   automaticOrCode  String             // 'CODE' or 'AUTOMATIC'
   codeOrName       String  
   type             DiscountType       // percentage or fixed 
@@ -157,4 +162,10 @@ enum DiscountType {
 enum ShippingRateType {
   ALL_RATES
   SELECTED_RATES
+}
+
+
+enum ShippingDiscountState {
+  ENABLED
+  DISABLED
 }
