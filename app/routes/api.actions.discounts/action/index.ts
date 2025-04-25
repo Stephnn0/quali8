@@ -12,7 +12,6 @@ import {
   createActionShippingDiscount,
   updateActionShippingDiscount,
 } from "app/models/app.server/actionShippingDiscounts/actionShippingDiscounts.server";
-import { formatToYYYYMMDD } from "app/utils/formatDate";
 
 export default async function action({ request }: ActionFunctionArgs) {
   console.log("...action shipping discount...");
@@ -97,16 +96,33 @@ export default async function action({ request }: ActionFunctionArgs) {
       if (parsedBody.automaticOrCode === "AUTOMATIC") {
         console.log("...AUTOMATIC..");
 
-        shippingDiscount = await createShippingAutomaticDiscount(
-          context.admin.graphql,
-          parsedBody!.codeOrName,
-          JSON.stringify(metafieldData),
-          "92f98185-5407-46c4-85d9-11594cc32d07", // functionId
-          formatToYYYYMMDD(parsedBody.startDate),
-          formatToYYYYMMDD(parsedBody.endDate),
-          parsedBody.usageLimit, // number
-          parsedBody.appliesOncePerCustomer, // boolean
+        const hasEndDate = parsedBody.hasEndDate;
+        const shippingDiscountState = parsedBody.shippingDiscountState;
+
+        let formattedStartDate = combineDateAndTime(
+          parsedBody.startDate,
+          parsedBody.startTime || "12:00 AM",
         );
+        let formattedEndDate = hasEndDate
+          ? combineDateAndTime(parsedBody.endDate, parsedBody.endTime)
+          : "2028-11-01T00:00:00Z";
+
+        if (shippingDiscountState === "DISABLED") {
+          formattedStartDate = "2023-01-01T00:00:00Z";
+          formattedEndDate = "2023-11-01T00:00:00Z";
+        }
+
+        shippingDiscount = await createShippingAutomaticDiscount({
+          graphql: context.admin.graphql,
+          title: parsedBody.codeOrName,
+          body: JSON.stringify(metafieldData),
+          functionId: "92f98185-5407-46c4-85d9-11594cc32d07", // functionId
+          startDate: formattedStartDate,
+          endDate: formattedEndDate,
+          shippingDiscountState: parsedBody.shippingDiscountState,
+          combinedWithOrderDiscounts: parsedBody.combinedWithOrderDiscounts,
+          combinedWithProductDiscounts: parsedBody.combinedWithProductDiscounts,
+        });
 
         shopifyDiscountId =
           shippingDiscount?.discountAutomaticAppCreate?.automaticAppDiscount
@@ -185,12 +201,28 @@ export default async function action({ request }: ActionFunctionArgs) {
           parsedBody.shopifyDiscountId,
         );
 
+        const hasEndDate = parsedBody.hasEndDate;
+        const shippingDiscountState = parsedBody.shippingDiscountState;
+
+        let formattedStartDate = combineDateAndTime(
+          parsedBody.startDate,
+          parsedBody.startTime || "12:00 AM",
+        );
+        let formattedEndDate = hasEndDate
+          ? combineDateAndTime(parsedBody.endDate, parsedBody.endTime)
+          : "2028-11-01T00:00:00Z";
+
+        if (shippingDiscountState === "DISABLED") {
+          formattedStartDate = "2023-01-01T00:00:00Z";
+          formattedEndDate = "2023-11-01T00:00:00Z";
+        }
+
         const newshippingDiscount = await createShippingDiscount({
           graphql: context.admin.graphql,
           code: parsedBody.codeOrName,
           body: JSON.stringify(metafieldDataUpdate),
-          startDate: formatToYYYYMMDD(parsedBody.startDate),
-          endDate: formatToYYYYMMDD(parsedBody.endDate),
+          startDate: formattedStartDate,
+          endDate: formattedEndDate,
           shippingDiscountState: parsedBody.shippingDiscountState,
           limitUsagePerOneCustomer: parsedBody.limitUsagePerOneCustomer,
           combinedWithOrderDiscounts: parsedBody.combinedWithOrderDiscounts,
@@ -253,16 +285,34 @@ export default async function action({ request }: ActionFunctionArgs) {
           context.admin.graphql,
           parsedBody.shopifyDiscountId,
         );
-        const newshippingDiscount = await createShippingAutomaticDiscount(
-          context.admin.graphql,
-          parsedBody!.codeOrName,
-          JSON.stringify(metafieldDataUpdate),
-          "92f98185-5407-46c4-85d9-11594cc32d07", // functionId
-          formatToYYYYMMDD(parsedBody.startDate),
-          formatToYYYYMMDD(parsedBody.endDate),
-          parsedBody.usageLimit, // number
-          parsedBody.appliesOncePerCustomer, // boolean
+
+        const hasEndDate = parsedBody.hasEndDate;
+        const shippingDiscountState = parsedBody.shippingDiscountState;
+
+        let formattedStartDate = combineDateAndTime(
+          parsedBody.startDate,
+          parsedBody.startTime || "12:00 AM",
         );
+        let formattedEndDate = hasEndDate
+          ? combineDateAndTime(parsedBody.endDate, parsedBody.endTime)
+          : "2028-11-01T00:00:00Z";
+
+        if (shippingDiscountState === "DISABLED") {
+          formattedStartDate = "2023-01-01T00:00:00Z";
+          formattedEndDate = "2023-11-01T00:00:00Z";
+        }
+
+        const newshippingDiscount = await createShippingAutomaticDiscount({
+          graphql: context.admin.graphql,
+          title: parsedBody.codeOrName,
+          body: JSON.stringify(metafieldDataUpdate),
+          functionId: "92f98185-5407-46c4-85d9-11594cc32d07", // functionId
+          startDate: formattedStartDate,
+          endDate: formattedEndDate,
+          shippingDiscountState: parsedBody.shippingDiscountState,
+          combinedWithOrderDiscounts: parsedBody.combinedWithOrderDiscounts,
+          combinedWithProductDiscounts: parsedBody.combinedWithProductDiscounts,
+        });
 
         const newShopifyDiscountId =
           newshippingDiscount?.discountAutomaticAppCreate?.automaticAppDiscount

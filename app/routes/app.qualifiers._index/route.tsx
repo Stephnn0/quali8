@@ -11,7 +11,6 @@ import {
   MediaCard,
   Modal,
   TextContainer,
-  Frame,
 } from "@shopify/polaris";
 import { loader } from "./loader";
 import { DeleteIcon, EditIcon } from "@shopify/polaris-icons";
@@ -158,7 +157,6 @@ export default function Qualifiers() {
               onAction: () => {},
             }}
             description="Watch this video to learn how to get started with Qualifiers."
-            popoverActions={[{ content: "Dismiss", onAction: () => {} }]}
           >
             <img
               alt=""
@@ -188,6 +186,10 @@ export default function Qualifiers() {
                 { title: "Customers" },
                 { title: "Actions" },
               ]}
+              pagination={{
+                hasNext: true,
+                onNext: () => {},
+              }}
             >
               {rowMarkup}
             </IndexTable>

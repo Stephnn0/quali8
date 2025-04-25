@@ -178,7 +178,6 @@ export default function AllActions() {
               onAction: () => {},
             }}
             description="Watch this video to learn how to get started with Shipping Discounts."
-            popoverActions={[{ content: "Dismiss", onAction: () => {} }]}
           >
             <img
               alt=""
@@ -215,6 +214,10 @@ export default function AllActions() {
                 { title: "Value" },
                 { title: "Actions" }, // 🔧 New Column
               ]}
+              pagination={{
+                hasNext: true,
+                onNext: () => {},
+              }}
             >
               {rowMarkup}
             </IndexTable>

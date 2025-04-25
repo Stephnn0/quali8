@@ -7,6 +7,7 @@ import {
   useForm,
 } from "@shopify/react-form";
 import type { loader } from "../loader";
+import { useAppBridge } from "@shopify/app-bridge-react";
 
 export type DiscountForm = ReturnType<typeof useDiscountForm>;
 
@@ -37,6 +38,7 @@ export function useDiscountForm() {
 
   const navigate = useNavigate();
   const fetcher = useFetcher();
+  const shopify = useAppBridge();
 
   console.log(qualifierIds, "-----------------------------------");
   const form = useForm({
@@ -113,6 +115,8 @@ export function useDiscountForm() {
             },
           );
 
+          shopify.toast.show("Discount Created");
+
           navigate("/app/actions/discounts");
         } else {
           console.log("update");
@@ -146,6 +150,9 @@ export function useDiscountForm() {
               action: `/api/actions/discounts`,
             },
           );
+
+          shopify.toast.show("Discount Updated");
+          navigate("/app/actions/discounts");
         }
       } catch (error) {
         return { status: "success" };

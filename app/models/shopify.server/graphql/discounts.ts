@@ -3,7 +3,7 @@ export const GRAPHQL_MUTATION_CREATE_DISCOUNT = `#graphql
    $functionId: String!
    $title: String!
    $startsAt: DateTime!
-    $endsAt: DateTime
+   $endsAt: DateTime
    $code: String!
    $metafields: [MetafieldInput!]!
    $orderDiscounts: Boolean
@@ -37,48 +37,29 @@ export const GRAPHQL_MUTATION_CREATE_DISCOUNT = `#graphql
   }
 `;
 
-export const GRAPHQL_MUTATION_CODE_UPDATE_DISCOUNT = `#graphql
-  mutation discountCodeAppUpdate(
-   $functionId: String!
-   $title: String!
-   $startsAt: DateTime!
-   $code: String!
-   $metafields: [MetafieldInput!]!
-   $ID: ID!
-  ) {
-    discountCodeAppUpdate(
-      id: $ID,
-      codeAppDiscount: {
-        functionId: $functionId
-        title: $title
-        startsAt: $startsAt
-        code: $code
-        metafields: $metafields
-      }
-    ) {
-      codeAppDiscount {
-        discountId
-      }
-      userErrors {
-        message
-      }
-    }
-  }
-`;
-
 export const GRAPHQL_MUTATION_CREATE_AUTOMATIC_DISCOUNT = `#graphql
   mutation discountAutomaticAppCreate(
    $functionId: String!
    $title: String!
    $startsAt: DateTime!
+   $endsAt: DateTime
    $metafields: [MetafieldInput!]!
+   $orderDiscounts: Boolean
+   $productDiscounts: Boolean
+   $shippingDiscounts: Boolean
   ) {
     discountAutomaticAppCreate(
       automaticAppDiscount: {
         functionId: $functionId
         title: $title
         startsAt: $startsAt
+        endsAt: $endsAt
         metafields: $metafields
+        combinesWith:  {
+           orderDiscounts: $orderDiscounts
+           productDiscounts: $productDiscounts
+           shippingDiscounts: $shippingDiscounts
+        }    
       }
     ) {
       automaticAppDiscount {
@@ -116,6 +97,19 @@ export const GRAPHQL_MUTATION_DELETE_AUTOMATIC_DISCOUNT = `#graphql
     }
   }
 `;
+
+// ! ---------------------------------- NOT USED-----------------------------------
+// --------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------
 
 export const GRAPHQL_MUTATION_UPDATE_CODE_DISCOUNT = `#graphql
   mutation discountCodeAppUpdate($codeAppDiscount: DiscountCodeAppInput!, $ID: ID!) {
@@ -157,6 +151,35 @@ export const GRAPHQL_MUTATION_UPDATE_AUTOMATIC_DISCOUNT = `#graphql
       userErrors {
         field
         code
+        message
+      }
+    }
+  }
+`;
+
+export const GRAPHQL_MUTATION_CODE_UPDATE_DISCOUNT = `#graphql
+  mutation discountCodeAppUpdate(
+   $functionId: String!
+   $title: String!
+   $startsAt: DateTime!
+   $code: String!
+   $metafields: [MetafieldInput!]!
+   $ID: ID!
+  ) {
+    discountCodeAppUpdate(
+      id: $ID,
+      codeAppDiscount: {
+        functionId: $functionId
+        title: $title
+        startsAt: $startsAt
+        code: $code
+        metafields: $metafields
+      }
+    ) {
+      codeAppDiscount {
+        discountId
+      }
+      userErrors {
         message
       }
     }

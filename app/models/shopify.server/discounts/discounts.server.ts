@@ -9,25 +9,42 @@ import {
 } from "../graphql/discounts";
 import { APP } from "app/constants/app.constants";
 
-export async function createShippingAutomaticDiscount(
-  graphql: AdminGraphqlClient,
-  title: string,
-  metafieldData: string,
-  functionId: string,
-  startDate: string,
-  endsAt: string,
-  usageLimit: number,
-  appliesOncePerCustomer: boolean,
-) {
+type CreateAutomaticShippingDiscountParams = {
+  graphql: AdminGraphqlClient;
+  title: string;
+  body: string;
+  functionId: string;
+  startDate: string;
+  endDate: string;
+  shippingDiscountState: "ENABLED" | "DISABLED";
+  combinedWithOrderDiscounts: boolean;
+  combinedWithProductDiscounts: boolean;
+};
+
+export async function createShippingAutomaticDiscount({
+  graphql,
+  title,
+  body,
+  functionId,
+  startDate,
+  endDate,
+  shippingDiscountState,
+  combinedWithOrderDiscounts,
+  combinedWithProductDiscounts,
+}: CreateAutomaticShippingDiscountParams) {
   try {
     const VARIABLES = {
       functionId: functionId,
       title: title,
       startsAt: startDate,
-      endsAt: endsAt,
+      endsAt: endDate,
+      combinesWith: {
+        orderDiscounts: combinedWithOrderDiscounts,
+        productDiscounts: combinedWithProductDiscounts,
+      },
       metafields: {
         key: APP.FUNCTION_METAFIELD_KEY,
-        value: metafieldData,
+        value: body,
         type: "string",
       },
     };
