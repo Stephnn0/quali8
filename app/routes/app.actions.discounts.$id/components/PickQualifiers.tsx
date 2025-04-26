@@ -21,7 +21,7 @@ type Qualifier = {
 export function PickQualifiers({ mockQualifiers, form }: PickQualifiersProps) {
   const { fields } = form;
 
-  const { customers, qualifiersIds } = fields;
+  const { customers, qualifierIds } = fields;
 
   const qualifiers = mockQualifiers.map((qualifier: Qualifier) => ({
     id: qualifier.id,
@@ -36,7 +36,7 @@ export function PickQualifiers({ mockQualifiers, form }: PickQualifiersProps) {
 
   const { selectedResources, allResourcesSelected, handleSelectionChange } =
     useIndexResourceState(qualifiers, {
-      selectedResources: qualifiersIds.value as unknown as string[], // ! DANGEROUS 'as' FIX LATER
+      selectedResources: qualifierIds.value as unknown as string[], // ! DANGEROUS 'as' FIX LATER
     });
 
   const rowMarkup = qualifiers?.map(({ id, name }: any, index: any) => (
@@ -68,8 +68,8 @@ export function PickQualifiers({ mockQualifiers, form }: PickQualifiersProps) {
     );
 
     customers.value = selectedCustomers;
-    qualifiersIds.value = selectedQualifierIds;
-  }, [selectedResources, qualifiers, customers, qualifiersIds]);
+    qualifierIds.value = selectedQualifierIds;
+  }, [selectedResources, qualifiers, customers, qualifierIds]);
 
   return (
     <Card>

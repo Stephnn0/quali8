@@ -8,6 +8,11 @@ import {
 } from "@shopify/react-form";
 import type { loader } from "../loader";
 import { useAppBridge } from "@shopify/app-bridge-react";
+import type {
+  CreateBody,
+  Customer,
+} from "app/routes/api.actions.discounts/zod";
+import { zodApiActionsShippingDiscounts } from "app/routes/api.actions.discounts/zod";
 
 export type DiscountForm = ReturnType<typeof useDiscountForm>;
 
@@ -15,8 +20,6 @@ export function useDiscountForm() {
   const loaderData = useLoaderData<typeof loader>();
 
   const shippingDiscount = loaderData?.payload.shippingDiscount;
-
-  console.log(shippingDiscount, "shippingDiscount");
 
   const {
     id,
@@ -28,7 +31,7 @@ export function useDiscountForm() {
     value,
     //
     shippingRateType,
-    shippingRatesIds,
+    shippingRatesNames,
     qualifierIds,
     //
     startDate,
@@ -71,14 +74,14 @@ export function useDiscountForm() {
         validates: [positiveIntegerString("Value is required")],
       }),
 
-      customers: useField<string[]>({
+      customers: useField<Customer[]>({
         value: [],
         validates: [lengthMoreThan(0, "Customers is required")],
       }),
-      qualifiersIds: useField<number[]>(qualifierIds || []),
+      qualifierIds: useField<number[]>(qualifierIds || []),
       //
       shippingRateType: useField(shippingRateType || "ALL_RATES"),
-      shippingRatesNames: useField<string[]>(shippingRatesIds || []),
+      shippingRatesNames: useField<string[]>(shippingRatesNames || []),
       //
       startDate: useField(startDate || ""),
       startTime: useField(startTime || ""),
@@ -88,42 +91,51 @@ export function useDiscountForm() {
     },
     makeCleanAfterSubmit: true,
     onSubmit: async (fieldValues) => {
-      const body = {
-        shippingDiscountState: fieldValues.shippingDiscountState,
-        limitUsagePerOneCustomer: fieldValues.limitUsagePerOneCustomer,
-        combinedWithOrderDiscounts: fieldValues.combinedWithOrderDiscounts,
-        combinedWithProductDiscounts: fieldValues.combinedWithProductDiscounts,
-        //
-        automaticOrCode: fieldValues.automaticOrCode,
-        codeOrName: fieldValues.code,
-        type: fieldValues.type,
-        value: fieldValues.valueType,
-        customers: fieldValues.customers,
-        qualifiersIds: fieldValues.qualifiersIds,
-        //
-        shippingRateType: fieldValues.shippingRateType,
-        shippingRatesNames: fieldValues.shippingRatesNames,
-        //
-        startDate: fieldValues.startDate,
-        startTime: fieldValues.startTime,
-        hasEndDate: fieldValues.hasEndDate,
-        endDate: fieldValues.endDate,
-        endTime: fieldValues.endTime,
-      };
-
       try {
         if (!shippingDiscount) {
           console.log("post");
-          console.log("----------------body--------------", body);
 
-          fetcher.submit(
-            { body: JSON.stringify(body) },
-            {
-              method: "POST",
-              encType: "multipart/form-data",
-              action: "/api/actions/discounts",
-            },
-          );
+          const body: CreateBody = {
+            action: "create", // (1
+            //
+            shippingDiscountState: fieldValues.shippingDiscountState, // (2 DISABLED, ENABLED
+            codeOrName: fieldValues.code, // (3
+            //
+            limitUsagePerOneCustomer: fieldValues.limitUsagePerOneCustomer, // (4
+            //
+            type: fieldValues.type, // (5 percentage or fixed
+            value: fieldValues.valueType, // (6
+            //
+            combinedWithOrderDiscounts: fieldValues.combinedWithOrderDiscounts, // (7
+            combinedWithProductDiscounts:
+              fieldValues.combinedWithProductDiscounts, // (8
+            //
+            automaticOrCode: fieldValues.automaticOrCode, // (9
+            //
+            customers: fieldValues.customers, // (10
+            qualifierIds: fieldValues.qualifierIds, // (11
+            //
+            shippingRateType: fieldValues.shippingRateType, // (12 ALL_RATES or CUSTOMED_RATES
+            shippingRatesNames: fieldValues.shippingRatesNames, // (13
+            //
+            startDate: fieldValues.startDate, // (14
+            startTime: fieldValues.startTime, // (15
+            hasEndDate: fieldValues.hasEndDate, // (16
+            endDate: fieldValues.endDate, // (17
+            endTime: fieldValues.endTime, // (18
+          };
+
+          console.log(body, "body");
+
+          const bodyParsed = zodApiActionsShippingDiscounts.create.parse(body);
+
+          console.log(bodyParsed, "----------bodyParsed-----------");
+
+          fetcher.submit(bodyParsed as any, {
+            method: "POST",
+            encType: "application/json",
+            action: "/api/actions/discounts",
+          });
 
           shopify.toast.show("Discount Created");
 
@@ -132,15 +144,24 @@ export function useDiscountForm() {
           console.log("update");
 
           const updateBody = {
+            action: "update",
+            //
             id: id,
             shopifyDiscountId: shopifyDiscountId,
+            //
+            shippingDiscountState: fieldValues.shippingDiscountState,
+            limitUsagePerOneCustomer: fieldValues.limitUsagePerOneCustomer,
+            combinedWithOrderDiscounts: fieldValues.combinedWithOrderDiscounts,
+            combinedWithProductDiscounts:
+              fieldValues.combinedWithProductDiscounts,
             //
             automaticOrCode: fieldValues.automaticOrCode,
             codeOrName: fieldValues.code,
             type: fieldValues.type,
             value: fieldValues.valueType,
             customers: fieldValues.customers,
-            qualifiersIds: fieldValues.qualifiersIds,
+            //
+            qualifierIds: fieldValues.qualifierIds,
             //
             shippingRateType: fieldValues.shippingRateType,
             shippingRatesNames: fieldValues.shippingRatesNames,
@@ -156,7 +177,7 @@ export function useDiscountForm() {
             { body: JSON.stringify(updateBody) },
             {
               method: "PUT",
-              encType: "multipart/form-data",
+              encType: "application/json",
               action: `/api/actions/discounts`,
             },
           );
@@ -165,6 +186,12 @@ export function useDiscountForm() {
           navigate("/app/actions/discounts");
         }
       } catch (error) {
+        console.log(
+          error,
+          "-----------------------------------------error------------",
+        );
+        shopify.toast.show("Some Error Occured");
+
         return { status: "success" };
       }
 

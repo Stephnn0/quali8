@@ -117,6 +117,7 @@ model Customers {
 
 model ShippingDiscountAction {
   id               Int               @id @default(autoincrement())
+  shopifyDiscountId  String           @unique
   //
   shippingDiscountState          ShippingDiscountState
   limitUsagePerOneCustomer       Boolean @default(false)
@@ -129,16 +130,15 @@ model ShippingDiscountAction {
   value            String
   //            
   shippingRateType ShippingRateType
-  shippingRatesIds String[]          //! fixed this maybe by handle or name
+  shippingRatesNames String[]          //! fixed this maybe by handle or name
   qualifierIds   Int[]
   //
-  startDate      DateTime?
+  startDate      String?
   startTime      String?
   hasEndDate     Boolean              @default(false)
-  endDate        DateTime?
+  endDate        String?
   endTime        String?
   //
-  shopifyDiscountId  String           @unique
     //
   shop           String
   shopifyStore   ShopifyStore         @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
