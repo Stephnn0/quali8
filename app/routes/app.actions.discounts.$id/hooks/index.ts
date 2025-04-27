@@ -2,7 +2,6 @@ import { useFetcher, useLoaderData, useNavigate } from "@remix-run/react";
 import {
   lengthMoreThan,
   notEmpty,
-  positiveIntegerString,
   useField,
   useForm,
 } from "@shopify/react-form";
@@ -13,6 +12,8 @@ import type {
   Customer,
 } from "app/routes/api.actions.discounts/zod";
 import { zodApiActionsShippingDiscounts } from "app/routes/api.actions.discounts/zod";
+import { useState } from "react";
+import { ZodError } from "zod";
 
 export type DiscountForm = ReturnType<typeof useDiscountForm>;
 
@@ -50,6 +51,12 @@ export function useDiscountForm() {
   const fetcher = useFetcher();
   const shopify = useAppBridge();
 
+  // Error states
+  const [valueError, setValueError] = useState<string | null>(null);
+  const [qualifierIdsError, setQualifierIdsError] = useState<string | null>(
+    null,
+  );
+
   const form = useForm({
     fields: {
       shippingDiscountState: useField(shippingDiscountState || "ENABLED"),
@@ -69,16 +76,16 @@ export function useDiscountForm() {
       }),
 
       type: useField(type || "percentage"),
-      valueType: useField({
-        value: value || "",
-        validates: [positiveIntegerString("Value is required")],
-      }),
+      valueType: useField(value || 0),
 
       customers: useField<Customer[]>({
         value: [],
         validates: [lengthMoreThan(0, "Customers is required")],
       }),
-      qualifierIds: useField<number[]>(qualifierIds || []),
+      qualifierIds: useField<number[]>({
+        value: qualifierIds || [],
+        validates: [lengthMoreThan(0, "Qualifiers are required")],
+      }),
       //
       shippingRateType: useField(shippingRateType || "ALL_RATES"),
       shippingRatesNames: useField<string[]>(shippingRatesNames || []),
@@ -89,8 +96,11 @@ export function useDiscountForm() {
       endTime: useField(endTime || ""),
       hasEndDate: useField(hasEndDate || false),
     },
-    makeCleanAfterSubmit: true,
+    makeCleanAfterSubmit: false,
     onSubmit: async (fieldValues) => {
+      setValueError(null);
+      setQualifierIdsError(null);
+
       try {
         if (!shippingDiscount) {
           console.log("post");
@@ -186,13 +196,21 @@ export function useDiscountForm() {
           navigate("/app/actions/discounts");
         }
       } catch (error) {
-        console.log(
-          error,
-          "-----------------------------------------error------------",
-        );
+        if (error instanceof ZodError) {
+          error.errors.forEach((err) => {
+            if (err.path.includes("value")) {
+              setValueError(err.message); // Set the value error
+            } else if (err.path.includes("qualifierIds")) {
+              setQualifierIdsError(err.message); // Set the qualifierIds error
+            }
+          });
+        }
+
+        console.log("Error parsing body:", error);
+
         shopify.toast.show("Some Error Occured");
 
-        return { status: "success" };
+        return { status: "success", errors: { form: "Some Error Occured" } };
       }
 
       return { status: "success" };
@@ -201,5 +219,7 @@ export function useDiscountForm() {
 
   return {
     ...form,
+    valueError,
+    qualifierIdsError,
   };
 }

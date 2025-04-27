@@ -46,7 +46,9 @@ export function ShippingRates({ shippingRates, form }: PickShippingRatesProps) {
     name: rate.name,
   }));
 
-  const [selected, setSelected] = useState<string[]>([]);
+  const [selected, setSelected] = useState<string[]>(
+    shippingRatesNames.value || [],
+  );
   const [popoverActive, setPopoverActive] = useState(false);
 
   const togglePopoverActive = useCallback(

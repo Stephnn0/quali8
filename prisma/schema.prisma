@@ -127,7 +127,7 @@ model ShippingDiscountAction {
   automaticOrCode  String             // 'CODE' or 'AUTOMATIC'
   codeOrName       String  
   type             DiscountType       // percentage or fixed 
-  value            String
+  value            Int
   //            
   shippingRateType ShippingRateType
   shippingRatesNames String[]          //! fixed this maybe by handle or name

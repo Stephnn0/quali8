@@ -28,7 +28,7 @@ export default function ActionDiscounts() {
 
   const form = useDiscountForm();
 
-  const { fields } = form;
+  const { fields, valueError, qualifierIdsError } = form;
 
   const {
     code,
@@ -42,8 +42,8 @@ export default function ActionDiscounts() {
     combinedWithProductDiscounts,
   } = fields;
 
-  const [discountValue, setDiscountValue] = useState<number | "">(
-    Number(valueType.value) || "",
+  const [discountValue, setDiscountValue] = useState<number | 0>(
+    valueType.value || 0,
   );
 
   const [discountUnit, setDiscountUnit] = useState<"percentage" | "fixed" | "">(
@@ -69,6 +69,8 @@ export default function ActionDiscounts() {
     setDiscountState(selectedDiscountState);
     shippingDiscountState.value = selectedDiscountState;
   };
+
+  console.log(form.submitErrors, "form.submitErrors");
 
   return (
     <Page
@@ -129,11 +131,13 @@ export default function ActionDiscounts() {
               }
             />
             <br />
-            <Checkbox
-              label="Limit usage to one per customer"
-              checked={limitUsagePerOneCustomer.value}
-              onChange={(value) => limitUsagePerOneCustomer.onChange(value)}
-            />
+            {automaticOrCode.value === "CODE" && (
+              <Checkbox
+                label="Limit usage to one per customer"
+                checked={limitUsagePerOneCustomer.value}
+                onChange={(value) => limitUsagePerOneCustomer.onChange(value)}
+              />
+            )}
             <Divider />
             <br />
 
@@ -163,12 +167,13 @@ export default function ActionDiscounts() {
                     ? "Enter percentage value"
                     : "Enter currency value"
                 }
-                value={discountValue !== "" ? String(discountValue) : ""}
+                value={discountValue !== 0 ? String(discountValue) : String(0)}
                 onChange={(value) => {
                   setDiscountValue(Number(value));
-                  valueType.value = value;
+                  valueType.onChange(Number(value)); // make sure you're using onChange
                 }}
                 type="number"
+                error={valueError as any} // Pass the error to TextField
               />
             </InlineGrid>
           </Card>
@@ -241,6 +246,11 @@ export default function ActionDiscounts() {
             mockQualifiers={loaderData?.payload.qualifiers}
             form={form}
           />
+          {qualifierIdsError && (
+            <Text variant="bodyMd" as="p" tone="critical">
+              {qualifierIdsError}
+            </Text>
+          )}
         </Layout.Section>
 
         <Layout.Section>

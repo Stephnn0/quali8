@@ -21,6 +21,8 @@ type Qualifier = {
 export function PickQualifiers({ mockQualifiers, form }: PickQualifiersProps) {
   const { fields } = form;
 
+  console.log(form.submitErrors, "form.submitErrors");
+
   const { customers, qualifierIds } = fields;
 
   const qualifiers = mockQualifiers.map((qualifier: Qualifier) => ({
@@ -67,32 +69,39 @@ export function PickQualifiers({ mockQualifiers, form }: PickQualifiersProps) {
       (qualifier: any) => qualifier.id,
     );
 
-    customers.value = selectedCustomers;
-    qualifierIds.value = selectedQualifierIds;
-  }, [selectedResources, qualifiers, customers, qualifierIds]);
+    // customers.value = selectedCustomers;
+    // qualifierIds.value = selectedQualifierIds;
+    customers.onChange(selectedCustomers);
+    qualifierIds.onChange(selectedQualifierIds);
+
+    if (selectedQualifierIds.length > 0) {
+    }
+  }, [selectedResources]);
 
   return (
-    <Card>
-      <Text variant="bodyMd" as="p" fontWeight="bold">
-        Pick Qualifier Group
-      </Text>
-      <br />
-      <Text variant="bodyMd" as="p">
-        Select the customer segments that will be used to qualify for this
-      </Text>
+    <>
+      <Card>
+        <Text variant="bodyMd" as="p" fontWeight="bold">
+          Pick Qualifier Group
+        </Text>
+        <br />
+        <Text variant="bodyMd" as="p">
+          Select the customer segments that will be used to qualify for this
+        </Text>
 
-      <br />
-      <IndexTable
-        resourceName={resourceName}
-        itemCount={qualifiers?.length || 0}
-        selectedItemsCount={
-          allResourcesSelected ? "All" : selectedResources.length
-        }
-        onSelectionChange={handleSelectionChange}
-        headings={[{ title: "Name" }]}
-      >
-        {rowMarkup}
-      </IndexTable>
-    </Card>
+        <br />
+        <IndexTable
+          resourceName={resourceName}
+          itemCount={qualifiers?.length || 0}
+          selectedItemsCount={
+            allResourcesSelected ? "All" : selectedResources.length
+          }
+          onSelectionChange={handleSelectionChange}
+          headings={[{ title: "Name" }]}
+        >
+          {rowMarkup}
+        </IndexTable>
+      </Card>
+    </>
   );
 }
