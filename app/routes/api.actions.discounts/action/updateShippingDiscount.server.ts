@@ -45,10 +45,10 @@ export default async function updateShippingDiscountServer(
     const { formattedStartDate, formattedEndDate } = getFormattedDiscountDates({
       hasEndDate: body.hasEndDate,
       shippingDiscountState: body.shippingDiscountState!,
-      startDate: body.startDate,
-      startTime: body.startTime,
-      endDate: body.endDate,
-      endTime: body.endTime,
+      startDate: body.startDate!,
+      startTime: body.startTime!,
+      endDate: body.endDate!,
+      endTime: body.endTime!,
     });
 
     const newshippingDiscount = await createShippingDiscount({
@@ -77,10 +77,10 @@ export default async function updateShippingDiscountServer(
     const { formattedStartDate, formattedEndDate } = getFormattedDiscountDates({
       hasEndDate: body.hasEndDate,
       shippingDiscountState: body.shippingDiscountState!,
-      startDate: body.startDate,
-      startTime: body.startTime,
-      endDate: body.endDate,
-      endTime: body.endTime,
+      startDate: body.startDate!,
+      startTime: body.startTime!,
+      endDate: body.endDate!,
+      endTime: body.endTime!,
     });
 
     const newshippingDiscount = await createShippingAutomaticDiscount({
@@ -105,25 +105,34 @@ export default async function updateShippingDiscountServer(
       {
         where: { id: body.id },
         data: {
-          codeOrName: body.codeOrName,
           shopifyDiscountId: newShopifyDiscountId,
           //
-          startDate: body.startDate ? new Date(body.startDate) : undefined,
-          startTime: body.startTime,
-          hasEndDate: body.hasEndDate,
-          endDate: body.endDate ? new Date(body.endDate) : undefined,
-          endTime: body.endTime,
-          //
-          shippingRatesNames: body.shippingRatesNames,
-          qualifierIds: body.qualifierIds,
           shippingDiscountState: body.shippingDiscountState,
+          codeOrName: body.codeOrName,
+          //
           limitUsagePerOneCustomer: body.limitUsagePerOneCustomer,
+          //
+          type: body.type!,
+          value: body.value!,
+          //
           combinedWithOrderDiscounts: body.combinedWithOrderDiscounts,
           combinedWithProductDiscounts: body.combinedWithProductDiscounts,
-
+          //
+          automaticOrCode: body.automaticOrCode!,
+          //
+          qualifierIds: body.qualifierIds,
           qualifiers: {
             connect: body.qualifierIds?.map((id: number) => ({ id })),
           },
+          //
+          shippingRatesNames: body.shippingRatesNames,
+          shippingRateType: body.shippingRateType!,
+          //
+          startDate: body.startDate,
+          startTime: body.startTime,
+          hasEndDate: body.hasEndDate,
+          endDate: body.endDate,
+          endTime: body.endTime,
         },
       },
       db,

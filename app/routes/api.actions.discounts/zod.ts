@@ -40,19 +40,58 @@ const create: ZodSchema<Create> = z
       if (data.value > 100) {
         context.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "Value must be less than or equal to 100",
+          message: "Value must be less than or equal to 100%",
           path: ["value"],
         });
       }
     }
   });
 
-const update: ZodSchema<Update> = z.object({
-  action: z.literal("update"),
-  id: z.number(),
-  shopifyDiscountId: z.string(),
-  customers: z.array(z.object({ shopifyId: z.string(), id: z.number() })),
-});
+const update: ZodSchema<Update> = z
+  .object({
+    action: z.literal("update"),
+    //
+    id: z.number(),
+    shopifyDiscountId: z.string(),
+    //
+    shippingDiscountState: z.enum(["ENABLED", "DISABLED"]), // (2
+    codeOrName: z.string(), // (3
+    //
+    limitUsagePerOneCustomer: z.boolean(), // (4
+    //
+    type: z.enum(["percentage", "fixed"]), // (5
+    value: z.number().gt(0, { message: "Value must be greater than 0" }),
+    //
+    combinedWithOrderDiscounts: z.boolean(), // (7
+    combinedWithProductDiscounts: z.boolean(), // (8
+    //
+    automaticOrCode: z.enum(["AUTOMATIC", "CODE"]), // (9
+    //
+    qualifierIds: z
+      .array(z.number())
+      .min(1, "At least one qualifier is required"), //  (10
+    customers: z.array(z.object({ shopifyId: z.string(), id: z.number() })),
+    //
+    shippingRateType: z.enum(["ALL_RATES", "SELECTED_RATES"]), // (12
+    shippingRatesNames: z.array(z.string()), // (13
+    //
+    startDate: z.string(), // (14
+    endDate: z.string().optional(), // (15
+    hasEndDate: z.boolean(), // (16
+    startTime: z.string().optional(), // (17
+    endTime: z.string().optional(), // (18
+  })
+  .superRefine((data, context) => {
+    if (data.type === "percentage") {
+      if (data.value > 100) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Value must be less than or equal to 100%",
+          path: ["value"],
+        });
+      }
+    }
+  });
 
 const actionCodes = z.union([createCode, updateCode]);
 

@@ -55,7 +55,7 @@ export default async function action({ request }: ActionFunctionArgs) {
 
           return handleApiSuccess({
             payload: { shippingDiscount: updatedShippingDiscount },
-            code: "created",
+            code: "updated",
           });
         }
 
