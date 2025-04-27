@@ -3,7 +3,7 @@
 client_id = "34da8696cbfc709d9fdc83cb99b19030"
 name = "quali8"
 handle = "quali8"
-application_url = "https://determines-sur-elsewhere-somehow.trycloudflare.com"
+application_url = "https://kids-labeled-banners-solar.trycloudflare.com"
 embedded = true
 
 [build]
@@ -28,9 +28,9 @@ scopes = "write_products, read_customers, read_shipping, write_discounts"
 
 [auth]
 redirect_urls = [
-  "https://determines-sur-elsewhere-somehow.trycloudflare.com/auth/callback",
-  "https://determines-sur-elsewhere-somehow.trycloudflare.com/auth/shopify/callback",
-  "https://determines-sur-elsewhere-somehow.trycloudflare.com/api/auth/callback"
+  "https://kids-labeled-banners-solar.trycloudflare.com/auth/callback",
+  "https://kids-labeled-banners-solar.trycloudflare.com/auth/shopify/callback",
+  "https://kids-labeled-banners-solar.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]

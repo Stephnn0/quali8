@@ -1,6 +1,18 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
 import type { DefaultArgs } from "@prisma/client/runtime/binary";
 
+export async function getManyCustomers(
+  prismaArgs: Prisma.CustomersFindManyArgs<DefaultArgs>,
+  db: PrismaClient,
+) {
+  try {
+    const customers = await db.customers.findMany(prismaArgs);
+    return customers;
+  } catch (error) {
+    console.error("Error fetching customers:", error);
+  }
+}
+
 export async function getCustomersByIds(
   shopifyIds: string[],
   db: PrismaClient,

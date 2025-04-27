@@ -3,7 +3,6 @@ import {
   Card,
   FormLayout,
   Select,
-  TextField,
   LegacyStack,
   Box,
   Text,
@@ -12,6 +11,7 @@ import { useState } from "react";
 import { DeleteIcon } from "@shopify/polaris-icons";
 import type { QualifierForm } from "../hooks";
 import type { FilterCustomersForm } from "../hooks/filterCustomers";
+import { ConditionValueInput } from "./DyanmicInputs";
 
 type ConditionsQualifierProps = {
   form: QualifierForm;
@@ -20,7 +20,7 @@ type ConditionsQualifierProps = {
 };
 
 // shared types and options
-type Condition = {
+export type Condition = {
   type: string;
   comparisonType: string;
   value: string;
@@ -146,14 +146,10 @@ export default function NewConditions({
                           handleChange(index, "comparisonType", value)
                         }
                       />
-                      <TextField
-                        labelHidden
-                        label="Collection rule content"
-                        value={condition.value}
-                        onChange={(value) =>
-                          handleChange(index, "value", value)
-                        }
-                        autoComplete="off"
+                      <ConditionValueInput
+                        condition={condition}
+                        index={index}
+                        onChange={handleChange}
                       />
                     </FormLayout.Group>
                   </FormLayout>

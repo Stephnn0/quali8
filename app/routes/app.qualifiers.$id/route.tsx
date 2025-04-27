@@ -44,7 +44,7 @@ export default function QualifiersForm() {
           <NewCondtions
             form={form}
             formFilterCustomers={formFilterCustomers}
-            fetchedConditions={conditions}
+            fetchedConditions={conditions!}
           />
         </Layout.Section>
         <Layout.Section>

@@ -1,6 +1,18 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
 import type { DefaultArgs } from "@prisma/client/runtime/library";
 
+export async function getManyConditions(
+  prismaArgs: Prisma.ConditionsFindManyArgs<DefaultArgs>,
+  db: PrismaClient,
+) {
+  try {
+    const conditions = await db.conditions.findMany(prismaArgs);
+    return conditions;
+  } catch (error) {
+    console.error("Error fetching conditions:", error);
+  }
+}
+
 export async function createCondition(
   prismaArgs: Prisma.ConditionsCreateArgs<DefaultArgs>,
   db: PrismaClient,

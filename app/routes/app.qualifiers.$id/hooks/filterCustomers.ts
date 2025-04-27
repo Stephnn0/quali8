@@ -25,6 +25,8 @@ export function useFilterCustomersForm() {
         conditionLogicType: fieldValues.ConditionLogicTypeCustomer,
       };
 
+      console.log("---------body------------", body);
+
       try {
         fetcher.submit(
           { body: JSON.stringify(body) },

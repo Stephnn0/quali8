@@ -30,7 +30,7 @@ export default function CustomersQueryQualifier({
   const { fetcher } = formFilterCustomers;
 
   const { fields } = form;
-  const { customers } = fields;
+  const { customers, formConditions } = fields;
 
   const [customerSegments, setCustomerSegments] = useState<CustomerSegment[]>(
     [],
@@ -94,10 +94,7 @@ export default function CustomersQueryQualifier({
       <br />
 
       <Form onSubmit={formFilterCustomers.submit}>
-        <Button
-          //  disabled={!formFilterCustomers.dirty}
-          submit
-        >
+        <Button disabled={formConditions.value.length === 0} submit>
           {fetcher.state === "submitting" ? "...loading" : "Run Query"}
         </Button>
       </Form>
