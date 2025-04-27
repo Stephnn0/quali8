@@ -32,6 +32,14 @@ const typeMapping: Record<string, string> = {
   customer_email: "email",
   customer_country: "country",
   customer_amount_spent: "total_spent",
+  updated_at: "updated_at",
+  tag_not: "tag_not",
+  order_date: "order_date",
+  last_name: "last_name",
+  last_abandoned_order_date: "last_abandoned_order_date",
+  first_name: "first_name",
+  customer_date: "created_at",
+  accepts_marketing: "accepts_marketing",
 };
 
 const comparisonMapping: Record<string, string> = {

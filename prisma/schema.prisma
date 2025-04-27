@@ -54,13 +54,23 @@ enum LogicType {
   OR
 }
 
+
 enum ConditionType {
   customer_tag
   customer_order_count
   customer_email
   customer_country
   customer_amount_spent
+  updated_at
+  tag_not
+  order_date
+  last_name
+  last_abandoned_order_date
+  first_name
+  customer_date
+  accepts_marketing
 }
+
 
 enum ComparisonType {
   equals
