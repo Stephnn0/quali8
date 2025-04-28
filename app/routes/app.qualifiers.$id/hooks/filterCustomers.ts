@@ -3,6 +3,7 @@ import { LogicType } from "@prisma/client";
 import { useFetcher } from "@remix-run/react";
 import { useField, useForm } from "@shopify/react-form";
 import type action from "../../api.shopifyCustomers/action";
+import { conditionsSubmissionSchema } from "./zod";
 
 export { action };
 
@@ -24,19 +25,23 @@ export function useFilterCustomersForm() {
         conditions: fieldValues.formConditions,
         conditionLogicType: fieldValues.ConditionLogicTypeCustomer,
       };
+      console.log("---------before------------");
+
+      conditionsSubmissionSchema.parse(body);
 
       console.log("---------body------------", body);
 
       try {
-        fetcher.submit(
-          { body: JSON.stringify(body) },
-          {
-            method: "post",
-            action: "/api/shopifyCustomers",
-            encType: "multipart/form-data",
-          },
-        );
+        // fetcher.submit(
+        //   { body: JSON.stringify(body) },
+        //   {
+        //     method: "post",
+        //     action: "/api/shopifyCustomers",
+        //     encType: "multipart/form-data",
+        //   },
+        // );
       } catch (error) {
+        console.log("---------error------------", error);
         return { status: "success" };
       }
 

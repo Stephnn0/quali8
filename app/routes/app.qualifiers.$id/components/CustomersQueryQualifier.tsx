@@ -19,7 +19,7 @@ type CustomersQueryQualifierProps = {
   formFilterCustomers: FilterCustomersForm;
 };
 type CustomerSegment = {
-  id: string;
+  shopifyId: string;
   firstName: string;
 };
 
@@ -32,14 +32,16 @@ export default function CustomersQueryQualifier({
   const { fields } = form;
   const { customers, formConditions } = fields;
 
+  console.log("--------------", customers.value);
+
   const [customerSegments, setCustomerSegments] = useState<CustomerSegment[]>(
-    [],
+    customers.value || [],
   );
 
   useEffect(() => {
     if (fetcher.data?.payload) {
       const customersRefactor = fetcher.data.payload.map(({ node }: any) => ({
-        id: node.id,
+        shopifyId: node.id,
         firstName: node.firstName ?? "",
         lastName: node.lastName ?? "",
         createdAt: node.createdAt,
@@ -47,6 +49,8 @@ export default function CustomersQueryQualifier({
 
       setCustomerSegments(customersRefactor);
       customers.value = customersRefactor;
+    } else if (customers.value?.length > 0) {
+      setCustomerSegments(customers.value); // 👈 fallback to initial value
     } else {
       setCustomerSegments([]);
     }
@@ -60,11 +64,11 @@ export default function CustomersQueryQualifier({
   const { selectedResources, allResourcesSelected, handleSelectionChange } =
     useIndexResourceState(customerSegments);
 
-  const rowMarkup = customerSegments?.map(({ id, firstName }, index) => (
+  const rowMarkup = customerSegments?.map(({ shopifyId, firstName }, index) => (
     <IndexTable.Row
-      id={id}
-      key={id}
-      selected={selectedResources.includes(id)}
+      id={shopifyId}
+      key={shopifyId}
+      selected={selectedResources.includes(shopifyId)}
       position={index}
     >
       <IndexTable.Cell>

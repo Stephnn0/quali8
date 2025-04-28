@@ -26,6 +26,7 @@ export default async function action({ request }: ActionFunctionArgs) {
       parsedBody;
 
     if (request.method === "POST") {
+      // ! we first create the qualifier and then create and connect conditions and customers
       const data: Parameters<typeof createQualifier>[0]["data"] = {
         name,
         description,
@@ -53,7 +54,7 @@ export default async function action({ request }: ActionFunctionArgs) {
 
         for (const customer of customers) {
           await upsertCustomer(db, {
-            shopifyId: customer.id,
+            shopifyId: customer.shopifyId,
             firstName: customer.firstName,
             lastName: customer.lastName,
             shop: session.shop,
@@ -66,8 +67,6 @@ export default async function action({ request }: ActionFunctionArgs) {
     }
 
     if (request.method === "PUT") {
-      console.log("----------------- update qualifier -------------------");
-
       const updatedQualifier = await updateQualifier(
         {
           where: { id: parsedBody.id, shop: session.shop },

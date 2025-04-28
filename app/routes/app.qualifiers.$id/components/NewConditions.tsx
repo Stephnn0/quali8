@@ -26,7 +26,7 @@ export type Condition = {
   value: string;
 };
 
-const typeOptions = [
+export const typeOptions = [
   { label: "Select a condition", value: "" }, // ⬅️ default placeholder
   { label: "Customer Tag", value: "customer_tag" },
   { label: "Customer Order Count", value: "customer_order_count" },
@@ -49,7 +49,10 @@ const comparisonTypeOptions = [
   { label: "is not equal to", value: "not_equals" },
 ];
 
-const comparisonTypeMap: Record<string, { label: string; value: string }[]> = {
+export const comparisonTypeMap: Record<
+  string,
+  { label: string; value: string }[]
+> = {
   customer_tag: [
     { label: "is equal to", value: "equals" },
     { label: "is not equal to", value: "not_equals" },
@@ -124,6 +127,8 @@ export default function NewConditions({
     fetchedConditions || [],
   );
 
+  console.log(conditions, "conditions");
+
   const addCondition = () => {
     setConditions((prev) => [
       ...prev,
@@ -141,8 +146,22 @@ export default function NewConditions({
     field: keyof Condition,
     value: string,
   ) => {
+    console.log("-------------handle change-----------------");
     const updated = [...conditions];
+
     updated[index][field] = value;
+
+    if (field === "type") {
+      const comparisonOptions = comparisonTypeMap[value] || [];
+      const defaultComparison = comparisonOptions[0]?.value || "";
+      updated[index].comparisonType = defaultComparison;
+    }
+
+    console.log(field, "field");
+
+    console.log(value, "value");
+
+    console.log(updated, "updated");
     setConditions(updated);
     formConditions.onChange(updated as any[]); // Update the form conditions
     FilterCustomerCondtions.onChange(updated as any[]); // Update the filter customers conditions

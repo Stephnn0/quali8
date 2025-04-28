@@ -8,28 +8,31 @@ import { useAppBridge } from "@shopify/app-bridge-react";
 export type QualifierForm = ReturnType<typeof useQualifierForm>;
 
 type CustomerSegment = {
-  id: string;
+  shopifyId: string;
   firstName: string;
 };
 
 export function useQualifierForm() {
   const navigate = useNavigate();
   const fetcher = useFetcher();
-
   const shopify = useAppBridge();
 
   const loaderData = useLoaderData<typeof loader>();
-
   const qualifier = loaderData?.payload.qualifier;
+  const { name, description, conditionLogicType, conditions, customers } =
+    qualifier || {};
 
-  const { name, description, conditionLogicType, conditions } = qualifier || {};
+  const refactorCustomers = customers?.map((customer) => ({
+    shopifyId: customer.shopifyId,
+    firstName: customer.firstName || "",
+  }));
 
   const form = useForm({
     fields: {
       name: useField(name || ""),
       description: useField(description || ""),
       //
-      customers: useField<CustomerSegment[]>([]),
+      customers: useField<CustomerSegment[]>(refactorCustomers || []),
       ConditionLogicType: useField<LogicType>(
         conditionLogicType || LogicType.AND,
       ),
@@ -48,6 +51,9 @@ export function useQualifierForm() {
             conditions: fieldValues.formConditions,
             conditionLogicType: fieldValues.ConditionLogicType,
           };
+
+          // ! fixed: comparison types is coming as empty
+          console.log(body, "--------------body------------------");
 
           fetcher.submit(
             { body: JSON.stringify(body) },

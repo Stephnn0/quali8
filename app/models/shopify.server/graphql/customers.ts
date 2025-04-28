@@ -7,7 +7,25 @@ export const GRAPHQL_QUERY_CUSTOMERS = `#graphql
           firstName
           lastName
           createdAt
-
+          addresses {
+           country
+          }
+          amountSpent {
+           amount
+          }
+          lastOrder {
+            createdAt
+          }
+          defaultEmailAddress {
+            emailAddress
+          }
+          orders {
+            edges {
+              node {
+                id
+              }
+            }
+          }
         }
       }
     }
