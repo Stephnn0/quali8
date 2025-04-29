@@ -31,6 +31,12 @@ export default function QualifiersForm() {
           <NameDescriptionQualifier form={form} />
         </Layout.Section>
         <Layout.Section>
+          <OperatorQualifier
+            form={form}
+            formFilterCustomers={formFilterCustomers}
+          />
+        </Layout.Section>
+        <Layout.Section>
           <CustomersQueryQualifier
             form={form}
             formFilterCustomers={formFilterCustomers}
@@ -43,12 +49,7 @@ export default function QualifiersForm() {
             </Text>
           )}
         </Layout.Section>
-        <Layout.Section>
-          <OperatorQualifier
-            form={form}
-            formFilterCustomers={formFilterCustomers}
-          />
-        </Layout.Section>
+
         <Layout.Section>
           <NewCondtions
             form={form}

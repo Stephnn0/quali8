@@ -53,62 +53,39 @@ export const comparisonTypeMap: Record<
   string,
   { label: string; value: string }[]
 > = {
-  customer_tag: [
-    { label: "is equal to", value: "equals" },
-    { label: "is not equal to", value: "not_equals" },
-  ],
+  customer_tag: [{ label: "is equal to", value: "equals" }],
   customer_order_count: [
     { label: "is equal to", value: "equals" },
     { label: "is greater than", value: "greater_than" },
     { label: "is less than", value: "less_than" },
+    { label: "is greater than or equal to", value: "greater_than_equals" },
+    { label: "is less than or equal to", value: "less_than_equals" },
   ],
-  customer_email: [
-    { label: "is equal to", value: "equals" },
-    { label: "is not equal to", value: "not_equals" },
-    { label: "contains", value: "contains" },
-  ],
-  customer_country: [
-    { label: "is equal to", value: "equals" },
-    { label: "is not equal to", value: "not_equals" },
-  ],
+  customer_email: [{ label: "is equal to", value: "equals" }],
+  customer_country: [{ label: "is equal to", value: "equals" }],
   customer_amount_spent: [
     { label: "is equal to", value: "equals" },
     { label: "is greater than", value: "greater_than" },
     { label: "is less than", value: "less_than" },
+    { label: "is greater than or equal to", value: "greater_than_equals" },
+    { label: "is less than or equal to", value: "less_than_equals" },
   ],
-  updated_at: [
-    { label: "is equal to", value: "equals" },
-    { label: "is before", value: "before" },
-    { label: "is after", value: "after" },
-  ],
-  tag_not: [{ label: "is not equal to", value: "not_equals" }],
+  updated_at: [{ label: "is equal to", value: "equals" }],
+  tag_not: [{ label: "is equal to", value: "equals" }],
   order_date: [
-    { label: "is equal to", value: "equals" },
-    { label: "is before", value: "before" },
-    { label: "is after", value: "after" },
+    { label: "was placed on", value: "equals" },
+    { label: "was placed after", value: "greater_than" },
+    { label: "was placed before", value: "less_than" },
   ],
-  last_name: [
-    { label: "is equal to", value: "equals" },
-    { label: "is not equal to", value: "not_equals" },
-  ],
+  last_name: [{ label: "is equal to", value: "equals" }],
   last_abandoned_order_date: [
-    { label: "is equal to", value: "equals" },
-    { label: "is before", value: "before" },
-    { label: "is after", value: "after" },
+    { label: "happend on", value: "equals" },
+    { label: "happend after", value: "greater_than" },
+    { label: "happend before", value: "less_than" },
   ],
-  first_name: [
-    { label: "is equal to", value: "equals" },
-    { label: "is not equal to", value: "not_equals" },
-  ],
-  customer_date: [
-    { label: "is equal to", value: "equals" },
-    { label: "is before", value: "before" },
-    { label: "is after", value: "after" },
-  ],
-  accepts_marketing: [
-    { label: "is true", value: "is_true" },
-    { label: "is false", value: "is_false" },
-  ],
+  first_name: [{ label: "is equal to", value: "equals" }],
+  customer_date: [{ label: "is equal to", value: "equals" }],
+  accepts_marketing: [{ label: "is", value: "equals" }],
 };
 
 export default function NewConditions({
@@ -146,7 +123,6 @@ export default function NewConditions({
     field: keyof Condition,
     value: string,
   ) => {
-    console.log("-------------handle change-----------------");
     const updated = [...conditions];
 
     updated[index][field] = value;
@@ -157,11 +133,6 @@ export default function NewConditions({
       updated[index].comparisonType = defaultComparison;
     }
 
-    console.log(field, "field");
-
-    console.log(value, "value");
-
-    console.log(updated, "updated");
     setConditions(updated);
     formConditions.onChange(updated as any[]); // Update the form conditions
     FilterCustomerCondtions.onChange(updated as any[]); // Update the filter customers conditions

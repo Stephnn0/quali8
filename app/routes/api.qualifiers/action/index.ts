@@ -53,6 +53,7 @@ export default async function action({ request }: ActionFunctionArgs) {
         }
 
         for (const customer of customers) {
+          // ! FIX ADD NEW VALUES: ORDERS, AMOUNT ETC
           await upsertCustomer(db, {
             shopifyId: customer.shopifyId,
             firstName: customer.firstName,
@@ -85,8 +86,6 @@ export default async function action({ request }: ActionFunctionArgs) {
     }
 
     if (request.method === "DELETE") {
-      console.log("----------------- delete qualifier -------------------");
-
       await Promise.all([
         deleteQualifier(
           {

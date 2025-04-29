@@ -1,3 +1,9 @@
+type Condition = {
+  type: string;
+  comparisonType: string;
+  value: string;
+};
+
 export function buildCustomerQuery(
   conditions: Condition[],
   logic: "AND" | "OR" = "AND",
@@ -14,32 +20,31 @@ export function buildCustomerQuery(
         return `-${field}:${value}`;
       }
 
+      console.log(
+        "--------------------------final condition------------------",
+      );
+      console.log("final condition", `${field}:${comparison}${value}`);
+
       return `${field}:${comparison}${value}`;
     })
     .filter(Boolean)
     .join(logic === "AND" ? " " : " OR "); // space for AND, OR for OR
 }
 
-type Condition = {
-  type: string;
-  comparisonType: string;
-  value: string;
-};
-
 const typeMapping: Record<string, string> = {
-  customer_tag: "tag",
-  customer_order_count: "orders_count",
-  customer_email: "email",
-  customer_country: "country",
-  customer_amount_spent: "total_spent",
-  updated_at: "updated_at",
-  tag_not: "tag_not",
-  order_date: "order_date",
-  last_name: "last_name",
-  last_abandoned_order_date: "last_abandoned_order_date",
-  first_name: "first_name",
-  customer_date: "created_at",
-  accepts_marketing: "accepts_marketing",
+  customer_tag: "tag", // -------------------------------- WORKING
+  customer_order_count: "orders_count", // --------------- WORKING
+  customer_email: "email", // ---------------------------- WORKING
+  customer_country: "country", // ------------------------ WORKING
+  customer_amount_spent: "total_spent", // --------------  WORKING
+  updated_at: "updated_at", // ---------------------------- WORKING
+  tag_not: "tag_not", // ---------------------------------- WORKING
+  order_date: "order_date", // -----------------------------WORKING
+  last_name: "last_name", // ------------------------------ WORKING
+  last_abandoned_order_date: "last_abandoned_order_date", // WORKING
+  first_name: "first_name", // ---------------------------- WORKING
+  customer_date: "customer_date", // ---------------------- WORKING
+  accepts_marketing: "accepts_marketing", // -------------- WORKING
 };
 
 const comparisonMapping: Record<string, string> = {

@@ -4,6 +4,7 @@ import {
   IndexTable,
   useIndexResourceState,
   Text,
+  Spinner,
 } from "@shopify/polaris";
 import type { CustomerSegment, QualifierForm } from "../hooks";
 import { Form } from "@remix-run/react";
@@ -84,24 +85,43 @@ export default function CustomersQueryQualifier({
 
   return (
     <Card>
-      <Card>
-        <IndexTable
-          resourceName={resourceName}
-          itemCount={customerSegments?.length || 0}
-          selectedItemsCount={
-            allResourcesSelected ? "All" : selectedResources.length
-          }
-          onSelectionChange={handleSelectionChange}
-          headings={[
-            { title: "Name" },
-            { title: "Country" },
-            { title: "Amount Spent" },
-            { title: "Orders" },
-          ]}
-        >
-          {rowMarkup}
-        </IndexTable>
-      </Card>
+      {fetcher.state === "loading" ||
+        (fetcher.state === "submitting" ? (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              gap: "5px",
+              alignItems: "center",
+              paddingTop: "15px",
+            }}
+          >
+            <Spinner accessibilityLabel="Spinner example" size="large" />
+            <Text variant="headingSm" as="h6">
+              loading customers...
+            </Text>
+          </div>
+        ) : (
+          <Card>
+            <IndexTable
+              resourceName={resourceName}
+              itemCount={customerSegments?.length || 0}
+              selectedItemsCount={
+                allResourcesSelected ? "All" : selectedResources.length
+              }
+              onSelectionChange={handleSelectionChange}
+              headings={[
+                { title: "Name" },
+                { title: "Country" },
+                { title: "Amount Spent" },
+                { title: "Orders" },
+              ]}
+            >
+              {rowMarkup}
+            </IndexTable>
+          </Card>
+        ))}
 
       <br />
 
