@@ -45,6 +45,14 @@ export default function QualifiersForm() {
             formFilterCustomers={formFilterCustomers}
           />
         </Layout.Section>
+
+        <Layout.Section>
+          <NewCondtions
+            form={form}
+            formFilterCustomers={formFilterCustomers}
+            fetchedConditions={conditions!}
+          />
+        </Layout.Section>
         <Layout.Section>
           <CustomersQueryQualifier
             form={form}
@@ -57,14 +65,6 @@ export default function QualifiersForm() {
               {error}
             </Text>
           )}
-        </Layout.Section>
-
-        <Layout.Section>
-          <NewCondtions
-            form={form}
-            formFilterCustomers={formFilterCustomers}
-            fetchedConditions={conditions!}
-          />
         </Layout.Section>
         <Layout.Section>
           <PageActions

@@ -1,4 +1,10 @@
-import { Link, useLoaderData, useNavigate, useSubmit } from "@remix-run/react";
+import {
+  Link,
+  useLoaderData,
+  useNavigate,
+  useSearchParams,
+  useSubmit,
+} from "@remix-run/react";
 import {
   IndexTable,
   Page,
@@ -27,8 +33,6 @@ export { loader, action };
 
 export default function AllActions() {
   const loaderData = useLoaderData<typeof loader>();
-
-  console.log(loaderData, "loaderData");
 
   // ! refactor in the future since we will have more types of actions
   const discountActions =
@@ -161,6 +165,22 @@ export default function AllActions() {
   };
   const navigate = useNavigate();
 
+  // ==================================== pagination
+
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  console.log("", searchParams);
+
+  const currentPage = loaderData?.page || 1;
+  const totalItems = loaderData?.total;
+  const itemsPerPage = loaderData?.itemsPerPage;
+  const hasNext = currentPage * itemsPerPage! < totalItems!;
+  const hasPrevious = currentPage > 1;
+
+  const goToPage = (page: number) => {
+    setSearchParams({ page: page.toString() });
+  };
+
   return (
     <Page
       backAction={{ url: "/app/actions" }}
@@ -218,8 +238,10 @@ export default function AllActions() {
                   { title: "Actions" }, // 🔧 New Column
                 ]}
                 pagination={{
-                  hasNext: true,
-                  onNext: () => {},
+                  hasNext,
+                  hasPrevious,
+                  onNext: () => goToPage(currentPage + 1),
+                  onPrevious: () => goToPage(currentPage - 1),
                 }}
               >
                 {rowMarkup}

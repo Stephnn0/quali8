@@ -23,7 +23,6 @@ enum ShippingRatesType {
 }
 
 export function ShippingRates({ shippingRates, form }: PickShippingRatesProps) {
-  console.log("ShippingRates", shippingRates);
   const { fields } = form;
 
   const { shippingRateType, shippingRatesNames } = fields;

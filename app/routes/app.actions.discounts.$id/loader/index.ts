@@ -58,7 +58,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     if (id === "new") {
       return handleApiSuccess<ActionShippingDiscountLoaderData>({
         payload: {
-          qualifiers: qualifiers || [],
+          qualifiers: qualifiers,
           rates: filteredMethodDefinitions,
         },
         code: "new",
@@ -74,7 +74,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
     return handleApiSuccess<ActionShippingDiscountLoaderData>({
       payload: {
-        qualifiers: qualifiers || [],
+        qualifiers: qualifiers,
         rates: filteredMethodDefinitions,
         shippingDiscount: actionWithShippingDiscount,
       },

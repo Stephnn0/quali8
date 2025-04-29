@@ -10,9 +10,15 @@ export async function getManyShippingDiscountActions(
   db: PrismaClient,
 ) {
   try {
-    const shippingDiscountActions =
-      await db.shippingDiscountAction.findMany(prismaArgs);
-    return shippingDiscountActions;
+    const [shippingDiscountActions, shippingDiscountActionsCount] =
+      await db.$transaction([
+        db.shippingDiscountAction.findMany({
+          ...prismaArgs,
+        }),
+        db.shippingDiscountAction.count({ where: prismaArgs.where || {} }),
+      ]);
+
+    return { shippingDiscountActions, shippingDiscountActionsCount };
   } catch (error) {
     console.error("Error getting shippingDiscountActions:", error);
   }

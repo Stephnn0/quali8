@@ -70,8 +70,6 @@ export default function ActionDiscounts() {
     shippingDiscountState.value = selectedDiscountState;
   };
 
-  console.log(form.submitErrors, "form.submitErrors");
-
   return (
     <Page
       title="Shipping Discounts"
@@ -243,7 +241,7 @@ export default function ActionDiscounts() {
 
         <Layout.Section>
           <PickQualifiers
-            mockQualifiers={loaderData?.payload.qualifiers}
+            mockQualifiers={loaderData?.payload.qualifiers?.qualifiers}
             form={form}
           />
           {qualifierIdsError && (

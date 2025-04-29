@@ -83,12 +83,6 @@ export default function DateSelector({ form }: DateSelectorProps) {
     selectedStartHour,
   ]); // ! should be empty cause it causes a re-render infinite loop
 
-  console.log("hasEndDate.value", hasEndDate.value);
-  console.log("startDate.value", startDate.value);
-  console.log("startTime.value", startTime.value);
-  console.log("endDate.value", endDate.value);
-  console.log("endTime.value", endTime.value);
-
   const handleStartDateChange = useCallback(
     (newDate: Date) => {
       setSelectedDate(newDate);

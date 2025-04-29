@@ -6,18 +6,32 @@ import { getManyShippingDiscountActions } from "app/models/app.server/actionShip
 export async function loader({ request }: LoaderFunctionArgs) {
   const { session } = await authenticate.admin(request);
 
+  const url = new URL(request.url);
+  const page = parseInt(url.searchParams.get("page") || "1", 10);
+
+  const itemsPerPage = 15;
+  const skip = (page - 1) * itemsPerPage;
+
   try {
     const ShippingDiscounts = await getManyShippingDiscountActions(
       {
         where: {
           shop: session.shop,
         },
+        orderBy: {
+          updatedAt: "desc",
+        },
+        take: itemsPerPage,
+        skip,
       },
       db,
     );
 
     return {
-      payload: ShippingDiscounts,
+      payload: ShippingDiscounts?.shippingDiscountActions,
+      itemsPerPage: itemsPerPage,
+      page: page,
+      total: ShippingDiscounts?.shippingDiscountActionsCount,
     };
   } catch (error) {
     console.log(error);

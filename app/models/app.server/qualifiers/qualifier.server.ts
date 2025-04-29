@@ -18,8 +18,14 @@ export async function getQualifiersByShop(
   db: PrismaClient,
 ) {
   try {
-    const qualifiers = await db.qualifiers.findMany(prismaArgs);
-    return qualifiers;
+    const [qualifiers, qualifiersCount] = await db.$transaction([
+      db.qualifiers.findMany({
+        ...prismaArgs,
+      }),
+      db.qualifiers.count({ where: prismaArgs.where || {} }),
+    ]);
+
+    return { qualifiers, qualifiersCount };
   } catch (error) {
     console.error("Error fetching qualifiers:", error);
   }

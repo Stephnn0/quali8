@@ -1,4 +1,10 @@
-import { Link, useFetcher, useLoaderData, useNavigate } from "@remix-run/react";
+import {
+  Link,
+  useFetcher,
+  useLoaderData,
+  useNavigate,
+  useSearchParams,
+} from "@remix-run/react";
 import {
   Button,
   IndexTable,
@@ -33,8 +39,6 @@ export default function Qualifiers() {
     id: number;
     conditionIds: number[];
   } | null>(null);
-
-  console.log("loaderData", loaderData);
 
   const qualifiers =
     loaderData?.payload?.map((data) => ({
@@ -143,6 +147,22 @@ export default function Qualifiers() {
 
   const navigate = useNavigate();
 
+  // ==================================== pagination
+
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  console.log("", searchParams);
+
+  const currentPage = loaderData?.page || 1;
+  const totalItems = loaderData?.total;
+  const itemsPerPage = loaderData?.itemsPerPage;
+  const hasNext = currentPage * itemsPerPage! < totalItems!;
+  const hasPrevious = currentPage > 1;
+
+  const goToPage = (page: number) => {
+    setSearchParams({ page: page.toString() });
+  };
+
   return (
     <Page
       title="Qualifiers"
@@ -192,8 +212,10 @@ export default function Qualifiers() {
                   { title: "Actions" },
                 ]}
                 pagination={{
-                  hasNext: true,
-                  onNext: () => {},
+                  hasNext,
+                  hasPrevious,
+                  onNext: () => goToPage(currentPage + 1),
+                  onPrevious: () => goToPage(currentPage - 1),
                 }}
               >
                 {rowMarkup}

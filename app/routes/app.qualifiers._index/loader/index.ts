@@ -3,8 +3,14 @@ import { getQualifiersByShop } from "app/models/app.server/qualifiers/qualifier.
 import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   const { session } = await authenticate.admin(request);
+
+  const url = new URL(request.url);
+  const page = parseInt(url.searchParams.get("page") || "1", 10);
+
+  const itemsPerPage = 15;
+  const skip = (page - 1) * itemsPerPage;
 
   try {
     const qualifiers = await getQualifiersByShop(
@@ -16,12 +22,20 @@ export async function loader({ request }: LoaderFunctionArgs) {
           customers: true,
           conditions: true,
         },
+        orderBy: {
+          updatedAt: "desc",
+        },
+        take: itemsPerPage,
+        skip,
       },
       db,
     );
 
     return {
-      payload: qualifiers,
+      payload: qualifiers?.qualifiers,
+      itemsPerPage: itemsPerPage,
+      page: page,
+      total: qualifiers?.qualifiersCount,
     };
   } catch (error) {
     console.log(error);
