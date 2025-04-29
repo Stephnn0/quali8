@@ -19,6 +19,8 @@ export default function QualifiersForm() {
 
   const form = useQualifierForm();
 
+  const { errorName } = form;
+
   const formFilterCustomers = useFilterCustomersForm();
   const { error } = formFilterCustomers;
 
@@ -29,6 +31,13 @@ export default function QualifiersForm() {
       <Layout>
         <Layout.Section>
           <NameDescriptionQualifier form={form} />
+        </Layout.Section>
+        <Layout.Section>
+          {errorName && (
+            <Text variant="bodyMd" as="p" tone="critical">
+              {errorName}
+            </Text>
+          )}
         </Layout.Section>
         <Layout.Section>
           <OperatorQualifier

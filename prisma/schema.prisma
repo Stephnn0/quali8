@@ -119,7 +119,7 @@ model Customers {
   lastName             String?
   //
   country              String?
-  amountSpent          Int?
+  amountSpent          String?
   orderCount           Int?
   qualifiers           Qualifiers[] @relation("CustomerQualifiers")
   //

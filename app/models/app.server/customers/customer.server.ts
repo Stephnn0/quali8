@@ -64,6 +64,9 @@ export async function upsertCustomer(
     lastName?: string;
     shop: string;
     qualifierId: number;
+    amountSpent?: number;
+    orderCount?: number;
+    country?: string;
   },
 ) {
   try {
@@ -74,6 +77,9 @@ export async function upsertCustomer(
         lastName: customer.lastName,
         shopifyStore: { connect: { shop: customer.shop } },
         qualifiers: { connect: { id: customer.qualifierId } },
+        amountSpent: customer.amountSpent,
+        orderCount: customer.orderCount,
+        country: customer.country,
       },
       create: {
         shopifyId: customer.shopifyId,
@@ -81,6 +87,9 @@ export async function upsertCustomer(
         lastName: customer.lastName,
         shopifyStore: { connect: { shop: customer.shop } },
         qualifiers: { connect: { id: customer.qualifierId } },
+        amountSpent: customer.amountSpent,
+        orderCount: customer.orderCount,
+        country: customer.country,
       },
     });
 

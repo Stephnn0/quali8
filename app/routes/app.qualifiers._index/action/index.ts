@@ -12,11 +12,9 @@ export async function action({ request }: ActionFunctionArgs) {
   const body = formData.get("body") as string;
 
   const parsedBody = JSON.parse(body);
-  console.log("parsedBody", parsedBody);
 
   try {
     if (request.method === "DELETE") {
-      console.log("-----------------delete------------");
       await Promise.all([
         deleteQualifier(
           {

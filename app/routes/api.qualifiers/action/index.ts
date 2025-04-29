@@ -25,6 +25,8 @@ export default async function action({ request }: ActionFunctionArgs) {
     const { name, description, customers, conditions, conditionLogicType } =
       parsedBody;
 
+    console.log(parsedBody, "parsedBody");
+
     if (request.method === "POST") {
       // ! we first create the qualifier and then create and connect conditions and customers
       const data: Parameters<typeof createQualifier>[0]["data"] = {
@@ -53,11 +55,13 @@ export default async function action({ request }: ActionFunctionArgs) {
         }
 
         for (const customer of customers) {
-          // ! FIX ADD NEW VALUES: ORDERS, AMOUNT ETC
           await upsertCustomer(db, {
             shopifyId: customer.shopifyId,
             firstName: customer.firstName,
             lastName: customer.lastName,
+            amountSpent: customer.amountSpent,
+            orderCount: customer.orderCount,
+            country: customer.country,
             shop: session.shop,
             qualifierId: qualifier?.id,
           });
@@ -75,12 +79,51 @@ export default async function action({ request }: ActionFunctionArgs) {
             name: parsedBody.name,
             description: parsedBody.description,
             conditionLogicType: parsedBody.conditionLogicType,
-            // conditions: {},
-            // customers: {},
           },
         },
         db,
       );
+
+      if (updatedQualifier) {
+        deleteManyConditions(
+          {
+            where: {
+              qualifierId: updatedQualifier?.id,
+              shopifyStore: { shop: session.shop },
+            },
+          },
+          db,
+        );
+
+        for (const condition of conditions) {
+          await createCondition(
+            {
+              data: {
+                type: condition.type,
+                comparisonType: condition.comparisonType,
+                value: condition.value,
+                qualifier: { connect: { id: updatedQualifier.id } },
+                shopifyStore: { connect: { shop: session.shop } },
+              },
+            },
+            db,
+          );
+        }
+
+        // 3. Upsert customers
+        for (const customer of customers) {
+          await upsertCustomer(db, {
+            shopifyId: customer.shopifyId,
+            firstName: customer.firstName,
+            lastName: customer.lastName,
+            amountSpent: customer.amountSpent,
+            orderCount: customer.orderCount,
+            country: customer.country,
+            shop: session.shop,
+            qualifierId: updatedQualifier.id,
+          });
+        }
+      }
 
       return { status: "updated", updatedQualifier };
     }

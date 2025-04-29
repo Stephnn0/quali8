@@ -3,7 +3,7 @@
 client_id = "34da8696cbfc709d9fdc83cb99b19030"
 name = "quali8"
 handle = "quali8"
-application_url = "https://consultants-chronicles-diverse-memorial.trycloudflare.com"
+application_url = "https://intervention-german-rm-presenting.trycloudflare.com"
 embedded = true
 
 [build]
@@ -28,9 +28,9 @@ scopes = "write_products, read_customers, read_shipping, write_discounts, read_o
 
 [auth]
 redirect_urls = [
-  "https://consultants-chronicles-diverse-memorial.trycloudflare.com/auth/callback",
-  "https://consultants-chronicles-diverse-memorial.trycloudflare.com/auth/shopify/callback",
-  "https://consultants-chronicles-diverse-memorial.trycloudflare.com/api/auth/callback"
+  "https://intervention-german-rm-presenting.trycloudflare.com/auth/callback",
+  "https://intervention-german-rm-presenting.trycloudflare.com/auth/shopify/callback",
+  "https://intervention-german-rm-presenting.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]

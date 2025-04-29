@@ -4,6 +4,12 @@ import { useFetcher, useLoaderData, useNavigate } from "@remix-run/react";
 import { useField, useForm } from "@shopify/react-form";
 import type { loader } from "../loader";
 import { useAppBridge } from "@shopify/app-bridge-react";
+import {
+  createQualifierSchema,
+  updateQualifierSchema,
+} from "app/routes/api.qualifiers/zod";
+import { useState } from "react";
+import { ZodError } from "zod";
 
 export type QualifierForm = ReturnType<typeof useQualifierForm>;
 
@@ -25,6 +31,8 @@ export function useQualifierForm() {
   const qualifier = loaderData?.payload.qualifier;
   const { name, description, conditionLogicType, conditions, customers } =
     qualifier || {};
+
+  const [errorName, setErrorName] = useState<string | null>(null);
 
   const refactorCustomers = customers?.map((customer) => ({
     shopifyId: customer.shopifyId,
@@ -49,8 +57,9 @@ export function useQualifierForm() {
       //
       formConditions: useField<Conditions[]>(conditions || []),
     },
-    makeCleanAfterSubmit: true,
+    makeCleanAfterSubmit: false,
     onSubmit: async (fieldValues) => {
+      setErrorName(null);
       try {
         if (!qualifier) {
           const body = {
@@ -62,8 +71,7 @@ export function useQualifierForm() {
             conditionLogicType: fieldValues.ConditionLogicType,
           };
 
-          // ! fixed: comparison types is coming as empty
-          console.log(body, "--------------body------------------");
+          createQualifierSchema.parse(body);
 
           fetcher.submit(
             { body: JSON.stringify(body) },
@@ -90,6 +98,8 @@ export function useQualifierForm() {
             conditionLogicType: fieldValues.ConditionLogicType,
           };
 
+          updateQualifierSchema.parse(updateBody);
+
           fetcher.submit(
             { body: JSON.stringify(updateBody) },
             {
@@ -104,6 +114,16 @@ export function useQualifierForm() {
           navigate("/app/qualifiers");
         }
       } catch (error) {
+        shopify.toast.show("Something went wrong");
+
+        if (error instanceof ZodError) {
+          error.errors.forEach((err) => {
+            if (err.path.includes("name")) {
+              setErrorName(err.message);
+            }
+          });
+        }
+
         return { status: "success" };
       }
 
@@ -114,5 +134,6 @@ export function useQualifierForm() {
   return {
     ...form,
     fetcher,
+    errorName,
   };
 }

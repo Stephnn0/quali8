@@ -20,8 +20,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
       db,
     );
 
-    console.log("qualifiers", qualifiers);
-
     return {
       payload: qualifiers,
     };
