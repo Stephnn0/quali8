@@ -111,77 +111,77 @@ export const GRAPHQL_MUTATION_DELETE_AUTOMATIC_DISCOUNT = `#graphql
 // --------------------------------------------------------------------------------
 // --------------------------------------------------------------------------------
 
-export const GRAPHQL_MUTATION_UPDATE_CODE_DISCOUNT = `#graphql
-  mutation discountCodeAppUpdate($codeAppDiscount: DiscountCodeAppInput!, $ID: ID!) {
-    discountCodeAppUpdate(codeAppDiscount: $codeAppDiscount, id: $ID) {
-      codeAppDiscount {
-        title
-        startsAt
-        endsAt
-        # usageLimit
-        status
-        appliesOncePerCustomer
-        # codes {
-        #   edges {
-        #     node {
-        #       code
-        #     }
-        #   }
-        # }
-      }
-      userErrors {
-        field
-        code
-        message
-      }
-    }
-  }
-`;
+// export const GRAPHQL_MUTATION_UPDATE_CODE_DISCOUNT = `#graphql
+//   mutation discountCodeAppUpdate($codeAppDiscount: DiscountCodeAppInput!, $ID: ID!) {
+//     discountCodeAppUpdate(codeAppDiscount: $codeAppDiscount, id: $ID) {
+//       codeAppDiscount {
+//         title
+//         startsAt
+//         endsAt
+//         # usageLimit
+//         status
+//         appliesOncePerCustomer
+//         # codes {
+//         #   edges {
+//         #     node {
+//         #       code
+//         #     }
+//         #   }
+//         # }
+//       }
+//       userErrors {
+//         field
+//         code
+//         message
+//       }
+//     }
+//   }
+// `;
 
-export const GRAPHQL_MUTATION_UPDATE_AUTOMATIC_DISCOUNT = `#graphql
-  mutation discountAutomaticAppUpdate($automaticAppDiscount: DiscountAutomaticAppInput!, $ID: ID!) {
-    discountAutomaticAppUpdate(automaticAppDiscount: $automaticAppDiscount, id: $ID) {
-      automaticAppDiscount {
-        title
-        startsAt
-        endsAt
-        status
-        
-      }
-      userErrors {
-        field
-        code
-        message
-      }
-    }
-  }
-`;
+// export const GRAPHQL_MUTATION_UPDATE_AUTOMATIC_DISCOUNT = `#graphql
+//   mutation discountAutomaticAppUpdate($automaticAppDiscount: DiscountAutomaticAppInput!, $ID: ID!) {
+//     discountAutomaticAppUpdate(automaticAppDiscount: $automaticAppDiscount, id: $ID) {
+//       automaticAppDiscount {
+//         title
+//         startsAt
+//         endsAt
+//         status
 
-export const GRAPHQL_MUTATION_CODE_UPDATE_DISCOUNT = `#graphql
-  mutation discountCodeAppUpdate(
-   $functionId: String!
-   $title: String!
-   $startsAt: DateTime!
-   $code: String!
-   $metafields: [MetafieldInput!]!
-   $ID: ID!
-  ) {
-    discountCodeAppUpdate(
-      id: $ID,
-      codeAppDiscount: {
-        functionId: $functionId
-        title: $title
-        startsAt: $startsAt
-        code: $code
-        metafields: $metafields
-      }
-    ) {
-      codeAppDiscount {
-        discountId
-      }
-      userErrors {
-        message
-      }
-    }
-  }
-`;
+//       }
+//       userErrors {
+//         field
+//         code
+//         message
+//       }
+//     }
+//   }
+// `;
+
+// export const GRAPHQL_MUTATION_CODE_UPDATE_DISCOUNT = `#graphql
+//   mutation discountCodeAppUpdate(
+//    $functionId: String!
+//    $title: String!
+//    $startsAt: DateTime!
+//    $code: String!
+//    $metafields: [MetafieldInput!]!
+//    $ID: ID!
+//   ) {
+//     discountCodeAppUpdate(
+//       id: $ID,
+//       codeAppDiscount: {
+//         functionId: $functionId
+//         title: $title
+//         startsAt: $startsAt
+//         code: $code
+//         metafields: $metafields
+//       }
+//     ) {
+//       codeAppDiscount {
+//         discountId
+//       }
+//       userErrors {
+//         message
+//       }
+//     }
+//   }
+// `;

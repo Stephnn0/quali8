@@ -16,10 +16,10 @@ export const GRAPHQL_QUERY_CUSTOMERS = `#graphql
           lastOrder {
             createdAt
           }
-          defaultEmailAddress {
-            emailAddress
+          defaultAddress {
+            address1
           }
-          orders {
+          orders(first: 40) {
             edges {
               node {
                 id

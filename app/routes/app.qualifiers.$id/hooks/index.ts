@@ -7,9 +7,13 @@ import { useAppBridge } from "@shopify/app-bridge-react";
 
 export type QualifierForm = ReturnType<typeof useQualifierForm>;
 
-type CustomerSegment = {
+export type CustomerSegment = {
   shopifyId: string;
   firstName: string;
+  createdAt: string;
+  country: string;
+  amountSpent: number;
+  orderCount: number;
 };
 
 export function useQualifierForm() {
@@ -25,6 +29,10 @@ export function useQualifierForm() {
   const refactorCustomers = customers?.map((customer) => ({
     shopifyId: customer.shopifyId,
     firstName: customer.firstName || "",
+    country: customer.country || "",
+    orderCount: customer.orderCount || 0,
+    amountSpent: customer.amountSpent || 0.0,
+    createdAt: "",
   }));
 
   const form = useForm({

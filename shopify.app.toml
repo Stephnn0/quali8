@@ -3,7 +3,7 @@
 client_id = "34da8696cbfc709d9fdc83cb99b19030"
 name = "quali8"
 handle = "quali8"
-application_url = "https://ending-lip-cloudy-commander.trycloudflare.com"
+application_url = "https://digital-pros-season-steel.trycloudflare.com"
 embedded = true
 
 [build]
@@ -24,13 +24,13 @@ api_version = "2025-04"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "write_products, read_customers, read_shipping, write_discounts"
+scopes = "write_products, read_customers, read_shipping, write_discounts, read_orders"
 
 [auth]
 redirect_urls = [
-  "https://ending-lip-cloudy-commander.trycloudflare.com/auth/callback",
-  "https://ending-lip-cloudy-commander.trycloudflare.com/auth/shopify/callback",
-  "https://ending-lip-cloudy-commander.trycloudflare.com/api/auth/callback"
+  "https://digital-pros-season-steel.trycloudflare.com/auth/callback",
+  "https://digital-pros-season-steel.trycloudflare.com/auth/shopify/callback",
+  "https://digital-pros-season-steel.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]

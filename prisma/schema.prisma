@@ -117,6 +117,10 @@ model Customers {
   email                String?     
   firstName            String?
   lastName             String?
+  //
+  country              String?
+  amountSpent          Int?
+  orderCount           Int?
   qualifiers           Qualifiers[] @relation("CustomerQualifiers")
   //
   shop                 String

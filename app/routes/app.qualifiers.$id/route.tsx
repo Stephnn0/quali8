@@ -1,4 +1,4 @@
-import { Layout, Page, PageActions } from "@shopify/polaris";
+import { Layout, Page, PageActions, Text } from "@shopify/polaris";
 import { useQualifierForm } from "./hooks";
 import NameDescriptionQualifier from "./components/NameDescription";
 import { OperatorQualifier } from "./components/OperatorQualifier";
@@ -18,7 +18,9 @@ export default function QualifiersForm() {
   const isNew = loaderData.payload?.qualifier === null;
 
   const form = useQualifierForm();
+
   const formFilterCustomers = useFilterCustomersForm();
+  const { error } = formFilterCustomers;
 
   const { conditions } = qualifier || {};
 
@@ -33,6 +35,13 @@ export default function QualifiersForm() {
             form={form}
             formFilterCustomers={formFilterCustomers}
           />
+        </Layout.Section>
+        <Layout.Section>
+          {error && (
+            <Text variant="bodyMd" as="p" tone="critical">
+              {error}
+            </Text>
+          )}
         </Layout.Section>
         <Layout.Section>
           <OperatorQualifier

@@ -5,7 +5,7 @@ import {
   useIndexResourceState,
   Text,
 } from "@shopify/polaris";
-import type { QualifierForm } from "../hooks";
+import type { CustomerSegment, QualifierForm } from "../hooks";
 import { Form } from "@remix-run/react";
 import { useEffect, useState } from "react";
 
@@ -18,10 +18,6 @@ type CustomersQueryQualifierProps = {
   form: QualifierForm;
   formFilterCustomers: FilterCustomersForm;
 };
-type CustomerSegment = {
-  shopifyId: string;
-  firstName: string;
-};
 
 export default function CustomersQueryQualifier({
   form,
@@ -32,19 +28,21 @@ export default function CustomersQueryQualifier({
   const { fields } = form;
   const { customers, formConditions } = fields;
 
-  console.log("--------------", customers.value);
-
   const [customerSegments, setCustomerSegments] = useState<CustomerSegment[]>(
     customers.value || [],
   );
 
   useEffect(() => {
     if (fetcher.data?.payload) {
+      console.log("fetcher.data.payload", fetcher.data.payload);
       const customersRefactor = fetcher.data.payload.map(({ node }: any) => ({
         shopifyId: node.id,
         firstName: node.firstName ?? "",
         lastName: node.lastName ?? "",
         createdAt: node.createdAt,
+        country: node.addresses?.[0]?.country ?? "N/A",
+        amountSpent: node.amountSpent?.amount ?? "0.0",
+        orderCount: node.orders?.edges?.length ?? 0,
       }));
 
       setCustomerSegments(customersRefactor);
@@ -64,20 +62,25 @@ export default function CustomersQueryQualifier({
   const { selectedResources, allResourcesSelected, handleSelectionChange } =
     useIndexResourceState(customerSegments);
 
-  const rowMarkup = customerSegments?.map(({ shopifyId, firstName }, index) => (
-    <IndexTable.Row
-      id={shopifyId}
-      key={shopifyId}
-      selected={selectedResources.includes(shopifyId)}
-      position={index}
-    >
-      <IndexTable.Cell>
-        <Text variant="bodyMd" fontWeight="bold" as="span">
-          {firstName}
-        </Text>
-      </IndexTable.Cell>
-    </IndexTable.Row>
-  ));
+  const rowMarkup = customerSegments?.map(
+    ({ shopifyId, firstName, country, amountSpent, orderCount }, index) => (
+      <IndexTable.Row
+        id={shopifyId}
+        key={shopifyId}
+        selected={selectedResources.includes(shopifyId)}
+        position={index}
+      >
+        <IndexTable.Cell>
+          <Text variant="bodyMd" fontWeight="bold" as="span">
+            {firstName}
+          </Text>
+        </IndexTable.Cell>
+        <IndexTable.Cell>{country}</IndexTable.Cell>
+        <IndexTable.Cell>${amountSpent}</IndexTable.Cell>
+        <IndexTable.Cell>{orderCount}</IndexTable.Cell>
+      </IndexTable.Row>
+    ),
+  );
 
   return (
     <Card>
@@ -89,7 +92,12 @@ export default function CustomersQueryQualifier({
             allResourcesSelected ? "All" : selectedResources.length
           }
           onSelectionChange={handleSelectionChange}
-          headings={[{ title: "Name" }]}
+          headings={[
+            { title: "Name" },
+            { title: "Country" },
+            { title: "Amount Spent" },
+            { title: "Orders" },
+          ]}
         >
           {rowMarkup}
         </IndexTable>

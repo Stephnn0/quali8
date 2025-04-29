@@ -4,12 +4,16 @@ import { useFetcher } from "@remix-run/react";
 import { useField, useForm } from "@shopify/react-form";
 import type action from "../../api.shopifyCustomers/action";
 import { conditionsSubmissionSchema } from "./zod";
+import { ZodError } from "zod";
+import { useState } from "react";
 
 export { action };
 
 export type FilterCustomersForm = ReturnType<typeof useFilterCustomersForm>;
 
 export function useFilterCustomersForm() {
+  const [error, setError] = useState<string | null>(null);
+
   const fetcher = useFetcher<typeof action>();
 
   const form = useForm({
@@ -21,27 +25,34 @@ export function useFilterCustomersForm() {
     },
     makeCleanAfterSubmit: false,
     onSubmit: async (fieldValues) => {
-      const body = {
-        conditions: fieldValues.formConditions,
-        conditionLogicType: fieldValues.ConditionLogicTypeCustomer,
-      };
-      console.log("---------before------------");
-
-      conditionsSubmissionSchema.parse(body);
-
-      console.log("---------body------------", body);
-
+      setError(null);
       try {
-        // fetcher.submit(
-        //   { body: JSON.stringify(body) },
-        //   {
-        //     method: "post",
-        //     action: "/api/shopifyCustomers",
-        //     encType: "multipart/form-data",
-        //   },
-        // );
+        const body = {
+          conditions: fieldValues.formConditions,
+          conditionLogicType: fieldValues.ConditionLogicTypeCustomer,
+        };
+
+        conditionsSubmissionSchema.parse(body);
+
+        fetcher.submit(
+          { body: JSON.stringify(body) },
+          {
+            method: "post",
+            action: "/api/shopifyCustomers",
+            encType: "multipart/form-data",
+          },
+        );
       } catch (error) {
-        console.log("---------error------------", error);
+        if (error instanceof ZodError) {
+          error.errors.forEach((err) => {
+            if (err.path.includes("conditions")) {
+              setError(err.message);
+            }
+          });
+        }
+
+        shopify.toast.show("Some Error Occured");
+
         return { status: "success" };
       }
 
@@ -52,5 +63,6 @@ export function useFilterCustomersForm() {
   return {
     ...form,
     fetcher,
+    error,
   };
 }
