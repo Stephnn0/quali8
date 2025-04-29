@@ -1,4 +1,4 @@
-import { Link, useLoaderData, useSubmit } from "@remix-run/react";
+import { Link, useLoaderData, useNavigate, useSubmit } from "@remix-run/react";
 import {
   IndexTable,
   Page,
@@ -13,6 +13,7 @@ import {
   MediaCard,
   Badge,
   FooterHelp,
+  EmptyState,
 } from "@shopify/polaris";
 import { loader } from "./loader";
 import { action } from "./action";
@@ -21,7 +22,7 @@ import { DeleteIcon, EditIcon } from "@shopify/polaris-icons";
 import { useCallback, useState } from "react";
 import image from "app/assets/sds.png";
 import { useAppBridge } from "@shopify/app-bridge-react";
-
+import quailifierlogo from "app/assets/dis2.png";
 export { loader, action };
 
 export default function AllActions() {
@@ -158,6 +159,7 @@ export default function AllActions() {
       console.log("Error deleting qualifier", error);
     }
   };
+  const navigate = useNavigate();
 
   return (
     <Page
@@ -192,36 +194,57 @@ export default function AllActions() {
           </MediaCard>
         </Layout.Section>
         <Layout.Section>
-          <Card>
-            <Text variant="headingMd" as="h4">
-              Shipping Discounts
-            </Text>
-            <br />
+          {discountActions.length > 0 ? (
+            <Card>
+              <Text variant="headingMd" as="h4">
+                Shipping Discounts
+              </Text>
+              <br />
 
-            <IndexTable
-              resourceName={resourceName}
-              itemCount={discountActions!.length}
-              selectedItemsCount={
-                allResourcesSelected ? "All" : selectedResources.length
-              }
-              // onSelectionChange={handleSelectionChange}
-              selectable={false}
-              headings={[
-                { title: "Status" },
-                { title: "Code" },
-                { title: "Type" },
-                { title: "Discount Method" },
-                { title: "Value" },
-                { title: "Actions" }, // 🔧 New Column
-              ]}
-              pagination={{
-                hasNext: true,
-                onNext: () => {},
-              }}
-            >
-              {rowMarkup}
-            </IndexTable>
-          </Card>
+              <IndexTable
+                resourceName={resourceName}
+                itemCount={discountActions!.length}
+                selectedItemsCount={
+                  allResourcesSelected ? "All" : selectedResources.length
+                }
+                // onSelectionChange={handleSelectionChange}
+                selectable={false}
+                headings={[
+                  { title: "Status" },
+                  { title: "Code" },
+                  { title: "Type" },
+                  { title: "Discount Method" },
+                  { title: "Value" },
+                  { title: "Actions" }, // 🔧 New Column
+                ]}
+                pagination={{
+                  hasNext: true,
+                  onNext: () => {},
+                }}
+              >
+                {rowMarkup}
+              </IndexTable>
+            </Card>
+          ) : (
+            <Card>
+              <EmptyState
+                heading="You have no shipping discounts yet"
+                image={quailifierlogo}
+                action={{
+                  content: "Create a Shipping Discount",
+                  onAction: () => {
+                    navigate("/app/actions/discounts/new");
+                  },
+                }}
+                fullWidth
+              >
+                <p>
+                  Create a Shipping Discount to offer your customers a discount
+                  on shipping rates.
+                </p>
+              </EmptyState>
+            </Card>
+          )}
         </Layout.Section>
         <Layout.Section>
           <FooterHelp>All rights reserved. 8Instruments</FooterHelp>

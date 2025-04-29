@@ -1,11 +1,14 @@
 import {
   Card,
+  EmptyState,
   IndexTable,
   Text,
   useIndexResourceState,
 } from "@shopify/polaris";
 import type { DiscountForm } from "../hooks";
 import { useEffect } from "react";
+import { useNavigate } from "@remix-run/react";
+import quailifierlogo from "app/assets/qualifier-logo.png";
 
 type PickQualifiersProps = {
   mockQualifiers: any;
@@ -78,30 +81,55 @@ export function PickQualifiers({ mockQualifiers, form }: PickQualifiersProps) {
     }
   }, [selectedResources]);
 
+  const navigate = useNavigate();
+
   return (
     <>
-      <Card>
-        <Text variant="bodyMd" as="p" fontWeight="bold">
-          Pick Qualifier Group
-        </Text>
-        <br />
-        <Text variant="bodyMd" as="p">
-          Select the customer segments that will be used to qualify for this
-        </Text>
+      {qualifiers.length > 0 ? (
+        <Card>
+          <Text variant="bodyMd" as="p" fontWeight="bold">
+            Pick Qualifier Group
+          </Text>
+          <br />
+          <Text variant="bodyMd" as="p">
+            Select the customer segments that will be used to qualify for this
+          </Text>
 
-        <br />
-        <IndexTable
-          resourceName={resourceName}
-          itemCount={qualifiers?.length || 0}
-          selectedItemsCount={
-            allResourcesSelected ? "All" : selectedResources.length
-          }
-          onSelectionChange={handleSelectionChange}
-          headings={[{ title: "Name" }]}
-        >
-          {rowMarkup}
-        </IndexTable>
-      </Card>
+          <br />
+
+          <IndexTable
+            resourceName={resourceName}
+            itemCount={qualifiers?.length || 0}
+            selectedItemsCount={
+              allResourcesSelected ? "All" : selectedResources.length
+            }
+            onSelectionChange={handleSelectionChange}
+            headings={[{ title: "Name" }]}
+          >
+            {rowMarkup}
+          </IndexTable>
+        </Card>
+      ) : (
+        <Card>
+          <EmptyState
+            heading="You have no qualifiers yet"
+            image={quailifierlogo}
+            action={{
+              content: "Create a qualifier",
+              onAction: () => {
+                navigate("/app/qualifiers/new");
+              },
+            }}
+            fullWidth
+          >
+            <p>
+              Qualifiers are a way to group customers based on their behavior.
+              You can use qualifiers to create segments of customers that you
+              can target with specific marketing campaigns.
+            </p>
+          </EmptyState>
+        </Card>
+      )}
     </>
   );
 }

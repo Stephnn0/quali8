@@ -1,4 +1,4 @@
-import { Link, useFetcher, useLoaderData } from "@remix-run/react";
+import { Link, useFetcher, useLoaderData, useNavigate } from "@remix-run/react";
 import {
   Button,
   IndexTable,
@@ -11,6 +11,7 @@ import {
   MediaCard,
   Modal,
   TextContainer,
+  EmptyState,
 } from "@shopify/polaris";
 import { loader } from "./loader";
 import { DeleteIcon, EditIcon } from "@shopify/polaris-icons";
@@ -18,6 +19,7 @@ import image from "app/assets/ccc.png";
 import { useCallback, useState } from "react";
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { useAppBridge } from "@shopify/app-bridge-react";
+import quailifierlogo from "app/assets/qualifier-logo.png";
 
 export { loader };
 
@@ -139,6 +141,8 @@ export default function Qualifiers() {
     }
   };
 
+  const navigate = useNavigate();
+
   return (
     <Page
       title="Qualifiers"
@@ -171,29 +175,52 @@ export default function Qualifiers() {
           </MediaCard>
         </Layout.Section>
         <Layout.Section>
-          <Card>
-            <IndexTable
-              resourceName={resourceName}
-              itemCount={qualifiers!.length}
-              selectedItemsCount={
-                allResourcesSelected ? "All" : selectedResources.length
-              }
-              selectable={false}
-              headings={[
-                { title: "Name" },
-                { title: "Description" },
-                { title: "Condition Logic Type" },
-                { title: "Customers" },
-                { title: "Actions" },
-              ]}
-              pagination={{
-                hasNext: true,
-                onNext: () => {},
-              }}
-            >
-              {rowMarkup}
-            </IndexTable>
-          </Card>
+          {qualifiers.length > 0 ? (
+            <Card>
+              <IndexTable
+                resourceName={resourceName}
+                itemCount={qualifiers!.length}
+                selectedItemsCount={
+                  allResourcesSelected ? "All" : selectedResources.length
+                }
+                selectable={false}
+                headings={[
+                  { title: "Name" },
+                  { title: "Description" },
+                  { title: "Condition Logic Type" },
+                  { title: "Customers" },
+                  { title: "Actions" },
+                ]}
+                pagination={{
+                  hasNext: true,
+                  onNext: () => {},
+                }}
+              >
+                {rowMarkup}
+              </IndexTable>
+            </Card>
+          ) : (
+            <Card>
+              <EmptyState
+                heading="You have no qualifiers yet"
+                image={quailifierlogo}
+                action={{
+                  content: "Create a qualifier",
+                  onAction: () => {
+                    navigate("/app/qualifiers/new");
+                  },
+                }}
+                fullWidth
+              >
+                <p>
+                  Qualifiers are a way to group customers based on their
+                  behavior. You can use qualifiers to create segments of
+                  customers that you can target with specific marketing
+                  campaigns.
+                </p>
+              </EmptyState>
+            </Card>
+          )}
         </Layout.Section>
       </Layout>
       <Modal
