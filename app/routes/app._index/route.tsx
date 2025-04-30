@@ -3,11 +3,16 @@ import { Banner, FooterHelp, Layout, Link, Page } from "@shopify/polaris";
 import { authenticate } from "app/shopify.server";
 import Dashboardcomponent from "app/components/Dashboardbanner";
 import Qualifiers from "./sections/Qualifiers/Qualifiers";
+import ShippingDiscount from "./sections/ShippingDiscounts/ShippingDiscounts";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   await authenticate.admin(request);
 
-  return null;
+  try {
+    return { payload: null, code: "none" };
+  } catch (error) {
+    return { errors: error, code: "not-found" };
+  }
 };
 
 export default function Index() {
@@ -30,7 +35,7 @@ export default function Index() {
           <Qualifiers />
         </Layout.Section>
         <Layout.Section variant="oneHalf">
-          <Qualifiers />
+          <ShippingDiscount />
         </Layout.Section>
         <Layout.Section>
           <FooterHelp>

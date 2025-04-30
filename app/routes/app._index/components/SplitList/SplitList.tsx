@@ -60,16 +60,16 @@ export default function SplitList({
   renderItem,
 }: SplitListProps) {
   // TODO - The errors here don't come from loaderData, they come from the fetchers
-  //   const { errors: loaderErrors } = useLoaderData<typeof loader>();
+  const { errors: loaderErrors } = useLoaderData<typeof loader>();
 
-  //   const errors = useMemo(() => [...(loaderErrors || [])], [loaderErrors]);
-  const isError = false;
+  const errors = useMemo(() => [...(loaderErrors || [])], [loaderErrors]);
+  const isError = errors.length > 0;
 
   const midIndex = Math.ceil(length / 2);
   const firstHalf = items.slice(0, midIndex);
   const secondHalf = items.slice(midIndex);
 
-  if (isError) return <h1>error happend</h1>;
+  if (isError) return <SplitListError />;
   if (items.length === 0)
     return (
       <Box paddingBlock="1000">

@@ -3,7 +3,7 @@
 client_id = "34da8696cbfc709d9fdc83cb99b19030"
 name = "quali8"
 handle = "quali8"
-application_url = "https://reconstruction-blvd-faq-boat.trycloudflare.com"
+application_url = "https://leslie-fool-flood-constant.trycloudflare.com"
 embedded = true
 
 [build]
@@ -28,9 +28,9 @@ scopes = "write_products, read_customers, read_shipping, write_discounts, read_o
 
 [auth]
 redirect_urls = [
-  "https://reconstruction-blvd-faq-boat.trycloudflare.com/auth/callback",
-  "https://reconstruction-blvd-faq-boat.trycloudflare.com/auth/shopify/callback",
-  "https://reconstruction-blvd-faq-boat.trycloudflare.com/api/auth/callback"
+  "https://leslie-fool-flood-constant.trycloudflare.com/auth/callback",
+  "https://leslie-fool-flood-constant.trycloudflare.com/auth/shopify/callback",
+  "https://leslie-fool-flood-constant.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]

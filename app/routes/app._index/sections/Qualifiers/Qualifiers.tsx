@@ -5,14 +5,15 @@ import { BlockStack, Card, ResourceItem, Text } from "@shopify/polaris";
 import SplitList from "../../components/SplitList/SplitList";
 import PlainEmptyState from "app/components/PlainEmptyState/PlainEmptyState";
 import quaim from "app/assets/q-im2.png";
+import QualifierSkeleton from "./QualifierSkeleton";
 
 const emptyState = (
   <PlainEmptyState
-    title="There are no categories to show"
-    description="Your add-on categories will appear here once you add them."
+    title="There are no qualifiers to show"
+    description="Your qualifiers will appear here once you add them."
     action={{
       url: "/app/qualifiers/new",
-      content: "Create new category",
+      content: "Create qualifier",
     }}
   />
 );
@@ -52,7 +53,7 @@ export default function Qualifiers() {
         id={id}
         accessibilityLabel={`View details for ${name}`}
         name={name}
-        url={""}
+        url={`/app/qualifiers/${id}`}
       >
         <Text variant="bodyMd" breakWord fontWeight="medium" as="h3">
           <span className={""}>{name}</span>
@@ -61,7 +62,8 @@ export default function Qualifiers() {
     );
   };
 
-  if (isBusy || (!initialPayload && subHasQualifiers)) return <h1>dd</h1>;
+  if (isBusy || (!initialPayload && subHasQualifiers))
+    return <QualifierSkeleton />;
 
   return (
     <Card>

@@ -39,6 +39,6 @@ export default async function loader({ request, params }: LoaderFunctionArgs) {
     };
   } catch (error) {
     console.log(error);
-    return null;
+    return { errors: error, code: "error" };
   }
 }
