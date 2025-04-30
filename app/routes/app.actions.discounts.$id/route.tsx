@@ -4,7 +4,6 @@ import {
   ButtonGroup,
   Card,
   InlineGrid,
-  InlineStack,
   Layout,
   Page,
   PageActions,
@@ -113,6 +112,21 @@ export default function ActionDiscounts() {
               </InlineGrid>
             </Card>
             <br />
+            <ButtonGroup variant="segmented">
+              <Button
+                disabled={operator === "CODE"}
+                onClick={() => handleOperatorChange("CODE")}
+              >
+                Discount Code
+              </Button>
+              <Button
+                disabled={operator === "AUTOMATIC"}
+                onClick={() => handleOperatorChange("AUTOMATIC")}
+              >
+                Automatic Discount
+              </Button>
+            </ButtonGroup>
+            <br />
 
             <TextField
               {...code}
@@ -207,31 +221,6 @@ export default function ActionDiscounts() {
               />
             </InlineGrid>
           </Card>
-        </Layout.Section>
-
-        {/* =========================================================================== */}
-        {/* =========================== CODE OR AUTOMATIC ============================= */}
-        {/* =========================================================================== */}
-        {/* =========================================================================== */}
-        {/* Toggle Buttons for AND/OR */}
-
-        <Layout.Section>
-          <InlineStack wrap={false}>
-            <ButtonGroup variant="segmented">
-              <Button
-                disabled={operator === "CODE"}
-                onClick={() => handleOperatorChange("CODE")}
-              >
-                Discount Code
-              </Button>
-              <Button
-                disabled={operator === "AUTOMATIC"}
-                onClick={() => handleOperatorChange("AUTOMATIC")}
-              >
-                Automatic Discount
-              </Button>
-            </ButtonGroup>
-          </InlineStack>
         </Layout.Section>
 
         {/* =========================================================================== */}

@@ -25,7 +25,7 @@ import image from "app/assets/ccc.png";
 import { useCallback, useState } from "react";
 import type { ActionFunctionArgs } from "@remix-run/node";
 import { useAppBridge } from "@shopify/app-bridge-react";
-import quailifierlogo from "app/assets/qualifier-logo.png";
+import quailifierlogo from "app/assets/q-im.png";
 
 export { loader };
 

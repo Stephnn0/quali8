@@ -93,7 +93,7 @@ export default async function createShippingDiscountServer(
 
   const data: Parameters<typeof createActionShippingDiscount>[0]["data"] = {
     shop: session.shop,
-    shopifyDiscountId: shopifyDiscountId,
+    shopifyDiscountId: shopifyDiscountId!,
     //
     shippingDiscountState: body.shippingDiscountState!,
     codeOrName: body.codeOrName,

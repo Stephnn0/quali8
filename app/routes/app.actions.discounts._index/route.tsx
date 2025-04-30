@@ -28,7 +28,7 @@ import { DeleteIcon, EditIcon } from "@shopify/polaris-icons";
 import { useCallback, useState } from "react";
 import image from "app/assets/sds.png";
 import { useAppBridge } from "@shopify/app-bridge-react";
-import quailifierlogo from "app/assets/dis2.png";
+import quailifierlogo from "app/assets/disco.png";
 export { loader, action };
 
 export default function AllActions() {

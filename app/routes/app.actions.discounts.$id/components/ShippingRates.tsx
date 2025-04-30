@@ -66,6 +66,23 @@ export function ShippingRates({ shippingRates, form }: PickShippingRatesProps) {
     }
   }, [selected, operator, shippingRatesNames]);
 
+  console.log(operator, "operator");
+
+  const ratesToDisplay = selected.map((selected, index) => (
+    <div
+      key={index}
+      style={{
+        marginTop: "10px",
+        padding: "0.5rem 1rem",
+        border: "1px solid #ccc",
+        borderRadius: "8px",
+        backgroundColor: "#f9f9f9",
+      }}
+    >
+      {selected}
+    </div>
+  ));
+
   return (
     <Layout>
       <Layout.Section>
@@ -110,6 +127,7 @@ export function ShippingRates({ shippingRates, form }: PickShippingRatesProps) {
               Choose the shipping rates that you would like to be discounted.
             </Text>
             <br />
+
             <Popover
               active={popoverActive}
               activator={
@@ -131,6 +149,7 @@ export function ShippingRates({ shippingRates, form }: PickShippingRatesProps) {
                 allowMultiple
               />
             </Popover>
+            {ratesToDisplay}
           </Card>
         )}
       </Layout.Section>

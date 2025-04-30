@@ -3,14 +3,10 @@ export function combineDateAndTime(
   timeString: string,
 ): string {
   const date = new Date(dateString);
-  const [time, modifier] = timeString.trim().split(" ");
-  let [hours, minutes] = time.split(":").map(Number);
+  const yyyy = date.getFullYear();
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const dd = String(date.getDate()).padStart(2, "0");
 
-  if (modifier?.toLowerCase() === "pm" && hours < 12) hours += 12;
-  if (modifier?.toLowerCase() === "am" && hours === 12) hours = 0;
-
-  date.setHours(hours);
-  date.setMinutes(minutes || 0);
-  date.setSeconds(0);
-  return date.toISOString();
+  // Combine and return in UTC format string
+  return `${yyyy}-${mm}-${dd}T${timeString}:00Z`;
 }

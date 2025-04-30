@@ -30,5 +30,6 @@ export function getFormattedDiscountDates(parsedBody: {
     formattedEndDate = "2023-11-01T00:00:00Z";
   }
 
+  //  2019-09-07T15:50:00Z
   return { formattedStartDate, formattedEndDate };
 }

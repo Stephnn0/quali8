@@ -1,5 +1,4 @@
 import {
-  Badge,
   Button,
   Card,
   EmptyState,
@@ -91,20 +90,36 @@ export function PickQualifiers({ mockQualifiers, form }: PickQualifiersProps) {
   const navigate = useNavigate();
 
   // ========================================================================== //
+
   const selectedQualifiersDisplay = qualifiers
-    .filter((q) => selectedResources.includes(q.id))
-    .map((q) => <Badge key={q.id}>{q.name}</Badge>);
+    .filter((q: any) => selectedResources.includes(q.id))
+    .map((q: any) => (
+      <div
+        key={q.id}
+        style={{
+          marginTop: "10px",
+          padding: "0.5rem 1rem",
+          border: "1px solid #ccc",
+          borderRadius: "8px",
+          backgroundColor: "#f9f9f9",
+        }}
+      >
+        {q.name}
+      </div>
+    ));
 
   const [modalActive, setModalActive] = useState(false);
   const [temporarySelected, setTemporarySelected] = useState<string[]>([]);
 
   const handleModalClose = () => {
-    const selectedQualifier = qualifiers.filter((q) =>
+    const selectedQualifier = qualifiers.filter((q: any) =>
       temporarySelected.includes(q.id),
     );
 
-    const selectedCustomers = selectedQualifier.flatMap((q) => q.customers);
-    const selectedQualifierIds = selectedQualifier.map((q) => q.id);
+    const selectedCustomers = selectedQualifier.flatMap(
+      (q: any) => q.customers,
+    );
+    const selectedQualifierIds = selectedQualifier.map((q: any) => q.id);
 
     customers.onChange(selectedCustomers);
     qualifierIds.onChange(selectedQualifierIds);
@@ -133,7 +148,9 @@ export function PickQualifiers({ mockQualifiers, form }: PickQualifiersProps) {
           Choose Qualifiers
         </Button>
         <br />
-        {selectedQualifiersDisplay}
+        <div style={{}}>
+          <p>{selectedQualifiersDisplay}</p>
+        </div>
       </Card>
 
       <Modal

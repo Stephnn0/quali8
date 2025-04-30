@@ -6,12 +6,14 @@ import {
   LegacyStack,
   Box,
   Text,
+  EmptyState,
 } from "@shopify/polaris";
 import { useState } from "react";
 import { DeleteIcon } from "@shopify/polaris-icons";
 import type { QualifierForm } from "../hooks";
 import type { FilterCustomersForm } from "../hooks/filterCustomers";
 import { ConditionValueInput } from "./DyanmicInputs";
+import conditionsImage from "app/assets/conditions.png";
 
 type ConditionsQualifierProps = {
   form: QualifierForm;
@@ -148,23 +150,19 @@ export default function NewConditions({
       <br />
 
       {conditions.length === 0 ? (
-        <Box padding="300" background="bg-surface">
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
+        <Card>
+          <EmptyState
+            heading="No conditions added yet."
+            image={conditionsImage}
+            action={{
+              content: "Add First Condition",
+              onAction: addCondition,
             }}
+            fullWidth
           >
-            <h2 style={{ paddingBottom: "7px" }}>No conditions added yet.</h2>
-            <br />
-            <br />
-
-            <Button variant="primary" onClick={addCondition}>
-              Add First Condition
-            </Button>
-          </div>
-        </Box>
+            <p>Add First Condition</p>
+          </EmptyState>
+        </Card>
       ) : (
         <>
           {conditions.map((condition, index) => (
