@@ -1,10 +1,10 @@
 import { Page } from "@shopify/polaris";
+import { Billing } from "app/components/BIlling";
 
 export default function Settings() {
   return (
-    <Page>
-      <h1>Settings</h1>
-      <p>Settings page</p>
+    <Page title="Settings">
+      <Billing />
     </Page>
   );
 }

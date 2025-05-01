@@ -1,0 +1,13 @@
+============================ FUNCTION =============================
+1- code , percentage 40, all rates  ---------------------- WORKS
+2 - automatic , fixed, 40, all rates  ---------------------- WORKS
+3 - automatic , fixed , 1 , specific rates ----------------- WORKS
+4 - TIMES DONT WORK
+5 - code/automatic for only selected customers -------------- WORKS
+
+
+
+
+
+
+============================ CRUD TESTS =============================
