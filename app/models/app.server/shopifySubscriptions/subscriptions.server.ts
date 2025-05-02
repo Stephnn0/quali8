@@ -10,6 +10,7 @@ import type { AdminGraphqlClient } from "@shopify/shopify-app-remix/server";
 import { getShopID } from "app/models/shopify.server/shop/shop.server";
 import { encodeGlobalID } from "app/utils/shopify";
 import { APP_PLANS } from "app/constants/plans";
+import { setAppSubscriptionMetafield } from "app/services/setup/metafields/setupAppSubscriptionMetafield/set";
 
 /**
  * Find a ShopifySubscription object in the database.
@@ -138,7 +139,7 @@ async function upsert<T extends AppShopifySubscriptionUpsertArgs>(
       const subscription = shopifyStore.shopifySubscriptions.find(Boolean);
 
       // Update the activeSubscription metafield for the shop
-      // ! await setAppSubscriptionMetafield(graphql, subscription || null, shopID);
+      await setAppSubscriptionMetafield(graphql, subscription || null, shopID);
 
       return upsertedSubscription;
     };

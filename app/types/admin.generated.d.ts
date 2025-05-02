@@ -3,6 +3,36 @@
 /* eslint-disable */
 import type * as AdminTypes from './admin.types';
 
+export type AppIdAndMetafieldsQueryVariables = AdminTypes.Exact<{
+  namespace: AdminTypes.Scalars['String']['input'];
+}>;
+
+
+export type AppIdAndMetafieldsQuery = { app?: AdminTypes.Maybe<(
+    Pick<AdminTypes.App, 'id'>
+    & { installation?: AdminTypes.Maybe<(
+      Pick<AdminTypes.AppInstallation, 'id'>
+      & { metafields: { nodes: Array<Pick<AdminTypes.Metafield, 'id' | 'key' | 'namespace' | 'value'>> } }
+    )> }
+  )> };
+
+export type AppIdAndShopIdWithMetafieldsQueryVariables = AdminTypes.Exact<{
+  namespace?: AdminTypes.InputMaybe<AdminTypes.Scalars['String']['input']>;
+  ownerType: AdminTypes.MetafieldOwnerType;
+}>;
+
+
+export type AppIdAndShopIdWithMetafieldsQuery = { app?: AdminTypes.Maybe<Pick<AdminTypes.App, 'id'>>, shop: (
+    Pick<AdminTypes.Shop, 'id'>
+    & { metafields: { nodes: Array<(
+        Pick<AdminTypes.Metafield, 'id' | 'key' | 'namespace' | 'value'>
+        & { definition?: AdminTypes.Maybe<{ access: Pick<AdminTypes.MetafieldAccess, 'admin' | 'customerAccount' | 'storefront'> }> }
+      )> } }
+  ), metafieldDefinitions: { nodes: Array<(
+      Pick<AdminTypes.MetafieldDefinition, 'namespace' | 'key'>
+      & { access: Pick<AdminTypes.MetafieldAccess, 'admin' | 'customerAccount' | 'storefront'> }
+    )> } };
+
 export type CustomersQueryVariables = AdminTypes.Exact<{
   first?: AdminTypes.InputMaybe<AdminTypes.Scalars['Int']['input']>;
   query?: AdminTypes.InputMaybe<AdminTypes.Scalars['String']['input']>;
@@ -87,6 +117,33 @@ export type GetShopifyFunctionsQueryVariables = AdminTypes.Exact<{
 
 export type GetShopifyFunctionsQuery = { shopifyFunctions: { edges: Array<{ node: Pick<AdminTypes.ShopifyFunction, 'id' | 'title'> }> } };
 
+export type SetMetafieldMutationVariables = AdminTypes.Exact<{
+  metafieldsSetInput: Array<AdminTypes.MetafieldsSetInput> | AdminTypes.MetafieldsSetInput;
+}>;
+
+
+export type SetMetafieldMutation = { metafieldsSet?: AdminTypes.Maybe<{ metafields?: AdminTypes.Maybe<Array<(
+      Pick<AdminTypes.Metafield, 'id' | 'namespace' | 'key' | 'value'>
+      & { definition?: AdminTypes.Maybe<{ access: Pick<AdminTypes.MetafieldAccess, 'admin' | 'customerAccount' | 'storefront'> }> }
+    )>>, userErrors: Array<Pick<AdminTypes.MetafieldsSetUserError, 'field' | 'message'>> }> };
+
+export type MetafieldDefinitionCreateMutationVariables = AdminTypes.Exact<{
+  definition: AdminTypes.MetafieldDefinitionInput;
+}>;
+
+
+export type MetafieldDefinitionCreateMutation = { metafieldDefinitionCreate?: AdminTypes.Maybe<{ createdDefinition?: AdminTypes.Maybe<(
+      Pick<AdminTypes.MetafieldDefinition, 'id' | 'namespace' | 'key' | 'ownerType'>
+      & { access: Pick<AdminTypes.MetafieldAccess, 'admin' | 'customerAccount' | 'storefront'> }
+    )>, userErrors: Array<Pick<AdminTypes.MetafieldDefinitionCreateUserError, 'field' | 'message' | 'code'>> }> };
+
+export type UpdateMetafieldDefinitionMutationVariables = AdminTypes.Exact<{
+  definition: AdminTypes.MetafieldDefinitionUpdateInput;
+}>;
+
+
+export type UpdateMetafieldDefinitionMutation = { metafieldDefinitionUpdate?: AdminTypes.Maybe<{ updatedDefinition?: AdminTypes.Maybe<Pick<AdminTypes.MetafieldDefinition, 'id' | 'name'>>, userErrors: Array<Pick<AdminTypes.MetafieldDefinitionUpdateUserError, 'field' | 'message' | 'code'>> }> };
+
 export type ShopInfoQueryVariables = AdminTypes.Exact<{
   appURLMetafieldKey: AdminTypes.Scalars['String']['input'];
   appENVMetafieldNamespace: AdminTypes.Scalars['String']['input'];
@@ -107,6 +164,8 @@ export type ShopIdQueryVariables = AdminTypes.Exact<{ [key: string]: never; }>;
 export type ShopIdQuery = { shop: Pick<AdminTypes.Shop, 'id'> };
 
 interface GeneratedQueryTypes {
+  "#graphql\n  query AppIdAndMetafields($namespace: String!) {\n    app {\n      id\n      installation {\n        id\n        metafields(first: 3, namespace: $namespace) {\n          nodes {\n            id\n            key\n            namespace\n            value\n          }\n        }\n      }\n    }\n  }\n": {return: AppIdAndMetafieldsQuery, variables: AppIdAndMetafieldsQueryVariables},
+  "#graphql\n  query AppIdAndShopIdWithMetafields($namespace: String, $ownerType: MetafieldOwnerType!) {\n    app {\n      id\n    }\n    shop {\n      id\n      metafields(first: 50, namespace: $namespace) {\n        nodes {\n          id\n          key\n          namespace\n          value\n          definition {\n            access {\n              admin\n              customerAccount\n              storefront\n            }\n          }\n        }\n      }\n    }\n    metafieldDefinitions(first: 50, namespace: $namespace, ownerType: $ownerType) {\n      nodes {\n        namespace\n        key\n        access {\n          admin\n          customerAccount\n          storefront\n        }\n      }\n    }\n  }\n": {return: AppIdAndShopIdWithMetafieldsQuery, variables: AppIdAndShopIdWithMetafieldsQueryVariables},
   "#graphql\n  query customers($first: Int, $query: String) {\n    customers(first: $first, query: $query) {\n      edges {\n        node {\n          id\n          firstName\n          lastName\n          createdAt\n          addresses {\n           country\n          }\n          amountSpent {\n           amount\n          }\n          lastOrder {\n            createdAt\n          }\n          defaultAddress {\n            address1\n          }\n          orders(first: 40) {\n            edges {\n              node {\n                id\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n": {return: CustomersQuery, variables: CustomersQueryVariables},
   "#graphql\n  query deliveryProfiles($first: Int) {\n    deliveryProfiles(first: $first) {\n      nodes {\n         name\n         profileLocationGroups {\n           locationGroupZones(first: 20) {\n             edges {\n               node {\n                  methodDefinitions(first: 20){\n                    edges {\n                      node {\n                         name\n                         rateProvider {\n                          ... on DeliveryRateDefinition {\n                            id\n                            price {\n                              amount\n                           }\n                         }\n                       }\n                     }\n                   }\n                 }\n               }\n             }\n           }\n         }\n       }\n    }\n  }\n": {return: DeliveryProfilesQuery, variables: DeliveryProfilesQueryVariables},
   "#graphql\n  query getShopifyFunctions($first: Int) {\n    shopifyFunctions(first: $first) {\n      edges {\n        node {\n          id\n          title\n        }\n      }\n    }\n  }\n": {return: GetShopifyFunctionsQuery, variables: GetShopifyFunctionsQueryVariables},
@@ -119,6 +178,9 @@ interface GeneratedMutationTypes {
   "#graphql\n  mutation discountAutomaticAppCreate(\n   $functionId: String!\n   $title: String!\n   $startsAt: DateTime!\n   $endsAt: DateTime\n   $metafields: [MetafieldInput!]!\n   $orderDiscounts: Boolean\n   $productDiscounts: Boolean\n   $shippingDiscounts: Boolean\n  ) {\n    discountAutomaticAppCreate(\n      automaticAppDiscount: {\n        functionId: $functionId\n        title: $title\n        startsAt: $startsAt\n        endsAt: $endsAt\n        metafields: $metafields\n        combinesWith:  {\n           orderDiscounts: $orderDiscounts\n           productDiscounts: $productDiscounts\n           shippingDiscounts: $shippingDiscounts\n        }    \n      }\n    ) {\n      automaticAppDiscount {\n        discountId\n      }\n      userErrors {\n        message\n      }\n    }\n  }\n": {return: DiscountAutomaticAppCreateMutation, variables: DiscountAutomaticAppCreateMutationVariables},
   "#graphql\n  mutation discountCodeAppDelete($ID: ID!) {\n    discountCodeDelete(id: $ID) {\n      deletedCodeDiscountId\n      userErrors {\n        field\n        code\n        message\n      }\n    }\n  }\n": {return: DiscountCodeAppDeleteMutation, variables: DiscountCodeAppDeleteMutationVariables},
   "#graphql\n  mutation discountAutomaticAppDelete($ID: ID!) {\n    discountAutomaticDelete(id: $ID) {\n      deletedAutomaticDiscountId\n      userErrors {\n        field\n        code\n        message\n      }\n    }\n  }\n": {return: DiscountAutomaticAppDeleteMutation, variables: DiscountAutomaticAppDeleteMutationVariables},
+  "#graphql\n  mutation SetMetafield($metafieldsSetInput: [MetafieldsSetInput!]!) {\n    metafieldsSet(metafields: $metafieldsSetInput) {\n      metafields {\n        id\n        namespace\n        key\n        value\n        definition {\n          access {\n            admin\n            customerAccount\n            storefront\n          }\n        }\n      }\n      userErrors {\n        field\n        message\n      }\n    }\n  }\n": {return: SetMetafieldMutation, variables: SetMetafieldMutationVariables},
+  "#graphql\n  mutation MetafieldDefinitionCreate($definition: MetafieldDefinitionInput!) {\n    metafieldDefinitionCreate(definition: $definition) {\n      createdDefinition {\n        id\n        namespace\n        key\n        ownerType\n        access {\n          admin\n          customerAccount\n          storefront\n        }\n      }\n      userErrors {\n        field\n        message\n        code\n      }\n    }\n  }\n": {return: MetafieldDefinitionCreateMutation, variables: MetafieldDefinitionCreateMutationVariables},
+  "#graphql\n  mutation UpdateMetafieldDefinition($definition: MetafieldDefinitionUpdateInput!) {\n    metafieldDefinitionUpdate(definition: $definition) {\n      updatedDefinition {\n        id\n        name\n      }\n      userErrors {\n        field\n        message\n        code\n      }\n    }\n  }\n": {return: UpdateMetafieldDefinitionMutation, variables: UpdateMetafieldDefinitionMutationVariables},
 }
 declare module '@shopify/admin-api-client' {
   type InputMaybe<T> = AdminTypes.InputMaybe<T>;
