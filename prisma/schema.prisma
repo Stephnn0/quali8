@@ -41,6 +41,8 @@ model ShopifyStore {
   customers            Customers[]   
   conditions           Conditions[]      
   shippingDiscounts     ShippingDiscountAction[]
+  shopifySubscriptions ShopifySubscription[]
+  shopData             ShopifyShopData?
 }
 
 enum AppStatus {
@@ -182,4 +184,217 @@ enum ShippingRateType {
 enum ShippingDiscountState {
   ENABLED
   DISABLED
+}
+
+
+// https://shopify.dev/docs/api/admin-graphql/latest/objects/AppSubscription
+// https://shopify.dev/docs/apps/launch/billing/subscription-billing
+// 
+// Shopify Subscriptions are different than traditional subscriptions
+// The name "Subscription" is used to encapsulate the concept of a billing agreement between the app and the store owner
+//
+// The agreement (Subscription) may contain a recurring charge, a usage-based charge, or both, but not neither (i.e., it must have at least one of them).
+// In Shopify's API these treated as LineItems, which are part of the AppSubscription object
+// In our app, we simplify this by just flattening and removing the LineItems property.
+//
+// Here are some key points about Shopify Subscriptions:
+// - A subscription may have a maximum of one recurring charge and one usage charge, and a minimum or one of them.
+// - A subscription may have a trial period, which is a fixed number of days a subscription won't be billed for.
+// - A subscription is just an agreement, the actual terms are under the Plan (lineItem) object.
+// - A subscription can be cancelled manually or automatically (by uninstalling the app).
+// - Re-subscribing, or changing subscription agreement (the plan), creates a new subscription (with a new Shopify ID) and ends the previous one.
+// - An app may have a maximum of one active subscription per store. This might be confusing as Shopify returns `activeSubscriptions` as an array, but they state that you can only have one. https://shopify.dev/docs/apps/launch/billing/subscription-billing#how-it-works
+// TODO - verify how the trialDays work when the subscription includes usage-based charges, what happens to these charges during the trial period?
+//
+
+model ShopifySubscription {
+  id                             Int                           @id @default(autoincrement())
+  createdAt                      DateTime                      @default(now())
+  updatedAt                      DateTime                      @default(now()) @updatedAt
+  //
+  shopifyId                      String /// GID of the subscription in the form of `"gid://shopify/AppSubscription/1234567890"`
+  name                           String /// Subscription name.
+  startDate                      DateTime                      @default(now()) /// Subscription start date, map to `createdAt` in Shopify
+  currentPeriodEnd               DateTime? /// Subscription end date, if active
+  status                         SubscriptionStatus /// Shopify subscription status - https://shopify.dev/docs/api/admin-graphql/latest/objects/appsubscription#field-status
+  test                           Boolean                       @default(false) /// Whether the subscription is in test mode (Only for development purposes)
+  trialDays                      Int? /// Number of days the subscription is in trial period
+  cancelMethod                   CancellationMethod? /// If the subscription was cancelled, it means how it was cancelled.
+  //
+  // TODO - These two should have a check constraint to ensure atleast one of them is not null
+  // TODO - there must be a check where if one is set, the respecive counterpart must be set too, for example, if `shopifyRecurringPricing` is set, then `recurringPlan` must be set too.
+  shopifyRecurringPricingId      Int? ///  Use `connectOrCreate`
+  shopifyRecurringPricing        ShopifyRecurringPricing?      @relation(fields: [shopifyRecurringPricingId], references: [id], onDelete: Restrict, onUpdate: Cascade) /// Use `connectOrCreate`. These are the pricing details that Shopify will charge the merchant.
+  unstable_shopifyUsagePricingId Int? /// Unstable, do not use in production. Use `connectOrCreate`
+  unstable_shopifyUsagePricing   Unstable_ShopifyUsagePricing? @relation(fields: [unstable_shopifyUsagePricingId], references: [id], onDelete: Restrict, onUpdate: Cascade) /// Unstable, do not use in production. Use `connectOrCreate`. These are the pricing details that Shopify will charge the merchant. 
+  //
+  // TODO - These two should have a check constraint to ensure atleast one of them is not null
+  // TODO - there must be a check where if one is set, the respecive counterpart must be set too, for example, if `recurringPlan` is set, then `shopifyRecurringPricing` must be set too.
+  // These are our own internal pricing details that we use to compare with Shopify's pricing (in case of discount, refund, etc) and associate extra business logic.
+  // These are seeded during deployment and are not meant to be updated/deleted by the app, only by admins.
+  recurringPlanId                Int? /// Only use `connect`
+  recurringPlan                  RecurringPlan?                @relation(fields: [recurringPlanId], references: [id], onDelete: Restrict, onUpdate: Cascade) /// Only use `connect`
+  unstable_usagePlanId           Int? /// Unstable, do not use in production. Only use `connect`
+  unstable_usagePlan             Unstable_UsagePlan?           @relation(fields: [unstable_usagePlanId], references: [id], onDelete: Restrict, onUpdate: Cascade) /// Unstable, do not use in production. Only use `connect`
+  //
+  shop                           String
+  shopifyStore                   ShopifyStore                  @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([shop, shopifyId])
+}
+
+/// https://shopify.dev/docs/api/admin-graphql/latest/objects/appsubscription#field-status
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELLED
+  DECLINED
+  EXPIRED
+  FROZEN
+  PENDING
+  ACCEPTED
+}
+
+enum CancellationMethod {
+  UNINSTALL
+  MANUAL
+}
+
+/// Mapped to AppRecurringPricing in Shopify's API. These are the pricing details that Shopify will charge the merchant.
+model ShopifyRecurringPricing {
+  id                         Int                    @id @default(autoincrement())
+  createdAt                  DateTime               @default(now())
+  updatedAt                  DateTime               @default(now()) @updatedAt
+  //
+  price                      Float /// The subtotal price of the plan. Mapped to `AppRecurringPricing.price.amount` in Shopify's API
+  currencyCode               String
+  interval                   ShopifyPricingInterval
+  //
+  discount                   Float? /// Discount amount for the discount. Mapped to either `AppRecurringPricing.discount.value.amount` if `discountType` is `AMOUNT` or `AppRecurringPricing.discount.value.percentage` if `discountType` is `PERCENTAGE` in Shopify's API
+  discountType               ShopifyDiscountType? /// Discount type. Infered via the presence of either `AppRecurringPricing.discount.value.amount` or `AppRecurringPricing.discount.value.percentage`. Shopify won't allow both to be set at the same time.
+  discountPriceAfter         Float? /// Price after discount is applied. Mapped to `AppRecurringPricing.discount.priceAfterDiscount.amount` in Shopify's API
+  discountCurrencyCode       String? /// Currency code after discount is applied. Mapped to `AppRecurringPricing.discount.priceAfterDiscount.currencyCode` in Shopify's API
+  discountDurationIntervals  Int? /// Number of intervals the discount applies to. For example, if the plan is $10/month and the discount is $5/month for 3 months, then this would be 3. Mapped to `AppRecurringPricing.discount.durationLimitInIntervals` in Shopify's API
+  discountRemainingIntervals Int? /// Number of intervals remaining for the discount to apply. Mapped to `AppRecurringPricing.discount.remainingDurationInIntervals` in Shopify's API
+  //
+  /// These are not tied to IDs in Shopify, so we can just reuse the same object for multiple subscriptions
+  subscriptions              ShopifySubscription[] /// * Use connectOrCreate
+
+  @@unique([price, currencyCode, interval, discount, discountType, discountPriceAfter, discountCurrencyCode, discountDurationIntervals, discountRemainingIntervals])
+}
+
+enum ShopifyDiscountType {
+  AMOUNT
+  PERCENTAGE
+}
+
+/// Mapped to AppUsagePricing in Shopify's API. These are the pricing details that Shopify will charge the merchant.
+model Unstable_ShopifyUsagePricing {
+  id                  Int                    @id @default(autoincrement())
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @default(now()) @updatedAt
+  //
+  cappedAmount        Float /// The maximum amount that the merchant will be charged for usage. Mapped to `AppUsagePricing.cappedAmount.amount` in Shopify's API
+  currencyCode        String /// The currency code of the capped amount. Mapped to `AppUsagePricing.cappedAmount.currencyCode` in Shopify's API
+  interval            ShopifyPricingInterval /// The interval at which the capped amount is calculated. Mapped to `AppUsagePricing.interval` in Shopify's API
+  terms               String /// The terms of the usage pricing (The agreement with the merchant). Mapped to `AppUsagePricing.terms` in Shopify's API
+  //
+  balanceUsed         Float /// The amount of the capped amount that has been used. Mapped to `AppUsagePricing.balanceUsed.amount` in Shopify's API
+  balanceCurrencyCode String /// The currency code of the balance used. Mapped to `AppUsagePricing.balanceUsed.currencyCode` in Shopify's API
+  //
+  /// These are not tied to IDs in Shopify, so we can just reuse the same object for multiple subscriptions
+  subscription        ShopifySubscription[] /// * Use connectOrCreate
+
+  @@unique([cappedAmount, currencyCode, interval, terms, balanceUsed, balanceCurrencyCode])
+}
+
+// https://shopify.dev/docs/api/admin-graphql/latest/objects/AppRecurringPricing#field-interval
+enum ShopifyPricingInterval {
+  ANNUAL
+  EVERY_30_DAYS
+}
+
+// TODO - Rolebased constraint Entries of this table should only be editable by high-level admin in Supabase, not the app itself.
+model RecurringPlan {
+  id                   Int                    @id @default(autoincrement())
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @default(now()) @updatedAt
+  //
+  shopifyPlanID        String? /// The ID of the plan in Shopify, used to identify the plan in Shopify's API // * unstable for now
+  price                Float /// Price for the interval in USD
+  name                 String /// Public name e.g., "Free", "Pro"
+  code                 String                 @unique /// Unique identifier of the plan, may be used in the future for API
+  level                RecurringPlanLevel     @default(FREE) /// Multiple Plans can have the same level, for example, "Pro" in annual and monthly.
+  interval             ShopifyPricingInterval /// Interval at which the price is charged
+  trialDays            Int?
+  //
+  // Limit and Amount columns go together, if you create a limit, you must also create an amount column.
+  // It's very important that you append exactly the words `limit` and `amount` to the column name.
+  // This is because our Gatekeeper system uses these columns to determine the limits and amounts for the merchant, and it's easier to automate this way.
+  // 
+  hasQualifiers        Boolean                @default(false)
+  hasShippingDiscounts            Boolean                @default(false)
+  //
+  //
+  read_generalApis     Boolean /// Whether the merchant can read general APIs
+  write_generalApis    Boolean /// Whether the merchant can write general APIs
+  //
+  subscriptions        ShopifySubscription[] /// * Only use `connect`, do not edit/delete these
+
+  @@unique([name, interval])
+  @@unique([name, interval, level])
+  @@unique([shopifyPlanID, interval])
+  @@unique([shopifyPlanID, interval, level])
+}
+
+enum RecurringPlanLevel {
+  FREE
+  PRO
+}
+
+// TODO - Rolebased constraint Entries of this table should only be editable by high-level admin in Supabase, not the app itself.
+// ! This is an unstable model, it is not meant to be used in production, only for development and testing.
+// When the model is stable, the fields will be moved to a `UsagePlan` model and the `Unstable_UsagePlan` model/data will be deleted.
+/// Unstable, do not use in production
+model Unstable_UsagePlan {
+  id            Int                     @id @default(autoincrement())
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @default(now()) @updatedAt
+  //
+  cappedAmount  Float /// The maximum amount that the merchant will be charged for usage in USD
+  name          String /// e.g., "Basic", "Premium"
+  code          String                  @unique // unique identifier of the plan, may be used in the future for API
+  level         Unstable_UsagePlanLevel @default(PAY_AS_YOU_GO)
+  trialDays     Int?
+  //
+  subscriptions ShopifySubscription[] /// * Only use `connect`, do not edit/delete these
+}
+
+/// Unstable, do not use in production
+enum Unstable_UsagePlanLevel {
+  PAY_AS_YOU_GO
+}
+
+
+
+model ShopifyShopData {
+  id              Int          @id @default(autoincrement())
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @default(now()) @updatedAt
+  //
+  shopID          BigInt? // TODO set this mandatory or make it as we always have it available after setup
+  name            String?
+  email           String?
+  shopOwnerName   String?
+  country         String? // new
+  currency        String? // new
+  timezone        String?
+  primaryLocale   String? // new
+  ianaTimezone    String?
+  planName        String?
+  planDisplayName String?
+  myshopifyDomain String?
+  hasStorefront   Boolean?
+  //
+  shop            String       @unique
+  shopifyStore    ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
 }
