@@ -348,7 +348,7 @@ model RecurringPlan {
 
 enum RecurringPlanLevel {
   FREE
-  PRO
+  BASIC
 }
 
 // TODO - Rolebased constraint Entries of this table should only be editable by high-level admin in Supabase, not the app itself.

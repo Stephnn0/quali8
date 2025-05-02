@@ -7,17 +7,19 @@ import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
 import { authenticate } from "app/shopify.server";
 import { getAppStatus } from "app/services/setup/getAppStatus";
 import db from "app/db.server";
+import { getSubscription } from "./getSubscription";
 
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const authAdminContext = await authenticate.admin(request);
+export const loader = async (loaderContext: LoaderFunctionArgs) => {
+  const authAdminContext = await authenticate.admin(loaderContext.request);
 
   const [{ shopInfo, shopifyStore }] = await Promise.all([
     //
     // Redirects to /setup if app needs to be setup
     getAppStatus(authAdminContext, db), // * Redirects
     //
+    getSubscription(loaderContext, authAdminContext),
   ]);
 
   console.log("shopInfo", shopInfo);

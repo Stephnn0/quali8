@@ -1,16 +1,31 @@
-import type { Prisma, PrismaClient } from "@prisma/client";
+import {
+  SubscriptionStatus,
+  type Prisma,
+  type PrismaClient,
+} from "@prisma/client";
 import type {
   AppShopifySubscriptionFindFirstArgs,
   AppShopifySubscriptionFindManyArgs,
   AppShopifySubscriptionUpsertArgs,
 } from "./types";
-import type { AuthAdminContext } from "app/types/utility/shopify";
+import type {
+  AuthAdminContext,
+  AuthWebhookContext,
+} from "app/types/utility/shopify";
 import type { FirstParam } from "app/types/utility/extendedTypescript";
 import type { AdminGraphqlClient } from "@shopify/shopify-app-remix/server";
 import { getShopID } from "app/models/shopify.server/shop/shop.server";
 import { encodeGlobalID } from "app/utils/shopify";
 import { APP_PLANS } from "app/constants/plans";
 import { setAppSubscriptionMetafield } from "app/services/setup/metafields/setupAppSubscriptionMetafield/set";
+import { appSubscriptionModel } from "app/models/shopify.server/appSubscription";
+import {
+  getDiscountAmount,
+  getDiscountPercentage,
+  getDiscountType,
+  getRecurringPricing,
+} from "./utils";
+import { recurringPlanModel } from "app/models/shopify.server/recurringPlan";
 
 /**
  * Find a ShopifySubscription object in the database.
@@ -229,9 +244,183 @@ export type ActiveSubscription = Awaited<
   ReturnType<typeof shopifySubscriptionModel.findActiveSubscription>
 >;
 
+async function findAllActiveSubscriptions(
+  db: PrismaClient,
+  shop: string,
+): Promise<ActiveSubscription[]> {
+  try {
+    const activeSubscriptions = await shopifySubscriptionModel.findMany(db, {
+      where: { shop, status: "ACTIVE" },
+      include: { recurringPlan: true, shopifyRecurringPricing: true },
+    });
+
+    return activeSubscriptions;
+  } catch (error) {
+    console.error("Error finding all active subscriptions:", error);
+    throw error; // Just for enhancing the returntype, as the above function will always throw
+  }
+}
+
+/**
+ * Sync a subscription with the database via a Shopify
+ *
+ * @param db - The PrismaClient instance
+ * @param authContext - The context object containing the webhook or admin payload and other utilities.
+ * @param subscription - The subscription object to upsert
+ * @param processID - The process ID for logging - usually the webhook ID or an UUID if not in a webhook context
+ * @returns void
+ */
+async function syncSubscription(
+  db: PrismaClient,
+  authContext: AuthWebhookContext | AuthAdminContext,
+  subscription: NonNullable<
+    Awaited<ReturnType<typeof appSubscriptionModel.find>>
+  >,
+  processID: string,
+) {
+  const { admin, session } = authContext || {};
+
+  if (!admin)
+    throw new Error(
+      `${processID} - No admin context available for upserting subscription`,
+    );
+
+  // const usagePricing = getUsagePricing(richSubscription);
+  const recurringPricing = getRecurringPricing(subscription);
+  const discountAmount = getDiscountAmount(recurringPricing);
+  const discountPercentage = getDiscountPercentage(recurringPricing);
+  const discountType = getDiscountType(discountAmount, discountPercentage);
+
+  // if (!recurringPricing || !usagePricing) throw new Error(`${processID} - No recurring pricing found in subscription`);
+  if (!recurringPricing)
+    throw new Error(
+      `${processID} - No recurring pricing found in subscription`,
+    );
+
+  const recurringPlan = await recurringPlanModel.find(db, {
+    omit: { id: false },
+    where: {
+      OR: [
+        { name: subscription.name },
+        { shopifyPlanID: recurringPricing.planId || "" },
+      ],
+      AND: { interval: recurringPricing.interval },
+    },
+  });
+
+  // This can be commented out when we introduce usage-pricing only subscriptions
+  if (!recurringPlan)
+    throw new Error(`${processID} - No recurring plan found in subscription`);
+
+  const createShopifyRecurringPricingInput =
+    recurringPricing &&
+    ({
+      price: Number(recurringPricing?.price.amount),
+      currencyCode: recurringPricing?.price.currencyCode,
+      interval: recurringPricing?.interval,
+      discountType,
+      discount:
+        Number(discountAmount?.amount) || Number(discountPercentage) || null,
+      discountPriceAfter: Number(
+        recurringPricing?.discount?.priceAfterDiscount.amount,
+      ),
+      discountCurrencyCode:
+        recurringPricing?.discount?.priceAfterDiscount.currencyCode,
+      discountDurationIntervals:
+        recurringPricing?.discount?.durationLimitInIntervals,
+      discountRemainingIntervals:
+        recurringPricing?.discount?.remainingDurationInIntervals,
+    } as const satisfies Prisma.ShopifyRecurringPricingCreateInput);
+
+  // We do a find first here because we can't use optional field Null values (discountCurrencyCode) in the where clause of where in connectOrCreate
+  // https://github.com/Brendonovich/prisma-client-rust/issues/62
+  const shopifyRecurringPricing =
+    createShopifyRecurringPricingInput &&
+    (await db.shopifyRecurringPricing.findFirst({
+      omit: { id: false },
+      where: createShopifyRecurringPricingInput,
+    }));
+
+  const createSubscriptionInput = {
+    shopifyId: subscription.id,
+    name: subscription.name,
+    startDate: subscription.createdAt,
+    currentPeriodEnd: subscription.currentPeriodEnd,
+    status: subscription.status,
+    test: subscription.test,
+    trialDays: subscription.trialDays,
+    cancelMethod:
+      subscription.status === SubscriptionStatus.CANCELLED
+        ? "MANUAL"
+        : undefined,
+
+    shopifyStore: { connect: { shop: session.shop } },
+
+    shopifyRecurringPricing: createShopifyRecurringPricingInput
+      ? {
+          connectOrCreate: {
+            create: createShopifyRecurringPricingInput,
+            where: { id: shopifyRecurringPricing?.id || -1 },
+          },
+        }
+      : undefined,
+
+    recurringPlan: recurringPlan
+      ? { connect: { id: recurringPlan.id } }
+      : undefined,
+
+    // # Unstable for now, see billing.prisma
+    // unstable_shopifyUsagePricing: {
+    //   connectOrCreate: {
+    //     where: {
+    //       cappedAmount_currencyCode_interval_terms_balanceUsed_balanceCurrencyCode: {
+    //         balanceCurrencyCode: usagePricing?.balanceUsed.currencyCode
+    //       }
+    //     }
+    //   }
+    // }
+    //
+  } as const satisfies Prisma.ShopifySubscriptionCreateInput;
+
+  const sub = await db.$transaction(async (tx) => {
+    // Cancel all active subscriptions for the shop, as we can only have one active subscription at a time
+
+    if (createSubscriptionInput.status === "ACTIVE") {
+      await tx.shopifySubscription.updateMany({
+        where: { shop: session.shop, status: "ACTIVE" },
+        data: {
+          status: "CANCELLED",
+          currentPeriodEnd: null,
+          cancelMethod: "MANUAL",
+        },
+      });
+    }
+
+    // Upsert the subscription
+    return shopifySubscriptionModel.upsert(tx, admin.graphql, {
+      create: createSubscriptionInput,
+      update: createSubscriptionInput,
+      where: {
+        shop_shopifyId: { shop: session.shop, shopifyId: subscription.id },
+      },
+      include: { recurringPlan: true, shopifyRecurringPricing: true },
+    });
+  });
+
+  return sub;
+}
+
+// -------------------------------------------------------
+// -------------------------------------------------------
+// * ---------------  Final Export  ----------------------
+// -------------------------------------------------------
+// -------------------------------------------------------
+
 export const shopifySubscriptionModel = {
   find,
   findMany,
   upsert,
   findActiveSubscription,
+  findAllActiveSubscriptions,
+  syncSubscription,
 };

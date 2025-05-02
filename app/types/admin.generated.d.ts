@@ -3,6 +3,64 @@
 /* eslint-disable */
 import type * as AdminTypes from './admin.types';
 
+export type UnstableActiveSubscriptionsQueryVariables = AdminTypes.Exact<{ [key: string]: never; }>;
+
+
+export type UnstableActiveSubscriptionsQuery = { currentAppInstallation: { activeSubscriptions: Array<(
+      Pick<AdminTypes.AppSubscription, 'id' | 'name' | 'status' | 'test' | 'trialDays' | 'createdAt' | 'currentPeriodEnd'>
+      & { lineItems: Array<(
+        Pick<AdminTypes.AppSubscriptionLineItem, 'id'>
+        & { plan: { pricingDetails: (
+            { __typename: 'AppRecurringPricing' }
+            & Pick<AdminTypes.AppRecurringPricing, 'interval'>
+            & { price: Pick<AdminTypes.MoneyV2, 'amount' | 'currencyCode'>, discount?: AdminTypes.Maybe<(
+              Pick<AdminTypes.AppSubscriptionDiscount, 'durationLimitInIntervals' | 'remainingDurationInIntervals'>
+              & { value: (
+                { __typename: 'AppSubscriptionDiscountAmount' }
+                & { amount: Pick<AdminTypes.MoneyV2, 'amount' | 'currencyCode'> }
+              ) | (
+                { __typename: 'AppSubscriptionDiscountPercentage' }
+                & Pick<AdminTypes.AppSubscriptionDiscountPercentage, 'percentage'>
+              ), priceAfterDiscount: Pick<AdminTypes.MoneyV2, 'amount' | 'currencyCode'> }
+            )> }
+          ) | (
+            { __typename: 'AppUsagePricing' }
+            & Pick<AdminTypes.AppUsagePricing, 'interval' | 'terms'>
+            & { balanceUsed: Pick<AdminTypes.MoneyV2, 'amount' | 'currencyCode'>, cappedAmount: Pick<AdminTypes.MoneyV2, 'amount' | 'currencyCode'> }
+          ) } }
+      )> }
+    )> } };
+
+export type UnstableAppSubscriptionByIdQueryVariables = AdminTypes.Exact<{
+  id: AdminTypes.Scalars['ID']['input'];
+}>;
+
+
+export type UnstableAppSubscriptionByIdQuery = { node?: AdminTypes.Maybe<(
+    Pick<AdminTypes.AppSubscription, 'id' | 'name' | 'status' | 'test' | 'trialDays' | 'createdAt' | 'currentPeriodEnd'>
+    & { lineItems: Array<(
+      Pick<AdminTypes.AppSubscriptionLineItem, 'id'>
+      & { plan: { pricingDetails: (
+          { __typename: 'AppRecurringPricing' }
+          & Pick<AdminTypes.AppRecurringPricing, 'interval'>
+          & { price: Pick<AdminTypes.MoneyV2, 'amount' | 'currencyCode'>, discount?: AdminTypes.Maybe<(
+            Pick<AdminTypes.AppSubscriptionDiscount, 'durationLimitInIntervals' | 'remainingDurationInIntervals'>
+            & { value: (
+              { __typename: 'AppSubscriptionDiscountAmount' }
+              & { amount: Pick<AdminTypes.MoneyV2, 'amount' | 'currencyCode'> }
+            ) | (
+              { __typename: 'AppSubscriptionDiscountPercentage' }
+              & Pick<AdminTypes.AppSubscriptionDiscountPercentage, 'percentage'>
+            ), priceAfterDiscount: Pick<AdminTypes.MoneyV2, 'amount' | 'currencyCode'> }
+          )> }
+        ) | (
+          { __typename: 'AppUsagePricing' }
+          & Pick<AdminTypes.AppUsagePricing, 'interval' | 'terms'>
+          & { balanceUsed: Pick<AdminTypes.MoneyV2, 'amount' | 'currencyCode'>, cappedAmount: Pick<AdminTypes.MoneyV2, 'amount' | 'currencyCode'> }
+        ) } }
+    )> }
+  )> };
+
 export type AppIdAndMetafieldsQueryVariables = AdminTypes.Exact<{
   namespace: AdminTypes.Scalars['String']['input'];
 }>;
@@ -164,6 +222,8 @@ export type ShopIdQueryVariables = AdminTypes.Exact<{ [key: string]: never; }>;
 export type ShopIdQuery = { shop: Pick<AdminTypes.Shop, 'id'> };
 
 interface GeneratedQueryTypes {
+  "#graphql\n query unstableActiveSubscriptions {\n  currentAppInstallation {\n    activeSubscriptions {\n      id\n      name\n      status\n      test\n      trialDays\n      createdAt\n      currentPeriodEnd\n      lineItems {\n        id\n        plan {\n          pricingDetails {\n            __typename\n            ... on AppRecurringPricing {\n             # planId -------------------------- fix\n              price {\n                amount\n                currencyCode\n              }\n              interval\n              discount {\n                value {\n                  __typename\n                  ... on AppSubscriptionDiscountAmount {\n                    amount {\n                      amount\n                      currencyCode\n                    }\n                  }\n                  ... on AppSubscriptionDiscountPercentage {\n                    percentage\n                  }\n                }\n                priceAfterDiscount {\n                  amount\n                  currencyCode\n                }\n                durationLimitInIntervals\n                remainingDurationInIntervals\n              }\n            }\n            ... on AppUsagePricing {\n              balanceUsed {\n                amount\n                currencyCode\n              }\n              cappedAmount {\n                amount\n                currencyCode\n              }\n              interval \n              terms\n            }\n          }\n        }\n      }\n    }\n  }\n }\n": {return: UnstableActiveSubscriptionsQuery, variables: UnstableActiveSubscriptionsQueryVariables},
+  "#graphql\n  query UnstableAppSubscriptionById($id: ID!) {\n    node(id: $id) {\n      ... on AppSubscription {\n        id\n        name\n        status\n        test\n        trialDays\n        createdAt\n        currentPeriodEnd\n        lineItems {\n          id\n          plan {\n            pricingDetails {\n              __typename\n              ... on AppRecurringPricing {\n                # planId --------------------------- plan id (find a way to find it)\n                price {\n                  amount\n                  currencyCode\n                }\n                interval\n                discount {\n                  value {\n                    __typename\n                    ... on AppSubscriptionDiscountAmount {\n                      amount {\n                        amount\n                        currencyCode\n                      }\n                    }\n                    ... on AppSubscriptionDiscountPercentage {\n                      percentage\n                    }\n                  }\n                  priceAfterDiscount {\n                    amount\n                    currencyCode\n                  }\n                  durationLimitInIntervals\n                  remainingDurationInIntervals\n                }\n              }\n              ... on AppUsagePricing {\n                balanceUsed {\n                  amount\n                  currencyCode\n                }\n                cappedAmount {\n                  amount\n                  currencyCode\n                }\n                interval \n                terms\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n": {return: UnstableAppSubscriptionByIdQuery, variables: UnstableAppSubscriptionByIdQueryVariables},
   "#graphql\n  query AppIdAndMetafields($namespace: String!) {\n    app {\n      id\n      installation {\n        id\n        metafields(first: 3, namespace: $namespace) {\n          nodes {\n            id\n            key\n            namespace\n            value\n          }\n        }\n      }\n    }\n  }\n": {return: AppIdAndMetafieldsQuery, variables: AppIdAndMetafieldsQueryVariables},
   "#graphql\n  query AppIdAndShopIdWithMetafields($namespace: String, $ownerType: MetafieldOwnerType!) {\n    app {\n      id\n    }\n    shop {\n      id\n      metafields(first: 50, namespace: $namespace) {\n        nodes {\n          id\n          key\n          namespace\n          value\n          definition {\n            access {\n              admin\n              customerAccount\n              storefront\n            }\n          }\n        }\n      }\n    }\n    metafieldDefinitions(first: 50, namespace: $namespace, ownerType: $ownerType) {\n      nodes {\n        namespace\n        key\n        access {\n          admin\n          customerAccount\n          storefront\n        }\n      }\n    }\n  }\n": {return: AppIdAndShopIdWithMetafieldsQuery, variables: AppIdAndShopIdWithMetafieldsQueryVariables},
   "#graphql\n  query customers($first: Int, $query: String) {\n    customers(first: $first, query: $query) {\n      edges {\n        node {\n          id\n          firstName\n          lastName\n          createdAt\n          addresses {\n           country\n          }\n          amountSpent {\n           amount\n          }\n          lastOrder {\n            createdAt\n          }\n          defaultAddress {\n            address1\n          }\n          orders(first: 40) {\n            edges {\n              node {\n                id\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n": {return: CustomersQuery, variables: CustomersQueryVariables},
