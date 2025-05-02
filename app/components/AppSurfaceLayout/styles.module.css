@@ -1,0 +1,11 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* ! RETEST-ON: Update Polaris */
+/* Fixes Page with prop FullWidth */
+.container > :global(.Polaris-Page) {
+  width: 100%;
+}

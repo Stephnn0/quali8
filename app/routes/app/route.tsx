@@ -5,14 +5,23 @@ import { AppProvider } from "@shopify/shopify-app-remix/react";
 import { NavMenu } from "@shopify/app-bridge-react";
 import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
 import { authenticate } from "app/shopify.server";
-import { setupApp } from "app/services/setup";
+import { getAppStatus } from "app/services/setup/getAppStatus";
+import db from "app/db.server";
 
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const context = await authenticate.admin(request);
+  const authAdminContext = await authenticate.admin(request);
 
-  await setupApp(context.session.shop);
+  const [{ shopInfo, shopifyStore }] = await Promise.all([
+    //
+    // Redirects to /setup if app needs to be setup
+    getAppStatus(authAdminContext, db), // * Redirects
+    //
+  ]);
+
+  console.log("shopInfo", shopInfo);
+  console.log("shopifyStore", shopifyStore);
 
   return { apiKey: process.env.SHOPIFY_API_KEY || "" };
 };
