@@ -7,7 +7,7 @@ import {
   MetafieldOwnerType,
   MetafieldStorefrontAccess,
   MetafieldStorefrontAccessInput,
-} from "app/types/admin.types";
+} from "~/types/admin.types";
 
 export const SHOP_METAFIELD_CONSTANTS = {
   namespace: APP.METAFIELDS_NAMESPACES.ENV,

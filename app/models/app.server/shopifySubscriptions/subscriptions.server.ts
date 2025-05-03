@@ -18,7 +18,7 @@ import { getShopID } from "app/models/shopify.server/shop/shop.server";
 import { encodeGlobalID } from "app/utils/shopify";
 import { APP_PLANS } from "app/constants/plans";
 import { setAppSubscriptionMetafield } from "app/services/setup/metafields/setupAppSubscriptionMetafield/set";
-import { appSubscriptionModel } from "app/models/shopify.server/appSubscription";
+import type { appSubscriptionModel } from "app/models/shopify.server/appSubscription";
 import {
   getDiscountAmount,
   getDiscountPercentage,
@@ -297,10 +297,16 @@ async function syncSubscription(
       `${processID} - No recurring pricing found in subscription`,
     );
 
+  // ! WE ALWAYS OUR 4 GENERATED RECURRING PLANS HERE npx prisma db seed
   const recurringPlan = await recurringPlanModel.find(db, {
     omit: { id: false },
     where: {
       OR: [
+        // ! SHOPIFY SUBSCRIPTION -> many [ USAGE PLAN ] -> one USAGE PRICING
+        // ! SHOPIFY SUBSCRIPTION -> many [ RECURRING PLAN ] -> one RECURRING PRICING
+        //
+        // ! We find a recurring plan by the subscription name or planId
+        // ! we need a unique identifier because if store is in spanish it returns the subscription name in spanish
         { name: subscription.name },
         { shopifyPlanID: recurringPricing.planId || "" },
       ],

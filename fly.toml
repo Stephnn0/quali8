@@ -1,0 +1,32 @@
+# fly.toml app configuration file generated for quali8 on 2025-05-02T09:27:38-04:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = 'quali8'
+primary_region = 'mia'
+
+[build]
+
+[deploy]
+  release_command = 'npx prisma migrate deploy'
+  seed_command = 'tsx ./prisma/seed/index.ts'
+
+[env]
+  PORT = '3000'
+  SCOPES = 'read_customers,read_orders,read_shipping,write_discounts,write_products'
+  SHOPIFY_API_KEY = '34da8696cbfc709d9fdc83cb99b19030'
+  SHOPIFY_APP_URL = 'https://quali8.fly.dev'
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1

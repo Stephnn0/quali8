@@ -11,6 +11,8 @@ export async function getAppStatus(
     session: { shop },
     redirect,
   } = authAdminContext;
+  console.log("--------------getAppStatus----------------------");
+
   // -----------------------------------------------------------------------------------------
   // -----------------------------------------------------------------------------------------
   // Check if there's a Shopify store
@@ -26,10 +28,16 @@ export async function getAppStatus(
     shopInfoPromise,
   ]);
 
+  console.log("--------------getAppStatus 2----------------------");
+
+  console.log("shopifyStore", shopifyStore);
+  console.log("shopInfo", shopInfo);
+
   if (!shopifyStore && shouldRedirect) throw redirect("/setup");
   else if (!shopifyStore) return { isSetup: false, shopifyStore, shopInfo };
   // -----------------------------------------------------------------------------------------
   // -----------------------------------------------------------------------------------------
+  console.log("--------------getAppStatus 3----------------------");
 
   // -----------------------------------------------------------------------------------------
   // -----------------------------------------------------------------------------------------
@@ -38,7 +46,11 @@ export async function getAppStatus(
 
   const isSetup = status === "SETUP";
 
+  console.log("--------------getAppStatus 4----------------------");
+
   if (!isSetup && shouldRedirect) throw redirect("/setup");
+
+  console.log("--------------getAppStatus 5----------------------");
 
   return { isSetup, shopifyStore, shopInfo };
 }

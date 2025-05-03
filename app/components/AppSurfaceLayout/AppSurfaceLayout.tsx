@@ -4,7 +4,7 @@ import Footer from "../Footer/Footer";
 
 export default function AppSurfaceLayout({ children }: PropsWithChildren) {
   return (
-    <main className={styles.container}>
+    <main className={styles.appSurfaceLayout}>
       {children}
       <Footer />
     </main>

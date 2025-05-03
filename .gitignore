@@ -13,8 +13,13 @@ database.sqlite
 .env
 .env.*
 
+postgres-flyio
+/postgres-flyio
 
 
+# Ignore all shopify.app. files, to avoid accidentally deploying or modifying the LIVE app (and also commiting other random apps)
+shopify.app*.toml
+shopify.app.toml
 
 
 /extensions/*/dist

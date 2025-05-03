@@ -1,14 +1,14 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
-client_id = "34da8696cbfc709d9fdc83cb99b19030"
-name = "quali8"
-handle = "quali8"
-application_url = "https://taiwan-own-eat-flow.trycloudflare.com"
+client_id = "b9b7e1ced088bbaf2956013017ec52ad"
+application_url = "https://jewelry-rome-deaths-margaret.trycloudflare.com"
 embedded = true
+name = "quali8-dev-gamma"
+handle = "quali8-dev-gamma"
 
 [build]
 include_config_on_deploy = true
-dev_store_url = "electronics-shopicode.myshopify.com"
+dev_store_url = "oroa-development.myshopify.com"
 automatically_update_urls_on_dev = true
 
 [webhooks]
@@ -28,9 +28,9 @@ scopes = "write_products, read_customers, read_shipping, write_discounts, read_o
 
 [auth]
 redirect_urls = [
-  "https://taiwan-own-eat-flow.trycloudflare.com/auth/callback",
-  "https://taiwan-own-eat-flow.trycloudflare.com/auth/shopify/callback",
-  "https://taiwan-own-eat-flow.trycloudflare.com/api/auth/callback"
+  "https://jewelry-rome-deaths-margaret.trycloudflare.com/auth/callback",
+  "https://jewelry-rome-deaths-margaret.trycloudflare.com/auth/shopify/callback",
+  "https://jewelry-rome-deaths-margaret.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]

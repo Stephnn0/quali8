@@ -17,6 +17,7 @@ export async function setupApp(
   authAdminContext: AuthAdminContext,
   db: PrismaClient,
 ) {
+  console.log("-----------------setupApp-------------------");
   const {
     admin: { graphql },
   } = authAdminContext;
@@ -28,12 +29,16 @@ export async function setupApp(
       fetchShopMetafieldsData(graphql),
     ]);
 
+  console.log("-----------------setupApp 1-------------------");
+
   if (isSetup) return;
 
   console.log("Setting up the app...");
 
   // Shopify Store - Create Initial Setup
   assertNonNullable(shopInfo); // * Throws
+
+  console.log("-----------------setupApp 2-------------------");
 
   await setupShopifyStore({
     authAdminContext,
@@ -43,6 +48,8 @@ export async function setupApp(
   });
 
   await setupSubscriptionMetafield(authAdminContext, shopMetafieldsData, db);
+
+  console.log("-----------------setupApp 3-------------------");
 
   await setupShopifyStore({
     authAdminContext,

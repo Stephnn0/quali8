@@ -2,6 +2,7 @@ import type { LoaderFunctionArgs } from "@remix-run/node";
 import { getQualifiersByShop } from "app/models/app.server/qualifiers/qualifier.server";
 import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
+import { handleApiError } from "~/utils/server/handleApiResponse/handleApiError.server";
 
 export default async function loader({ request, params }: LoaderFunctionArgs) {
   const { session } = await authenticate.admin(request);
@@ -38,7 +39,7 @@ export default async function loader({ request, params }: LoaderFunctionArgs) {
       total: qualifiers?.qualifiersCount,
     };
   } catch (error) {
-    console.log(error);
-    return { errors: error, code: "error" };
+    console.error("Error at api/qualifiers: ", error);
+    return handleApiError({ errors: error, code: "error" });
   }
 }

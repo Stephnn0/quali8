@@ -1,6 +1,7 @@
 {
-  "name": "quali8",
+  "name": "quali8-shopify-app",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "remix vite:build",
     "dev": "shopify app dev",
@@ -18,9 +19,8 @@
     "graphql-codegen": "graphql-codegen",
     "vite": "vite"
   },
-  "type": "module",
   "engines": {
-    "node": "^18.20 || ^20.10 || >=21.0.0"
+    "node": "^20.10 || >=21.0.0"
   },
   "prisma": {
     "seed": "tsx ./prisma/seed/index.ts"
@@ -41,15 +41,17 @@
     "prisma": "^6.2.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "tsx": "^4.19.4",
     "vite-tsconfig-paths": "^5.0.1",
     "zod": "^3.24.2"
   },
   "devDependencies": {
+    "@flydotio/dockerfile": "^0.7.10",
     "@remix-run/eslint-config": "^2.16.1",
     "@remix-run/route-config": "^2.16.1",
     "@shopify/api-codegen-preset": "^1.1.1",
     "@types/eslint": "^9.6.1",
-    "@types/node": "^22.2.0",
+    "@types/node": "^22.15.3",
     "@types/react": "^18.2.31",
     "@types/react-dom": "^18.2.14",
     "eslint": "^8.42.0",
@@ -76,5 +78,5 @@
     "@graphql-codegen/typescript-operations": "4.5.0",
     "minimatch": "9.0.5"
   },
-  "author": "system-1"
+  "author": "8Instruments"
 }

@@ -15,6 +15,7 @@ export const UNSTABLE_GRAPHQL_QUERY_APP_SUBSCRIPTION_BY_ID = `#graphql
             pricingDetails {
               __typename
               ... on AppRecurringPricing {
+                planHandle
                 # planId --------------------------- plan id (find a way to find it)
                 price {
                   amount

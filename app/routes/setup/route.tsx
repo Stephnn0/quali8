@@ -12,6 +12,8 @@ import { AppProvider } from "@shopify/shopify-app-remix/react";
 import { FullPageCard } from "app/components/FullPageCard";
 import SetupGraphic from "./SetupGraphic/SetupGraphic";
 import AppSurfaceLayout from "app/components/AppSurfaceLayout/AppSurfaceLayout";
+import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
+import { handleApiError } from "~/utils/server/handleApiResponse/handleApiError.server";
 
 export function wait(duration: number) {
   const promise = new Promise<void>((resolve) => {
@@ -20,6 +22,7 @@ export function wait(duration: number) {
 
   return promise;
 }
+export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const authAdminContext = await authenticate.admin(request);
@@ -67,16 +70,16 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return { payload: null, code: "success" };
   } catch (error) {
     console.error(`Error in /setup`); // eslint-disable-line no-console
-    return { errors: error, code: "error" };
+    return handleApiError({ errors: error, code: "error" });
   }
 };
 
 export default function Setup() {
   const { isSetup } = useLoaderData<typeof loader>();
-  const actionErrors = useActionData<typeof action>() || {};
+  const { errors: actionErrors } = useActionData<typeof action>() || {};
 
   const submit = useSubmit();
-  const error = actionErrors;
+  const error = actionErrors && actionErrors?.length > 0;
 
   useEffect(() => {
     if (!isSetup && !error) {
@@ -85,7 +88,7 @@ export default function Setup() {
   }, [isSetup, submit, error]);
 
   return (
-    <AppProvider isEmbeddedApp apiKey={"34da8696cbfc709d9fdc83cb99b19030"}>
+    <AppProvider isEmbeddedApp apiKey={"b9b7e1ced088bbaf2956013017ec52ad"}>
       <AppSurfaceLayout>
         {error ? (
           <FullPageCardErrorState heading="There was an error during installation">

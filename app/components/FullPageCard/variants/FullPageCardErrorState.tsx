@@ -4,7 +4,7 @@ import type { EmptyStateProps } from "@shopify/polaris";
 import { EmptyState, Text } from "@shopify/polaris";
 import { EmailIcon } from "@shopify/polaris-icons";
 import type { PropsWithChildren } from "react";
-import domains from "~/assets/images/domains.svg";
+import domains from "~/assets/domains.svg";
 import { FullPageCard } from "..";
 
 type FullPageCardErrorStateProps = Partial<

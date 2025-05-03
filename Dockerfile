@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:20-alpine
 RUN apk add --no-cache openssl
 
 EXPOSE 3000
@@ -15,6 +15,9 @@ RUN npm ci --omit=dev && npm cache clean --force
 RUN npm remove @shopify/cli
 
 COPY . .
+
+# So we can have the enums from the custom generator before we build
+RUN npm run prisma generate --no-hints
 
 RUN npm run build
 
