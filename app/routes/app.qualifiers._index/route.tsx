@@ -23,15 +23,10 @@ import { loader } from "./loader";
 import { DeleteIcon, EditIcon } from "@shopify/polaris-icons";
 import image from "app/assets/ccc.png";
 import { useCallback, useState } from "react";
-import type { ActionFunctionArgs } from "@remix-run/node";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import quailifierlogo from "app/assets/q-im.png";
 
 export { loader };
-
-export async function action({ request }: ActionFunctionArgs) {
-  return null;
-}
 
 export default function Qualifiers() {
   const loaderData = useLoaderData<typeof loader>();

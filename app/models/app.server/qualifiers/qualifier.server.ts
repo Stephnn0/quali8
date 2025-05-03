@@ -31,6 +31,47 @@ export async function getQualifiersByShop(
   }
 }
 
+export async function getQualifiersByShopWithCustomersAndConditions(
+  prismaArgs: Prisma.QualifiersFindManyArgs<DefaultArgs>,
+  db: PrismaClient,
+) {
+  try {
+    const [qualifiers, qualifiersCount] = await db.$transaction([
+      db.qualifiers.findMany({
+        ...prismaArgs,
+        include: {
+          customers: true,
+          conditions: true,
+        },
+      }),
+      db.qualifiers.count({ where: prismaArgs.where || {} }),
+    ]);
+
+    return { qualifiers, qualifiersCount };
+  } catch (error) {
+    console.error("Error fetching qualifiers:", error);
+  }
+}
+
+export async function getQualifierByIdWithConditionsAndCustomers(
+  shop: string,
+  id: string,
+  db: PrismaClient,
+) {
+  try {
+    const qualifier = await db.qualifiers.findUnique({
+      include: {
+        customers: true,
+        conditions: true,
+      },
+      where: { id: Number(id), shop: shop },
+    });
+    return qualifier;
+  } catch (error) {
+    console.error("Error fetching qualifier:", error);
+  }
+}
+
 export async function getQualifierById(
   prismaArgs: Prisma.QualifiersFindUniqueArgs<DefaultArgs>,
   db: PrismaClient,

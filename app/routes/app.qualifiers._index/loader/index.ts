@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
-import { getQualifiersByShop } from "app/models/app.server/qualifiers/qualifier.server";
+import { getQualifiersByShopWithCustomersAndConditions } from "app/models/app.server/qualifiers/qualifier.server";
 import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
 
@@ -13,14 +13,10 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const skip = (page - 1) * itemsPerPage;
 
   try {
-    const qualifiers = await getQualifiersByShop(
+    const qualifiers = await getQualifiersByShopWithCustomersAndConditions(
       {
         where: {
           shop: session.shop,
-        },
-        include: {
-          customers: true,
-          conditions: true,
         },
         orderBy: {
           updatedAt: "desc",
