@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
-import { getQualifierById } from "app/models/app.server/qualifiers/qualifier.server";
+import { getQualifierByIdWithConditionsAndCustomers } from "app/models/app.server/qualifiers/qualifier.server";
 import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
 import { handleApiSuccess } from "app/utils/handleApiSuccess";
@@ -19,14 +19,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   }
 
   try {
-    const qualifier = await getQualifierById(
-      {
-        include: {
-          customers: true,
-          conditions: true,
-        },
-        where: { id: Number(params.id), shop: session.shop },
-      },
+    const qualifier = await getQualifierByIdWithConditionsAndCustomers(
+      session.shop,
+      id,
       db,
     );
 

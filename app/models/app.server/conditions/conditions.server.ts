@@ -1,6 +1,8 @@
 import type { Prisma, PrismaClient } from "@prisma/client";
 import type { DefaultArgs } from "@prisma/client/runtime/library";
 
+export type Condition = Awaited<ReturnType<typeof getConditionByQualiferId>>;
+
 export async function getManyConditions(
   prismaArgs: Prisma.ConditionsFindManyArgs<DefaultArgs>,
   db: PrismaClient,

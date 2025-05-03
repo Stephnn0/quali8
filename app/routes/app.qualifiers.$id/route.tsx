@@ -27,7 +27,10 @@ export default function QualifiersForm() {
   const { conditions } = qualifier || {};
 
   return (
-    <Page title="Create Qualifier" backAction={{ url: "/app/qualifiers" }}>
+    <Page
+      title={isNew ? "Create Qualifier" : qualifier?.name}
+      backAction={{ url: "/app/qualifiers" }}
+    >
       <Layout>
         <Layout.Section>
           <NameDescriptionQualifier form={form} />
