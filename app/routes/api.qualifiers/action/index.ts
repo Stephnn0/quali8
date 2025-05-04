@@ -25,8 +25,6 @@ export default async function action({ request }: ActionFunctionArgs) {
     const { name, description, customers, conditions, conditionLogicType } =
       parsedBody;
 
-    console.log(parsedBody, "parsedBody");
-
     if (request.method === "POST") {
       // ! we first create the qualifier and then create and connect conditions and customers
       const data: Parameters<typeof createQualifier>[0]["data"] = {

@@ -61,12 +61,9 @@ export function ShippingRates({ shippingRates, form }: PickShippingRatesProps) {
 
   useEffect(() => {
     if (operator === ShippingRatesType.SELECTED_RATES) {
-      console.log("selected", selected);
       shippingRatesNames.value = selected;
     }
   }, [selected, operator, shippingRatesNames]);
-
-  console.log(operator, "operator");
 
   const ratesToDisplay = selected.map((selected, index) => (
     <div

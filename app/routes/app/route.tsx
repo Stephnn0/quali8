@@ -12,7 +12,6 @@ import { getSubscription } from "./getSubscription";
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
 export const loader = async (loaderContext: LoaderFunctionArgs) => {
-  console.log("---------------------app----------------------");
   const authAdminContext = await authenticate.admin(loaderContext.request);
 
   const [{ shopInfo, shopifyStore }] = await Promise.all([
@@ -23,8 +22,7 @@ export const loader = async (loaderContext: LoaderFunctionArgs) => {
     getSubscription(loaderContext, authAdminContext),
   ]);
 
-  console.log("shopInfo", shopInfo);
-  console.log("shopifyStore", shopifyStore);
+  console.log("App Status", shopInfo, shopifyStore);
 
   return { apiKey: process.env.SHOPIFY_API_KEY || "" };
 };

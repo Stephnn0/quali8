@@ -13,6 +13,24 @@ export async function createQualifier(
   }
 }
 
+export async function getAllQualifiers(
+  prismaArgs: Prisma.QualifiersFindManyArgs<DefaultArgs>,
+  db: PrismaClient,
+) {
+  try {
+    const qualifiers = await db.qualifiers.findMany({
+      ...prismaArgs,
+      include: {
+        customers: true,
+        conditions: true,
+      },
+    });
+    return qualifiers;
+  } catch (error) {
+    console.error("Error get all qualifiers qualifier:", error);
+  }
+}
+
 export async function getQualifiersByShop(
   prismaArgs: Prisma.QualifiersFindManyArgs<DefaultArgs>,
   db: PrismaClient,

@@ -43,8 +43,6 @@ export function useQualifierForm() {
     createdAt: "",
   }));
 
-  console.log(refactorCustomers, "refactorCustomers");
-
   const form = useForm({
     fields: {
       name: useField(name || ""),

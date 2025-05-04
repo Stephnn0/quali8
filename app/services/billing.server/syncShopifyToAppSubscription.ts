@@ -15,16 +15,8 @@ export async function syncShopifyToAppSubscription(
   const activeSubscriptions =
     await appModel.findActiveSubscriptions(authAdminContext);
 
-  console.log("--------------------activeSubscriptions--------------------");
-  console.log(JSON.stringify(activeSubscriptions, null, 2));
-  console.log("----------------------------------------------------------");
-
   if (activeSubscriptions?.length) {
     const currentSubscription = activeSubscriptions[0];
-
-    console.log("--------------------currentSubscription--------------------");
-    console.log(JSON.stringify(currentSubscription, null, 2));
-    console.log("----------------------------------------------------------");
 
     const processID = crypto.randomUUID();
 

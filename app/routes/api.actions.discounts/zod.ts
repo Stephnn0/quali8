@@ -22,7 +22,7 @@ const create: ZodSchema<Create> = z
     automaticOrCode: z.enum(["AUTOMATIC", "CODE"]), // (9
     //
     qualifierIds: z
-      .array(z.number())
+      .array(z.string())
       .min(1, "At least one qualifier is required"), //  (10
     customers: z.array(z.object({ shopifyId: z.string(), id: z.number() })), // (11
     //
@@ -68,7 +68,7 @@ const update: ZodSchema<Update> = z
     automaticOrCode: z.enum(["AUTOMATIC", "CODE"]), // (9
     //
     qualifierIds: z
-      .array(z.number())
+      .array(z.string())
       .min(1, "At least one qualifier is required"), //  (10
     customers: z.array(z.object({ shopifyId: z.string(), id: z.number() })),
     //

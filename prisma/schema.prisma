@@ -36,6 +36,7 @@ model ShopifyStore {
   shopifyPlan          String? // TODO - Delete after all stores are using the new shopData
   status               AppStatus
   appVersion           String                @default("0.0.0")
+  functionId           String?
   //
   qualifiers           Qualifiers[]
   customers            Customers[]   
@@ -147,7 +148,7 @@ model ShippingDiscountAction {
   //            
   shippingRateType ShippingRateType
   shippingRatesNames String[]          //! fixed this maybe by handle or name
-  qualifierIds   Int[]
+  qualifierIds   String[]
   //
   startDate      String?
   startTime      String?

@@ -2,98 +2,61 @@ import {
   Button,
   Card,
   EmptyState,
-  IndexTable,
   Modal,
+  OptionList,
   Text,
   TextContainer,
-  useIndexResourceState,
 } from "@shopify/polaris";
 import type { DiscountForm } from "../hooks";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "@remix-run/react";
 import quailifierlogo from "app/assets/qualifier-logo.png";
+import type { getAllQualifiers } from "~/models/app.server/qualifiers/qualifier.server";
 
 type PickQualifiersProps = {
-  mockQualifiers: any;
+  mockQualifiers: Awaited<ReturnType<typeof getAllQualifiers>>;
   form: DiscountForm;
-};
-
-type Qualifier = {
-  id: number;
-  name: string;
-  customers: string[];
 };
 
 export function PickQualifiers({ mockQualifiers, form }: PickQualifiersProps) {
   const { fields } = form;
-
   const { customers, qualifierIds } = fields;
-
-  const qualifiers = mockQualifiers.map((qualifier: Qualifier) => ({
-    id: qualifier.id,
-    name: qualifier.name,
-    customers: qualifier.customers, // Just use the array of IDs directly
-  }));
-
-  console.log("Qualifiers: ", qualifiers);
-
-  const resourceName = {
-    singular: "qualifier",
-    plural: "qualifiers",
-  };
-
-  const { selectedResources, allResourcesSelected, handleSelectionChange } =
-    useIndexResourceState(qualifiers, {
-      selectedResources: qualifierIds.value as unknown as string[], // ! DANGEROUS 'as' FIX LATER
-    });
-
-  const rowMarkup = qualifiers?.map(({ id, name }: any, index: any) => (
-    <IndexTable.Row
-      id={id}
-      key={id}
-      selected={selectedResources.includes(id)}
-      position={index}
-    >
-      <IndexTable.Cell>
-        <Text variant="bodyMd" fontWeight="bold" as="span">
-          {name}
-        </Text>
-      </IndexTable.Cell>
-    </IndexTable.Row>
-  ));
-
-  useEffect(() => {
-    const selectedQualifier = qualifiers.filter((qualifier: any) =>
-      selectedResources.includes(qualifier.id),
-    );
-
-    const selectedCustomers = selectedQualifier.flatMap(
-      (qualifier: any) => qualifier.customers,
-    );
-
-    const selectedQualifierIds = selectedQualifier.map(
-      (qualifier: any) => qualifier.id,
-    );
-
-    console.log("Selected Customers: ", selectedCustomers);
-    console.log("Selected Qualifier IDs: ", selectedQualifierIds);
-
-    // customers.value = selectedCustomers;
-    // qualifierIds.value = selectedQualifierIds;
-    customers.onChange(selectedCustomers);
-    qualifierIds.onChange(selectedQualifierIds);
-
-    if (selectedQualifierIds.length > 0) {
-    }
-  }, [selectedResources]);
-
+  const [selectedQualifiersIds, setSelectedQualifiersIds] = useState<string[]>(
+    qualifierIds.value || [],
+  );
+  const [modalActive, setModalActive] = useState(false);
+  const [temporarySelected, setTemporarySelected] = useState<string[]>([]);
   const navigate = useNavigate();
 
-  // ========================================================================== //
+  const qualifiers = mockQualifiers?.map((qualifier) => ({
+    id: qualifier.id,
+    name: qualifier.name,
+    customers: qualifier.customers,
+  }));
+
+  const handleSelectionQualifierIdChange = (selectedValues: string[]) => {
+    setSelectedQualifiersIds(selectedValues);
+    setTemporarySelected(selectedValues);
+    qualifierIds.onChange(selectedValues);
+  };
+
+  const handleModalClose = () => {
+    const selectedQualifier = qualifiers?.filter((q) =>
+      temporarySelected.includes(String(q.id)),
+    );
+
+    const selectedCustomers = selectedQualifier?.flatMap((q) => q.customers);
+    const selectedQualifierIds = selectedQualifier?.map((q) => String(q.id));
+
+    customers.onChange(selectedCustomers as any);
+    qualifierIds.onChange(selectedQualifierIds!);
+
+    setModalActive(false);
+  };
 
   const selectedQualifiersDisplay = qualifiers
-    .filter((q: any) => selectedResources.includes(q.id))
-    .map((q: any) => (
+    ?.filter((q) => selectedQualifiersIds.includes(String(q.id)))
+    .map((q) => (
       <div
         key={q.id}
         style={{
@@ -108,27 +71,6 @@ export function PickQualifiers({ mockQualifiers, form }: PickQualifiersProps) {
       </div>
     ));
 
-  const [modalActive, setModalActive] = useState(false);
-  const [temporarySelected, setTemporarySelected] = useState<string[]>([]);
-
-  const handleModalClose = () => {
-    const selectedQualifier = qualifiers.filter((q: any) =>
-      temporarySelected.includes(q.id),
-    );
-
-    const selectedCustomers = selectedQualifier.flatMap(
-      (q: any) => q.customers,
-    );
-    const selectedQualifierIds = selectedQualifier.map((q: any) => q.id);
-
-    customers.onChange(selectedCustomers);
-    qualifierIds.onChange(selectedQualifierIds);
-
-    // ! FIX LATER
-    // handleSelectionChange(temporarySelected, false);
-    setModalActive(false);
-  };
-
   return (
     <>
       <Card>
@@ -141,7 +83,7 @@ export function PickQualifiers({ mockQualifiers, form }: PickQualifiersProps) {
         <br />
         <Button
           onClick={() => {
-            setTemporarySelected(selectedResources);
+            setTemporarySelected(selectedQualifiersIds);
             setModalActive(true);
           }}
         >
@@ -169,20 +111,19 @@ export function PickQualifiers({ mockQualifiers, form }: PickQualifiersProps) {
         ]}
       >
         <Modal.Section>
-          {qualifiers.length > 0 ? (
+          {qualifiers!.length > 0 ? (
             <>
               <TextContainer>Select one or more qualifiers below</TextContainer>
-              <IndexTable
-                resourceName={resourceName}
-                itemCount={qualifiers?.length || 0}
-                selectedItemsCount={
-                  allResourcesSelected ? "All" : selectedResources.length
-                }
-                onSelectionChange={handleSelectionChange}
-                headings={[{ title: "Name" }]}
-              >
-                {rowMarkup}
-              </IndexTable>
+              <OptionList
+                title="Select one or more qualifiers below"
+                onChange={handleSelectionQualifierIdChange}
+                options={qualifiers?.map((q) => ({
+                  label: q.name,
+                  value: String(q.id),
+                }))}
+                selected={selectedQualifiersIds}
+                allowMultiple
+              />
             </>
           ) : (
             <Card>

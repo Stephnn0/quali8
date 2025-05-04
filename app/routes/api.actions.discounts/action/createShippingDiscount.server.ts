@@ -56,6 +56,7 @@ export default async function createShippingDiscountServer(
       limitUsagePerOneCustomer: body.limitUsagePerOneCustomer!,
       combinedWithOrderDiscounts: body.combinedWithOrderDiscounts!,
       combinedWithProductDiscounts: body.combinedWithProductDiscounts!,
+      shop: session.shop,
     });
 
     shopifyDiscountId =
@@ -78,12 +79,12 @@ export default async function createShippingDiscountServer(
       graphql: admin.graphql,
       title: body.codeOrName,
       body: JSON.stringify(metafieldData),
-      functionId: "92f98185-5407-46c4-85d9-11594cc32d07", // functionId
       startDate: formattedStartDate,
       endDate: formattedEndDate,
       shippingDiscountState: body.shippingDiscountState!,
       combinedWithOrderDiscounts: body.combinedWithOrderDiscounts!,
       combinedWithProductDiscounts: body.combinedWithProductDiscounts!,
+      shop: session.shop,
     });
 
     shopifyDiscountId =
@@ -111,7 +112,7 @@ export default async function createShippingDiscountServer(
     qualifierIds: body.qualifierIds,
     qualifiers: body.qualifierIds?.length
       ? {
-          connect: body.qualifierIds.map((id) => ({ id })),
+          connect: body.qualifierIds.map((id: string) => ({ id: Number(id) })),
         }
       : undefined,
     //
