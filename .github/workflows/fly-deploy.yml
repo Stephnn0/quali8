@@ -5,11 +5,25 @@ on:
   push:
     branches:
       - main
+env:
+  FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+  SHOPIFY_API_KEY: ${{ secrets.SHOPIFY_API_KEY }}
+  SHOPIFY_API_SECRET: ${{ secrets.SHOPIFY_API_SECRET }}
+  SCOPES: ${{ secrets.SCOPES }}
+  SHOPIFY_APP_HANDLE: ${{ secrets.SHOPIFY_APP_HANDLE }}
+  SHOPIFY_SHIPPING_DISCOUNTS_ID: ${{ secrets.SHOPIFY_SHIPPING_DISCOUNTS_ID }}
+
+  VITE_SHOPIFY_API_KEY: ${{ secrets.VITE_SHOPIFY_API_KEY }}
+
+  SHOPIFY_FREE_PLAN_ID: ${{ secrets.SHOPIFY_FREE_PLAN_ID }}
+  SHOPIFY_BASIC_PLAN_ID: ${{ secrets.SHOPIFY_BASIC_PLAN_ID }}
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
 jobs:
   deploy:
     name: Deploy app
     runs-on: ubuntu-latest
-    concurrency: deploy-group    # optional: ensure only one action runs at a time
+    concurrency: deploy-group # optional: ensure only one action runs at a time
     steps:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
