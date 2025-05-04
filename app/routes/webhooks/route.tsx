@@ -2,6 +2,8 @@ import type { ActionFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { authenticate } from "app/shopify.server";
 import { handleAppUninstalledWebhook } from "./handlers/handleAppUninstalledWebhook.server";
+import { handleAppSubscriptionUpdateWebhook } from "./handlers/handleAppSubscriptionUpdate.server";
+import db from "~/db.server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const authWebhookContext = await authenticate.webhook(request);
@@ -30,6 +32,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   switch (topic) {
     case "APP_UNINSTALLED":
       await handleAppUninstalledWebhook(authWebhookContext);
+      break;
+
+    case "APP_SUBSCRIPTIONS_UPDATE":
+      await handleAppSubscriptionUpdateWebhook(db, authWebhookContext);
       break;
 
     case "SHOP_REDACT":
