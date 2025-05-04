@@ -1,6 +1,13 @@
 import { APP_PLANS } from "./plans";
 
+const { VITE_SHOPIFY_API_KEY } = import.meta.env || {};
+
+export const PUBLIC_ENV = {
+  VITE_SHOPIFY_API_KEY,
+} as const;
+
 export const APP = {
+  APP_HANDLE: "quali8", // "quali8" quali8-dev-gamma
   FUNCTION_ID: "92f98185-5407-46c4-85d9-11594cc32d07",
   FUNCTION_METAFIELD_KEY: "quali8_shipping_discounts",
 

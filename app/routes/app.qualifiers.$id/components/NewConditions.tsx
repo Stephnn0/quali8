@@ -57,8 +57,6 @@ export default function NewConditions({
     fetchedConditions || [],
   );
 
-  console.log(conditions, "conditions");
-
   const addCondition = () => {
     setConditions((prev) => [
       ...prev,

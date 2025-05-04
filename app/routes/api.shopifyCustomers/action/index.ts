@@ -14,8 +14,6 @@ export default async function action({ request }: ActionFunctionArgs) {
 
   const { conditions, conditionLogicType } = parsedBody;
 
-  console.log(conditions, "conditions");
-
   const query = buildCustomerQuery(conditions, conditionLogicType);
 
   try {

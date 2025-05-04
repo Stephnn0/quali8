@@ -32,8 +32,6 @@ export function useFilterCustomersForm() {
           conditionLogicType: fieldValues.ConditionLogicTypeCustomer,
         };
 
-        console.log("-------------body--------------", body);
-
         conditionsSubmissionSchema.parse(body);
 
         fetcher.submit(

@@ -18,6 +18,9 @@ export type SetupShopifyStoreParams = {
   status: Exclude<ShopifyStore["status"], "UNINSTALLED">;
   /** The Shopify store information */
   shopInfo: NonNullable<Awaited<ReturnType<typeof getShopInfo>>>;
+
+  /** The function ID for the Shopify function */
+  functionId?: string;
 };
 
 export async function setupShopifyStore({
@@ -25,6 +28,7 @@ export async function setupShopifyStore({
   shopInfo,
   shopifyStore,
   authAdminContext,
+  functionId,
 }: SetupShopifyStoreParams) {
   const {
     session: { shop },
@@ -35,7 +39,8 @@ export async function setupShopifyStore({
   try {
     const setup = async () => {
       if (!shopifyStore && status === "INSTALLED") {
-        return  createShopifyStore( { data: { shop, status, shopData: { create: shopData.create } } }, db); /* eslint-disable-line max-len */ // prettier-ignore
+        return  createShopifyStore( { data:
+           { shop, status, functionId,  shopData: { create: shopData.create } } }, db); /* eslint-disable-line max-len */ // prettier-ignore
       }
       if (status === "INSTALLED") {
         return updateShopifyStore( { where: { shop }, data: { status, shopData: { upsert: shopData } } }, db); /* eslint-disable-line max-len */ // prettier-ignore

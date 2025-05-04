@@ -14,17 +14,6 @@ type DateSelectorProps = {
   form: DiscountForm;
 };
 
-// !-------------------------------------- refactor this to be 0-24
-// const getCurrentTime = () => {
-//   const now = new Date();
-//   let hours = now.getHours();
-//   const minutes = now.getMinutes();
-//   const suffix = hours < 12 ? "AM" : "PM";
-//   const hour12 = hours % 12 === 0 ? 12 : hours % 12;
-//   const formatted = `${hour12}:${minutes.toString().padStart(2, "0")} ${suffix}`;
-//   return formatted; // e.g., "9:04 PM"
-// };
-
 const getCurrentTime = () => {
   const now = new Date();
   const hours = now.getHours().toString().padStart(2, "0");
@@ -35,25 +24,10 @@ const getCurrentTime = () => {
 export default function DateSelector({ form }: DateSelectorProps) {
   const currentTime = getCurrentTime();
 
-  console.log("currentTime", currentTime);
-
   const [selectedStartHour, setSelectedStartHour] = useState(currentTime);
   const [selectedEndHour, setSelectedEndHour] = useState(currentTime);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedEndDate, setSelectedEndDate] = useState(new Date());
-
-  // const baseHourOptions = Array.from({ length: 24 * 2 }, (_, i) => {
-  //   const hour24 = Math.floor(i / 2);
-  //   const minutes = i % 2 === 0 ? "00" : "30";
-  //   const hour12 = hour24 % 12 === 0 ? 12 : hour24 % 12;
-  //   const suffix = hour24 < 12 ? "AM" : "PM";
-  //   const formatted = `${hour12}:${minutes} ${suffix}`;
-
-  //   return {
-  //     label: formatted,
-  //     value: `${hour24}:${minutes}`, // e.g., "13:30"
-  //   };
-  // });
 
   const baseHourOptions = Array.from({ length: 24 * 2 }, (_, i) => {
     const hour24 = Math.floor(i / 2);

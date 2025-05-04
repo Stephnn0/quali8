@@ -8,11 +8,11 @@ import { authenticate } from "app/shopify.server";
 import { getAppStatus } from "app/services/setup/getAppStatus";
 import db from "app/db.server";
 import { getSubscription } from "./getSubscription";
+import { PUBLIC_ENV } from "~/constants/app.constants";
 
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
 export const loader = async (loaderContext: LoaderFunctionArgs) => {
-  console.log("---------------------app----------------------");
   const authAdminContext = await authenticate.admin(loaderContext.request);
 
   const [{ shopInfo, shopifyStore }] = await Promise.all([
@@ -23,8 +23,7 @@ export const loader = async (loaderContext: LoaderFunctionArgs) => {
     getSubscription(loaderContext, authAdminContext),
   ]);
 
-  console.log("shopInfo", shopInfo);
-  console.log("shopifyStore", shopifyStore);
+  console.log("App Status", shopInfo, shopifyStore);
 
   return { apiKey: process.env.SHOPIFY_API_KEY || "" };
 };
@@ -33,7 +32,7 @@ export default function App() {
   const { apiKey } = useLoaderData<typeof loader>();
 
   return (
-    <AppProvider isEmbeddedApp apiKey={apiKey}>
+    <AppProvider isEmbeddedApp apiKey={PUBLIC_ENV.VITE_SHOPIFY_API_KEY}>
       <NavMenu>
         <Link to="/app" rel="home">
           Home

@@ -6,33 +6,46 @@ import {
   GRAPHQL_MUTATION_DELETE_CODE_DISCOUNT,
 } from "../graphql/discounts";
 import { APP } from "app/constants/app.constants";
+import { getShopifyStore } from "~/models/app.server/shopifyStore/shopifyStore.server";
+import db from "~/db.server";
 
 type CreateAutomaticShippingDiscountParams = {
   graphql: AdminGraphqlClient;
   title: string;
   body: string;
-  functionId: string;
   startDate: string;
   endDate: string;
   shippingDiscountState: "ENABLED" | "DISABLED";
   combinedWithOrderDiscounts: boolean;
   combinedWithProductDiscounts: boolean;
+  shop: string;
 };
 
 export async function createShippingAutomaticDiscount({
   graphql,
   title,
   body,
-  functionId,
   startDate,
   endDate,
   shippingDiscountState,
   combinedWithOrderDiscounts,
   combinedWithProductDiscounts,
+  shop,
 }: CreateAutomaticShippingDiscountParams) {
   try {
+    const shopifyStore = await getShopifyStore(
+      {
+        where: {
+          shop: shop,
+        },
+      },
+      db,
+    );
+
+    if (!shopifyStore?.functionId) throw new Error("Function ID not found");
+
     const VARIABLES = {
-      functionId: functionId,
+      functionId: shopifyStore?.functionId,
       title: title,
       startsAt: startDate,
       endsAt: endDate,
@@ -69,6 +82,7 @@ type CreateShippingDiscountParams = {
   limitUsagePerOneCustomer: boolean;
   combinedWithOrderDiscounts: boolean;
   combinedWithProductDiscounts: boolean;
+  shop: string;
 };
 
 export async function createShippingDiscount({
@@ -81,10 +95,22 @@ export async function createShippingDiscount({
   limitUsagePerOneCustomer,
   combinedWithOrderDiscounts,
   combinedWithProductDiscounts,
+  shop,
 }: CreateShippingDiscountParams) {
   try {
+    const shopifyStore = await getShopifyStore(
+      {
+        where: {
+          shop: shop,
+        },
+      },
+      db,
+    );
+
+    if (!shopifyStore?.functionId) throw new Error("Function ID not found");
+
     const VARIABLES = {
-      functionId: "92f98185-5407-46c4-85d9-11594cc32d07",
+      functionId: shopifyStore?.functionId,
       title: code,
       startsAt: startDate,
       endsAt: endDate,
@@ -101,8 +127,6 @@ export async function createShippingDiscount({
         type: "string",
       },
     };
-
-    console.log("------------------VARIABLES------------------", VARIABLES);
 
     const response = await graphql(GRAPHQL_MUTATION_CREATE_DISCOUNT, {
       variables: VARIABLES,

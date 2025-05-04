@@ -14,6 +14,7 @@ import SetupGraphic from "./SetupGraphic/SetupGraphic";
 import AppSurfaceLayout from "app/components/AppSurfaceLayout/AppSurfaceLayout";
 import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
 import { handleApiError } from "~/utils/server/handleApiResponse/handleApiError.server";
+import { PUBLIC_ENV } from "~/constants/app.constants";
 
 export function wait(duration: number) {
   const promise = new Promise<void>((resolve) => {
@@ -88,7 +89,7 @@ export default function Setup() {
   }, [isSetup, submit, error]);
 
   return (
-    <AppProvider isEmbeddedApp apiKey={"b9b7e1ced088bbaf2956013017ec52ad"}>
+    <AppProvider isEmbeddedApp apiKey={PUBLIC_ENV.VITE_SHOPIFY_API_KEY}>
       <AppSurfaceLayout>
         {error ? (
           <FullPageCardErrorState heading="There was an error during installation">

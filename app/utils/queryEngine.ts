@@ -20,11 +20,6 @@ export function buildCustomerQuery(
         return `-${field}:${value}`;
       }
 
-      console.log(
-        "--------------------------final condition------------------",
-      );
-      console.log("final condition", `${field}:${comparison}${value}`);
-
       return `${field}:${comparison}${value}`;
     })
     .filter(Boolean)

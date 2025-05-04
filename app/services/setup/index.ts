@@ -4,6 +4,11 @@ import { fetchShopMetafieldsData } from "./metafields/fetchShopMefaieldData.serv
 import type { PrismaClient } from "@prisma/client";
 import { getAppStatus } from "./getAppStatus";
 import { setupShopifyStore } from "./setupShopifyStore";
+import {
+  getFunctionId,
+  getShopifyFunctions,
+} from "~/models/shopify.server/functions/functions.server";
+import { APP } from "~/constants/app.constants";
 
 export function assertNonNullable<T>(
   value: T,
@@ -17,19 +22,17 @@ export async function setupApp(
   authAdminContext: AuthAdminContext,
   db: PrismaClient,
 ) {
-  console.log("-----------------setupApp-------------------");
   const {
     admin: { graphql },
   } = authAdminContext;
 
   // App Status & ShopInfo
-  const [{ isSetup, shopifyStore, shopInfo }, shopMetafieldsData] =
+  const [{ isSetup, shopifyStore, shopInfo }, shopMetafieldsData, functions] =
     await Promise.all([
       getAppStatus(authAdminContext, db, false),
       fetchShopMetafieldsData(graphql),
+      getShopifyFunctions(graphql),
     ]);
-
-  console.log("-----------------setupApp 1-------------------");
 
   if (isSetup) return;
 
@@ -38,18 +41,17 @@ export async function setupApp(
   // Shopify Store - Create Initial Setup
   assertNonNullable(shopInfo); // * Throws
 
-  console.log("-----------------setupApp 2-------------------");
+  const functionId = await getFunctionId(functions, APP.APP_HANDLE);
 
   await setupShopifyStore({
     authAdminContext,
     shopifyStore,
     shopInfo,
     status: "INSTALLED",
+    functionId: functionId,
   });
 
   await setupSubscriptionMetafield(authAdminContext, shopMetafieldsData, db);
-
-  console.log("-----------------setupApp 3-------------------");
 
   await setupShopifyStore({
     authAdminContext,

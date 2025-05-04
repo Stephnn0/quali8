@@ -5,6 +5,9 @@ export const GRAPHQL_QUERY_SHOPIFY_FUNCTIONS = `#graphql
         node {
           id
           title
+          app {
+            handle
+          }
         }
       }
     }

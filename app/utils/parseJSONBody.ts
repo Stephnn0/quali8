@@ -12,21 +12,14 @@ async function parseJSONBody<T>(
   schema: ZodSchema<T>,
   options: { key?: string } = {},
 ) {
-  console.log("-------------------------------parseJSONBody");
   const { key } = options;
-
-  console.log("-------------------------------key", key);
 
   const body = await request.json();
 
-  console.log("-------------------------------body", body);
-
-  console.log("-------------------------------body", body);
   if (!key) return schema.parse(body);
 
   const parsedKey = schema.parse(body[key]);
 
-  console.log("-------------------------------parsedKey", parsedKey);
   return {
     [key]: parsedKey,
     unsafeBody: body,

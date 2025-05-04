@@ -83,7 +83,7 @@ export function useDiscountForm() {
         value: [],
         validates: [lengthMoreThan(0, "Customers is required")],
       }),
-      qualifierIds: useField<number[]>({
+      qualifierIds: useField<string[]>({
         value: qualifierIds || [],
         validates: [lengthMoreThan(0, "Qualifiers are required")],
       }),
@@ -135,6 +135,8 @@ export function useDiscountForm() {
             endDate: fieldValues.endDate, // (17
             endTime: fieldValues.endTime, // (18
           };
+
+          console.log("bodyParsed", body);
 
           const bodyParsed = zodApiActionsShippingDiscounts.create.parse(body);
 
