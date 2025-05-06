@@ -1,14 +1,15 @@
+import { useLoaderData } from "@remix-run/react";
 import { Layout, Page } from "@shopify/polaris";
-// import { loader } from "./loader";
-import { useQualifierForm } from "./hooks";
-import NameDescriptionQualifier from "./components/NameDescription";
+import { loader } from "./loader";
+// import { useQualifierForm } from "./hooks";
+// import NameDescriptionQualifier from "./components/NameDescription";
 // import { OperatorQualifier } from "./components/OperatorQualifier";
 // import CustomersQueryQualifier from "./components/CustomersQueryQualifier";
 // import NewCondtions from "./components/NewConditions";
 // import { useFilterCustomersForm } from "./hooks/filterCustomers";
 // import { useLoaderData } from "@remix-run/react";
 
-// export { loader };
+export { loader };
 
 const mockQualifier = {
   name: "New Qualifier",
@@ -29,15 +30,17 @@ const mockQualifier = {
 
 export default function QualifiersForm() {
   console.log("------------------------1---------------------");
-  // const loaderData = useLoaderData<typeof loader>();
+  const loaderData = useLoaderData<typeof loader>();
   console.log("------------------------2---------------------");
+
+  console.log(loaderData);
 
   // const qualifier = loaderData?.payload?.qualifier;
   const qualifier = mockQualifier;
 
   console.log("------------------------3---------------------");
 
-  const form = useQualifierForm();
+  // const form = useQualifierForm();
   console.log("------------------------4---------------------");
 
   // const { errorName } = form;
@@ -60,7 +63,7 @@ export default function QualifiersForm() {
     >
       <Layout>
         <Layout.Section>
-          <NameDescriptionQualifier form={form} />
+          {/* <NameDescriptionQualifier form={form} /> */}
         </Layout.Section>
         {/* <Layout.Section>
           {errorName && (
