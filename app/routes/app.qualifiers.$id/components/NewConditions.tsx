@@ -14,17 +14,23 @@ import type { QualifierForm } from "../hooks";
 import type { FilterCustomersForm } from "../hooks/filterCustomers";
 import { ConditionValueInput } from "./DyanmicInputs";
 import conditionsImage from "app/assets/conditions.png";
-import type { getManyConditions } from "~/models/app.server/conditions/conditions.server";
 import {
   comparisonTypeMap,
   comparisonTypeOptions,
   typeOptions,
 } from "../conditions/conditions";
 
+export type FormCondition = {
+  id?: number;
+  type: string;
+  comparisonType: string;
+  value: string;
+};
+
 type ConditionsQualifierProps = {
   form: QualifierForm;
   formFilterCustomers: FilterCustomersForm;
-  fetchedConditions: Awaited<ReturnType<typeof getManyConditions>>;
+  fetchedConditions: FormCondition[];
 };
 
 export type Condition = {
