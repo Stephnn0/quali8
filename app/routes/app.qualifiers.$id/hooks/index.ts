@@ -1,4 +1,3 @@
-import type { Conditions } from "@prisma/client";
 import { LogicType } from "@prisma/client";
 import { useFetcher, useLoaderData, useNavigate } from "@remix-run/react";
 import { useField, useForm } from "@shopify/react-form";
@@ -13,6 +12,14 @@ import { useEffect, useState } from "react";
 import { ZodError } from "zod";
 
 export type QualifierForm = ReturnType<typeof useQualifierForm>;
+
+// types.ts (or in the same file)
+export type FormCondition = {
+  id?: number;
+  type: string;
+  comparisonType: string;
+  value: string;
+};
 
 export type CustomerSegment = {
   shopifyId: string;
@@ -59,7 +66,7 @@ export function useQualifierForm() {
         conditionLogicType || LogicType.AND,
       ),
       //
-      formConditions: useField<Conditions[]>(
+      formConditions: useField<FormCondition[]>(
         Array.isArray(conditions) ? conditions : [],
       ),
     },
