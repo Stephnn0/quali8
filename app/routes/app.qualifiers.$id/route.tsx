@@ -6,7 +6,7 @@ import CustomersQueryQualifier from "./components/CustomersQueryQualifier";
 import NewCondtions from "./components/NewConditions";
 import { useFilterCustomersForm } from "./hooks/filterCustomers";
 import { useLoaderData } from "@remix-run/react";
-import { loader } from "./loader";
+import { loader } from "./loader/index";
 
 export { loader };
 
@@ -15,7 +15,7 @@ export default function QualifiersForm() {
 
   const qualifier = loaderData?.payload?.qualifier;
 
-  const isNew = loaderData.payload?.qualifier === null;
+  const isNew = qualifier === null;
 
   const form = useQualifierForm();
 
@@ -28,7 +28,7 @@ export default function QualifiersForm() {
 
   return (
     <Page
-      title={isNew ? "Create Qualifier" : qualifier?.name}
+      title={isNew ? "Create Qualifier" : (qualifier?.name ?? "Qualifier")}
       backAction={{ url: "/app/qualifiers" }}
     >
       <Layout>
@@ -53,7 +53,7 @@ export default function QualifiersForm() {
           <NewCondtions
             form={form}
             formFilterCustomers={formFilterCustomers}
-            fetchedConditions={conditions!}
+            fetchedConditions={conditions ?? []}
           />
         </Layout.Section>
         <Layout.Section>

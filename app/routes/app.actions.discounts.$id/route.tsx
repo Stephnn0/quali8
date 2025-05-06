@@ -230,7 +230,7 @@ export default function ActionDiscounts() {
 
         <Layout.Section>
           <PickQualifiers
-            mockQualifiers={loaderData?.payload.qualifiers?.qualifiers}
+            mockQualifiers={loaderData?.payload?.qualifiers?.qualifiers}
             form={form}
           />
           {qualifierIdsError && (
@@ -242,7 +242,7 @@ export default function ActionDiscounts() {
 
         <Layout.Section>
           <ShippingRates
-            shippingRates={loaderData?.payload.rates}
+            shippingRates={loaderData?.payload?.rates}
             form={form}
           />
         </Layout.Section>
