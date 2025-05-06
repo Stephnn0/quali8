@@ -1,4 +1,3 @@
-import { LogicType } from "@prisma/client";
 import { useFetcher, useLoaderData, useNavigate } from "@remix-run/react";
 import { useField, useForm } from "@shopify/react-form";
 import type { loader } from "../loader";
@@ -20,6 +19,8 @@ export type FormCondition = {
   comparisonType: string;
   value: string;
 };
+
+export type LogicType = "AND" | "OR";
 
 export type CustomerSegment = {
   shopifyId: string;
@@ -62,9 +63,7 @@ export function useQualifierForm() {
       //
       customers: useField<CustomerSegment[]>(refactorCustomers || []),
 
-      ConditionLogicType: useField<LogicType>(
-        conditionLogicType || LogicType.AND,
-      ),
+      ConditionLogicType: useField<LogicType>(conditionLogicType || "AND"),
       //
       formConditions: useField<FormCondition[]>(
         Array.isArray(conditions) ? conditions : [],
