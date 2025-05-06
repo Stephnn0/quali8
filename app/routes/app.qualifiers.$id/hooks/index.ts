@@ -3,6 +3,7 @@ import { LogicType } from "@prisma/client";
 import { useFetcher, useLoaderData, useNavigate } from "@remix-run/react";
 import { useField, useForm } from "@shopify/react-form";
 import type { loader } from "../loader";
+import action from "../../api.qualifiers/action/index";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import {
   createQualifierSchema,
@@ -10,7 +11,6 @@ import {
 } from "app/routes/api.qualifiers/zod";
 import { useEffect, useState } from "react";
 import { ZodError } from "zod";
-import action from "../../api.qualifiers/action/index";
 
 export type QualifierForm = ReturnType<typeof useQualifierForm>;
 
@@ -29,6 +29,7 @@ export function useQualifierForm() {
   const shopify = useAppBridge();
 
   const loaderData = useLoaderData<typeof loader>();
+
   const qualifier = loaderData?.payload?.qualifier;
   const { name, description, conditionLogicType, conditions, customers } =
     qualifier || {};
@@ -58,7 +59,9 @@ export function useQualifierForm() {
         conditionLogicType || LogicType.AND,
       ),
       //
-      formConditions: useField<Conditions[]>(conditions || []),
+      formConditions: useField<Conditions[]>(
+        Array.isArray(conditions) ? conditions : [],
+      ),
     },
     makeCleanAfterSubmit: false,
     onSubmit: async (fieldValues) => {
