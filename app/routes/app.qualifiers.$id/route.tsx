@@ -1,9 +1,9 @@
-import { Layout, Page, PageActions, Text } from "@shopify/polaris";
+import { Layout, Page } from "@shopify/polaris";
 import { useQualifierForm } from "./hooks";
 import NameDescriptionQualifier from "./components/NameDescription";
-import { OperatorQualifier } from "./components/OperatorQualifier";
-import CustomersQueryQualifier from "./components/CustomersQueryQualifier";
-import NewCondtions from "./components/NewConditions";
+// import { OperatorQualifier } from "./components/OperatorQualifier";
+// import CustomersQueryQualifier from "./components/CustomersQueryQualifier";
+// import NewCondtions from "./components/NewConditions";
 import { useFilterCustomersForm } from "./hooks/filterCustomers";
 import { useLoaderData } from "@remix-run/react";
 import { loader } from "./loader/index";
@@ -35,7 +35,7 @@ export default function QualifiersForm() {
         <Layout.Section>
           <NameDescriptionQualifier form={form} />
         </Layout.Section>
-        <Layout.Section>
+        {/* <Layout.Section>
           {errorName && (
             <Text variant="bodyMd" as="p" tone="critical">
               {errorName}
@@ -77,7 +77,7 @@ export default function QualifiersForm() {
               disabled: !form.dirty,
             }}
           />
-        </Layout.Section>
+        </Layout.Section> */}
       </Layout>
     </Page>
   );
