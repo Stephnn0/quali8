@@ -1,4 +1,5 @@
 import { Layout, Page, Text, PageActions } from "@shopify/polaris";
+import { loader } from "./loader/index";
 import { useQualifierForm } from "./hooks";
 import NameDescriptionQualifier from "./components/NameDescription";
 import { OperatorQualifier } from "./components/OperatorQualifier";
@@ -6,7 +7,6 @@ import CustomersQueryQualifier from "./components/CustomersQueryQualifier";
 import NewCondtions from "./components/NewConditions";
 import { useFilterCustomersForm } from "./hooks/filterCustomers";
 import { useLoaderData } from "@remix-run/react";
-import { loader } from "./loader/index";
 
 export { loader };
 
@@ -14,8 +14,6 @@ export default function QualifiersForm() {
   const loaderData = useLoaderData<typeof loader>();
 
   const qualifier = loaderData?.payload?.qualifier;
-
-  const isNew = qualifier === null;
 
   const form = useQualifierForm();
 
@@ -28,11 +26,10 @@ export default function QualifiersForm() {
 
   return (
     <Page
-      title={isNew ? "Create Qualifier" : (qualifier?.name ?? "Qualifier")}
+      title={!qualifier ? "Create Qualifier" : (qualifier?.name ?? "Qualifier")}
       backAction={{ url: "/app/qualifiers" }}
     >
       <Layout>
-        <h1>fff</h1>
         <Layout.Section>
           <NameDescriptionQualifier form={form} />
         </Layout.Section>
@@ -73,7 +70,7 @@ export default function QualifiersForm() {
         <Layout.Section>
           <PageActions
             primaryAction={{
-              content: isNew ? "Create" : "Update",
+              content: !qualifier ? "Create" : "Update",
               onAction: form.submit,
               disabled: !form.dirty,
             }}
