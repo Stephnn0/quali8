@@ -6,39 +6,35 @@ import { handleApiSuccess } from "app/utils/handleApiSuccess";
 import type { QualifierLoaderData } from "../types";
 import { handleApiError } from "~/utils/server/handleApiResponse/handleApiError.server";
 
-const mockQualifier = {
-  name: "New Qualifier",
-  description: "This is a mock qualifier for creating new ones.",
-  conditionLogicType: "AND",
+// const mockQualifier = {
+//   name: "New Qualifier",
+//   description: "This is a mock qualifier for creating new ones.",
+//   conditionLogicType: "AND",
 
-  conditions: [
-    {
-      type: "customer_tag",
-      comparisonType: "equals",
-      value: "vip",
-    },
-  ],
+//   conditions: [
+//     {
+//       type: "customer_tag",
+//       comparisonType: "equals",
+//       value: "vip",
+//     },
+//   ],
 
-  customers: [],
-  shippingDiscounts: [],
-};
+//   customers: [],
+//   shippingDiscounts: [],
+// };
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const { session } = await authenticate.admin(request);
   const id = String(params.id || "");
   try {
     if (id === "new") {
-      console.log("------------------------new---------------------");
-
       return handleApiSuccess<QualifierLoaderData>({
         payload: {
-          qualifier: mockQualifier as any,
+          qualifier: null,
         },
         code: "loaded",
       });
     }
-
-    console.log("------------------------q---------------------");
 
     const qualifier = await getQualifierByIdWithConditionsAndCustomers(
       session.shop,
@@ -46,17 +42,14 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
       db,
     );
 
-    console.log("------------------------q 2---------------------");
-
     if (!qualifier) {
       return handleApiSuccess<QualifierLoaderData>({
         payload: {
-          qualifier: mockQualifier as any,
+          qualifier: null,
         },
         code: "loaded",
       });
     }
-    console.log("------------------------q 4---------------------");
 
     return handleApiSuccess<QualifierLoaderData>({
       payload: {

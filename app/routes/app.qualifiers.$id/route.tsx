@@ -1,62 +1,29 @@
-import { useLoaderData } from "@remix-run/react";
-import { Layout, Page } from "@shopify/polaris";
+import { Layout, Page, Text, PageActions } from "@shopify/polaris";
 import { loader } from "./loader";
 import { useQualifierForm } from "./hooks";
 import NameDescriptionQualifier from "./components/NameDescription";
-// import { useQualifierForm } from "./hooks";
-// import NameDescriptionQualifier from "./components/NameDescription";
-// import { OperatorQualifier } from "./components/OperatorQualifier";
-// import CustomersQueryQualifier from "./components/CustomersQueryQualifier";
-// import NewCondtions from "./components/NewConditions";
-// import { useFilterCustomersForm } from "./hooks/filterCustomers";
-// import { useLoaderData } from "@remix-run/react";
+import { OperatorQualifier } from "./components/OperatorQualifier";
+import CustomersQueryQualifier from "./components/CustomersQueryQualifier";
+import NewCondtions from "./components/NewConditions";
+import { useFilterCustomersForm } from "./hooks/filterCustomers";
+import { useLoaderData } from "@remix-run/react";
 
 export { loader };
 
-const mockQualifier = {
-  name: "New Qualifier",
-  description: "This is a mock qualifier for creating new ones.",
-  conditionLogicType: "AND",
-
-  conditions: [
-    {
-      type: "customer_tag",
-      comparisonType: "equals",
-      value: "vip",
-    },
-  ],
-
-  customers: [],
-  shippingDiscounts: [],
-};
-
 export default function QualifiersForm() {
-  console.log("------------------------1---------------------");
   const loaderData = useLoaderData<typeof loader>();
-  console.log("------------------------2---------------------");
 
-  console.log(loaderData);
-
-  // const qualifier = loaderData?.payload?.qualifier;
-  const qualifier = mockQualifier;
-
-  console.log("------------------------3---------------------");
+  const qualifier = loaderData?.payload?.qualifier;
 
   const form = useQualifierForm();
-  console.log("------------------------4---------------------");
 
-  // const { errorName } = form;
-  console.log("------------------------5---------------------");
+  const { errorName } = form;
 
-  //  const formFilterCustomers = useFilterCustomersForm();
-  // console.log("------------------------6---------------------");
+  const formFilterCustomers = useFilterCustomersForm();
 
-  // const { error } = formFilterCustomers;
-  // console.log("------------------------7---------------------");
+  const { error } = formFilterCustomers;
 
-  // const conditions = qualifier ? qualifier.conditions : [];
-
-  // console.log("------------------------8---------------------");
+  const conditions = qualifier ? qualifier.conditions : [];
 
   return (
     <Page
@@ -67,7 +34,7 @@ export default function QualifiersForm() {
         <Layout.Section>
           <NameDescriptionQualifier form={form} />
         </Layout.Section>
-        {/* <Layout.Section>
+        <Layout.Section>
           {errorName && (
             <Text variant="bodyMd" as="p" tone="critical">
               {errorName}
@@ -109,7 +76,7 @@ export default function QualifiersForm() {
               disabled: !form.dirty,
             }}
           />
-        </Layout.Section> */}
+        </Layout.Section>
       </Layout>
     </Page>
   );
