@@ -5,6 +5,20 @@ export type ShippingDiscountAction = Awaited<
   ReturnType<typeof createActionShippingDiscount>
 >;
 
+export async function getManyShippingDiscountActionsNotCount(
+  prismaArgs: Prisma.ShippingDiscountActionFindManyArgs<DefaultArgs>,
+  db: PrismaClient,
+) {
+  try {
+    const shippingDiscountActions =
+      await db.shippingDiscountAction.findMany(prismaArgs);
+    return shippingDiscountActions;
+  } catch (error) {
+    console.error("Error getting shippingDiscountActions:", error);
+    throw error;
+  }
+}
+
 export async function getManyShippingDiscountActions(
   prismaArgs: Prisma.ShippingDiscountActionFindManyArgs<DefaultArgs>,
   db: PrismaClient,

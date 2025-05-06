@@ -3,6 +3,7 @@ import { getQualifiersByShopWithCustomersAndConditions } from "app/models/app.se
 import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
 import { handleApiError } from "~/utils/server/handleApiResponse/handleApiError.server";
+import { handleApiSuccess } from "~/utils/handleApiSuccess";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const { session } = await authenticate.admin(request);
@@ -28,14 +29,33 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       db,
     );
 
-    return {
-      payload: qualifiers?.qualifiers,
-      itemsPerPage: itemsPerPage,
-      page: page,
-      total: qualifiers?.qualifiersCount,
-    };
+    // return {
+    //   payload: qualifiers?.qualifiers,
+    //   itemsPerPage: itemsPerPage,
+    //   page: page,
+    //   total: qualifiers?.qualifiersCount,
+    // };
+
+    return handleApiSuccess<ManyQualifiersByShopWithCustomersAndConditions>({
+      payload: {
+        qualifiersAndConditions: qualifiers,
+        itemsPerPage,
+        page,
+        total: qualifiers?.qualifiersCount ?? 0,
+      },
+      code: "success",
+    });
   } catch (error) {
     console.log(error);
     return handleApiError({ errors: error, code: "error" });
   }
 }
+
+export type ManyQualifiersByShopWithCustomersAndConditions = {
+  qualifiersAndConditions: Awaited<
+    ReturnType<typeof getQualifiersByShopWithCustomersAndConditions>
+  >;
+  itemsPerPage: number;
+  page: number;
+  total: number;
+};

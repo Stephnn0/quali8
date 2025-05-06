@@ -3,6 +3,7 @@ import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
 import { getManyShippingDiscountActions } from "app/models/app.server/actionShippingDiscounts/actionShippingDiscounts.server";
 import { handleApiError } from "~/utils/server/handleApiResponse/handleApiError.server";
+import { handleApiSuccess } from "~/utils/handleApiSuccess";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const { session } = await authenticate.admin(request);
@@ -28,14 +29,24 @@ export async function loader({ request }: LoaderFunctionArgs) {
       db,
     );
 
-    return {
-      payload: ShippingDiscounts?.shippingDiscountActions,
-      itemsPerPage: itemsPerPage,
-      page: page,
-      total: ShippingDiscounts?.shippingDiscountActionsCount,
-    };
+    return handleApiSuccess<ManyShippingDiscountActionsLoaderData>({
+      payload: {
+        discounts: ShippingDiscounts,
+        itemsPerPage,
+        page,
+        total: ShippingDiscounts?.shippingDiscountActionsCount ?? 0,
+      },
+      code: "success",
+    });
   } catch (error) {
     console.log(error);
     return handleApiError({ errors: error, code: "error" });
   }
 }
+
+export type ManyShippingDiscountActionsLoaderData = {
+  discounts: Awaited<ReturnType<typeof getManyShippingDiscountActions>>;
+  itemsPerPage: number;
+  page: number;
+  total: number;
+};

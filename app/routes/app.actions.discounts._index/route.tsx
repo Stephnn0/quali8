@@ -36,7 +36,7 @@ export default function AllActions() {
 
   // ! refactor in the future since we will have more types of actions
   const discountActions =
-    loaderData?.payload?.map((data) => ({
+    loaderData?.payload?.discounts.shippingDiscountActions.map((data) => ({
       id: data.id,
       codeOrName: data.codeOrName,
       type: data.type,
@@ -171,9 +171,9 @@ export default function AllActions() {
 
   console.log("", searchParams);
 
-  const currentPage = loaderData?.page || 1;
-  const totalItems = loaderData?.total;
-  const itemsPerPage = loaderData?.itemsPerPage;
+  const currentPage = loaderData?.payload?.page || 1;
+  const totalItems = loaderData?.payload?.total;
+  const itemsPerPage = loaderData?.payload?.itemsPerPage;
   const hasNext = currentPage * itemsPerPage! < totalItems!;
   const hasPrevious = currentPage > 1;
 

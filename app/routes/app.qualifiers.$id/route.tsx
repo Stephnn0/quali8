@@ -13,7 +13,7 @@ export { loader };
 export default function QualifiersForm() {
   const loaderData = useLoaderData<typeof loader>();
 
-  const qualifier = loaderData?.payload.qualifier;
+  const qualifier = loaderData?.payload?.qualifier;
 
   const isNew = loaderData.payload?.qualifier === null;
 

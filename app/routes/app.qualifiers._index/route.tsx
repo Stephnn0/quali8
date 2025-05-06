@@ -36,7 +36,7 @@ export default function Qualifiers() {
   } | null>(null);
 
   const qualifiers =
-    loaderData?.payload?.map((data) => ({
+    loaderData?.payload?.qualifiersAndConditions.qualifiers.map((data) => ({
       id: data.id,
       name: data.name,
       description: data.description,
@@ -146,11 +146,9 @@ export default function Qualifiers() {
 
   const [searchParams, setSearchParams] = useSearchParams();
 
-  console.log("", searchParams);
-
-  const currentPage = loaderData?.page || 1;
-  const totalItems = loaderData?.total;
-  const itemsPerPage = loaderData?.itemsPerPage;
+  const currentPage = loaderData?.payload?.page || 1;
+  const totalItems = loaderData?.payload?.total;
+  const itemsPerPage = loaderData?.payload?.itemsPerPage;
   const hasNext = currentPage * itemsPerPage! < totalItems!;
   const hasPrevious = currentPage > 1;
 
