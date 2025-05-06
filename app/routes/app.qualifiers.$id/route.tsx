@@ -1,11 +1,11 @@
-import { Layout, Page, Text, PageActions } from "@shopify/polaris";
+import { Layout, Page } from "@shopify/polaris";
 // import { loader } from "./loader";
 import { useQualifierForm } from "./hooks";
 import NameDescriptionQualifier from "./components/NameDescription";
-import { OperatorQualifier } from "./components/OperatorQualifier";
-import CustomersQueryQualifier from "./components/CustomersQueryQualifier";
-import NewCondtions from "./components/NewConditions";
-import { useFilterCustomersForm } from "./hooks/filterCustomers";
+// import { OperatorQualifier } from "./components/OperatorQualifier";
+// import CustomersQueryQualifier from "./components/CustomersQueryQualifier";
+// import NewCondtions from "./components/NewConditions";
+// import { useFilterCustomersForm } from "./hooks/filterCustomers";
 // import { useLoaderData } from "@remix-run/react";
 
 // export { loader };
@@ -40,18 +40,18 @@ export default function QualifiersForm() {
   const form = useQualifierForm();
   console.log("------------------------4---------------------");
 
-  const { errorName } = form;
-  console.log("------------------------5---------------------");
+  // const { errorName } = form;
+  // console.log("------------------------5---------------------");
 
-  const formFilterCustomers = useFilterCustomersForm();
-  console.log("------------------------6---------------------");
+  // const formFilterCustomers = useFilterCustomersForm();
+  // console.log("------------------------6---------------------");
 
-  const { error } = formFilterCustomers;
-  console.log("------------------------7---------------------");
+  // const { error } = formFilterCustomers;
+  // console.log("------------------------7---------------------");
 
-  const conditions = qualifier ? qualifier.conditions : [];
+  // const conditions = qualifier ? qualifier.conditions : [];
 
-  console.log("------------------------8---------------------");
+  // console.log("------------------------8---------------------");
 
   return (
     <Page
@@ -62,7 +62,7 @@ export default function QualifiersForm() {
         <Layout.Section>
           <NameDescriptionQualifier form={form} />
         </Layout.Section>
-        <Layout.Section>
+        {/* <Layout.Section>
           {errorName && (
             <Text variant="bodyMd" as="p" tone="critical">
               {errorName}
@@ -104,7 +104,7 @@ export default function QualifiersForm() {
               disabled: !form.dirty,
             }}
           />
-        </Layout.Section>
+        </Layout.Section> */}
       </Layout>
     </Page>
   );
