@@ -29,13 +29,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       db,
     );
 
-    // return {
-    //   payload: qualifiers?.qualifiers,
-    //   itemsPerPage: itemsPerPage,
-    //   page: page,
-    //   total: qualifiers?.qualifiersCount,
-    // };
-
     return handleApiSuccess<ManyQualifiersByShopWithCustomersAndConditions>({
       payload: {
         qualifiersAndConditions: qualifiers,

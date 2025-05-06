@@ -40,7 +40,10 @@ export function useQualifierForm() {
     firstName: customer.firstName || "",
     country: customer.country || "",
     orderCount: customer.orderCount || 0,
-    amountSpent: customer.amountSpent || 0.0,
+    amountSpent:
+      typeof customer.amountSpent === "string"
+        ? parseFloat(customer.amountSpent)
+        : customer.amountSpent || 0.0,
     createdAt: "",
   }));
 
@@ -50,6 +53,7 @@ export function useQualifierForm() {
       description: useField(description || ""),
       //
       customers: useField<CustomerSegment[]>(refactorCustomers || []),
+
       ConditionLogicType: useField<LogicType>(
         conditionLogicType || LogicType.AND,
       ),

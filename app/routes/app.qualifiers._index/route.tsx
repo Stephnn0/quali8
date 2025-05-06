@@ -16,7 +16,6 @@ import {
   Layout,
   MediaCard,
   Modal,
-  TextContainer,
   EmptyState,
 } from "@shopify/polaris";
 import { loader } from "./loader";
@@ -146,6 +145,8 @@ export default function Qualifiers() {
 
   const [searchParams, setSearchParams] = useSearchParams();
 
+  console.log("", searchParams);
+
   const currentPage = loaderData?.payload?.page || 1;
   const totalItems = loaderData?.payload?.total;
   const itemsPerPage = loaderData?.payload?.itemsPerPage;
@@ -255,12 +256,10 @@ export default function Qualifiers() {
         ]}
       >
         <Modal.Section>
-          <TextContainer>
-            <p>
-              This action cannot be undone. Are you sure you want to delete this
-              qualifier?
-            </p>
-          </TextContainer>
+          <p>
+            This action cannot be undone. Are you sure you want to delete this
+            qualifier?
+          </p>
         </Modal.Section>
       </Modal>
     </Page>
