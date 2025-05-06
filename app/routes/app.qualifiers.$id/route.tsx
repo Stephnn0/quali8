@@ -1,21 +1,40 @@
 import { Layout, Page, Text, PageActions } from "@shopify/polaris";
-import { loader } from "./loader/index";
+// import { loader } from "./loader";
 import { useQualifierForm } from "./hooks";
 import NameDescriptionQualifier from "./components/NameDescription";
 import { OperatorQualifier } from "./components/OperatorQualifier";
 import CustomersQueryQualifier from "./components/CustomersQueryQualifier";
 import NewCondtions from "./components/NewConditions";
 import { useFilterCustomersForm } from "./hooks/filterCustomers";
-import { useLoaderData } from "@remix-run/react";
+// import { useLoaderData } from "@remix-run/react";
 
-export { loader };
+// export { loader };
+
+const mockQualifier = {
+  name: "New Qualifier",
+  description: "This is a mock qualifier for creating new ones.",
+  conditionLogicType: "AND",
+
+  conditions: [
+    {
+      type: "customer_tag",
+      comparisonType: "equals",
+      value: "vip",
+    },
+  ],
+
+  customers: [],
+  shippingDiscounts: [],
+};
 
 export default function QualifiersForm() {
   console.log("------------------------1---------------------");
-  const loaderData = useLoaderData<typeof loader>();
+  // const loaderData = useLoaderData<typeof loader>();
   console.log("------------------------2---------------------");
 
-  const qualifier = loaderData?.payload?.qualifier;
+  // const qualifier = loaderData?.payload?.qualifier;
+  const qualifier = mockQualifier;
+
   console.log("------------------------3---------------------");
 
   const form = useQualifierForm();
