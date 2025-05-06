@@ -1,5 +1,6 @@
-import type { Conditions } from "@prisma/client";
-import { LogicType } from "@prisma/client";
+// import type { Conditions } from "@prisma/client";
+// import { LogicType } from "@prisma/client";
+//
 import { useFetcher } from "@remix-run/react";
 import { useField, useForm } from "@shopify/react-form";
 import type action from "../../api.shopifyCustomers/action";
@@ -8,6 +9,15 @@ import { ZodError } from "zod";
 import { useEffect, useState } from "react";
 
 export { action };
+
+export type FormCondition = {
+  id?: number;
+  type: string;
+  comparisonType: string;
+  value: string;
+};
+
+export type LogicType = "AND" | "OR";
 
 export type FilterCustomersForm = ReturnType<typeof useFilterCustomersForm>;
 
@@ -19,9 +29,9 @@ export function useFilterCustomersForm() {
   const form = useForm({
     fields: {
       //
-      ConditionLogicTypeCustomer: useField<LogicType>(LogicType.AND),
+      ConditionLogicTypeCustomer: useField<LogicType>("AND"),
       //
-      formConditions: useField<Conditions[]>([]),
+      formConditions: useField<FormCondition[]>([]),
     },
     makeCleanAfterSubmit: false,
     onSubmit: async (fieldValues) => {
