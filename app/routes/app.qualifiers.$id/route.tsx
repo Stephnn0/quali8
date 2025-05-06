@@ -1,40 +1,41 @@
 import { Layout, Page } from "@shopify/polaris";
-import { useQualifierForm } from "./hooks";
-import NameDescriptionQualifier from "./components/NameDescription";
+// import { useQualifierForm } from "./hooks";
+// import NameDescriptionQualifier from "./components/NameDescription";
 // import { OperatorQualifier } from "./components/OperatorQualifier";
 // import CustomersQueryQualifier from "./components/CustomersQueryQualifier";
 // import NewCondtions from "./components/NewConditions";
-import { useFilterCustomersForm } from "./hooks/filterCustomers";
-import { useLoaderData } from "@remix-run/react";
-import { loader } from "./loader/index";
+// import { useFilterCustomersForm } from "./hooks/filterCustomers";
+// import { useLoaderData } from "@remix-run/react";
+// import { loader } from "./loader/index";
 
-export { loader };
+// export { loader };
 
 export default function QualifiersForm() {
-  const loaderData = useLoaderData<typeof loader>();
+  // const loaderData = useLoaderData<typeof loader>();
 
-  const qualifier = loaderData?.payload?.qualifier;
+  // const qualifier = loaderData?.payload?.qualifier;
 
-  const isNew = qualifier === null;
+  // const isNew = qualifier === null;
 
-  const form = useQualifierForm();
+  // const form = useQualifierForm();
 
-  const { errorName } = form;
+  // const { errorName } = form;
 
-  const formFilterCustomers = useFilterCustomersForm();
-  const { error } = formFilterCustomers;
+  // const formFilterCustomers = useFilterCustomersForm();
+  // const { error } = formFilterCustomers;
 
-  const { conditions } = qualifier || {};
+  // const { conditions } = qualifier || {};
 
   return (
     <Page
-      title={isNew ? "Create Qualifier" : (qualifier?.name ?? "Qualifier")}
+      // title={isNew ? "Create Qualifier" : (qualifier?.name ?? "Qualifier")}
       backAction={{ url: "/app/qualifiers" }}
     >
       <Layout>
-        <Layout.Section>
+        <h1>fff</h1>
+        {/* <Layout.Section>
           <NameDescriptionQualifier form={form} />
-        </Layout.Section>
+        </Layout.Section> */}
         {/* <Layout.Section>
           {errorName && (
             <Text variant="bodyMd" as="p" tone="critical">
