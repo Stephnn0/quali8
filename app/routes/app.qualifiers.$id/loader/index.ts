@@ -9,22 +9,27 @@ import { handleApiError } from "~/utils/server/handleApiResponse/handleApiError.
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const { session } = await authenticate.admin(request);
   const id = String(params.id || "");
-
-  if (id === "new") {
-    return handleApiSuccess<QualifierLoaderData>({
-      payload: {
-        qualifier: null,
-      },
-      code: "loaded",
-    });
-  }
-
   try {
+    if (id === "new") {
+      console.log("------------------------new---------------------");
+
+      return handleApiSuccess<QualifierLoaderData>({
+        payload: {
+          qualifier: null,
+        },
+        code: "loaded",
+      });
+    }
+
+    console.log("------------------------q---------------------");
+
     const qualifier = await getQualifierByIdWithConditionsAndCustomers(
       session.shop,
       id,
       db,
     );
+
+    console.log("------------------------q 2---------------------");
 
     if (!qualifier) {
       return handleApiSuccess<QualifierLoaderData>({
@@ -34,6 +39,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
         code: "loaded",
       });
     }
+    console.log("------------------------q 4---------------------");
 
     return handleApiSuccess<QualifierLoaderData>({
       payload: {

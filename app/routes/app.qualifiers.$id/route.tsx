@@ -11,18 +11,28 @@ import { useLoaderData } from "@remix-run/react";
 export { loader };
 
 export default function QualifiersForm() {
+  console.log("------------------------1---------------------");
   const loaderData = useLoaderData<typeof loader>();
+  console.log("------------------------2---------------------");
 
   const qualifier = loaderData?.payload?.qualifier;
+  console.log("------------------------3---------------------");
 
   const form = useQualifierForm();
+  console.log("------------------------4---------------------");
 
   const { errorName } = form;
+  console.log("------------------------5---------------------");
 
   const formFilterCustomers = useFilterCustomersForm();
+  console.log("------------------------6---------------------");
+
   const { error } = formFilterCustomers;
+  console.log("------------------------7---------------------");
 
   const conditions = qualifier ? qualifier.conditions : [];
+
+  console.log("------------------------8---------------------");
 
   return (
     <Page
