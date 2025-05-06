@@ -24,7 +24,10 @@ export default function Qualifiers() {
     load: true,
   });
 
-  const initialPayload = initialData.data?.qualifiers;
+  const initialPayload =
+    initialData.data && "qualifiers" in initialData.data
+      ? initialData.data?.qualifiers
+      : [];
 
   const qualifiers = initialPayload || [];
   const isBusy = initialData.state !== "idle";

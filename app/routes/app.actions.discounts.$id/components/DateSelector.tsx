@@ -21,13 +21,32 @@ const getCurrentTime = () => {
   return `${hours}:${minutes}`; // e.g., "14:07"
 };
 
+const isToday = (date: Date) => {
+  const now = new Date();
+  return (
+    date.getDate() === now.getDate() &&
+    date.getMonth() === now.getMonth() &&
+    date.getFullYear() === now.getFullYear()
+  );
+};
+
 export default function DateSelector({ form }: DateSelectorProps) {
   const currentTime = getCurrentTime();
+  const { fields } = form;
+  const { startDate, startTime, endDate, endTime, hasEndDate } = fields;
 
-  const [selectedStartHour, setSelectedStartHour] = useState(currentTime);
-  const [selectedEndHour, setSelectedEndHour] = useState(currentTime);
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const [selectedEndDate, setSelectedEndDate] = useState(new Date());
+  const [selectedStartHour, setSelectedStartHour] = useState(
+    startTime.value || currentTime,
+  );
+  const [selectedEndHour, setSelectedEndHour] = useState(
+    endTime.value || currentTime,
+  );
+  const [selectedDate, setSelectedDate] = useState(
+    startDate.value ? new Date(startDate.value) : new Date(),
+  );
+  const [selectedEndDate, setSelectedEndDate] = useState(
+    endDate.value ? new Date(endDate.value) : new Date(),
+  );
 
   const baseHourOptions = Array.from({ length: 24 * 2 }, (_, i) => {
     const hour24 = Math.floor(i / 2);
@@ -56,8 +75,18 @@ export default function DateSelector({ form }: DateSelectorProps) {
         ...baseHourOptions,
       ];
 
-  const { fields } = form;
-  const { startDate, startTime, endDate, endTime, hasEndDate } = fields;
+  const filteredHourOptions = hourOptions.filter((option) => {
+    if (isToday(selectedDate)) {
+      return option.value >= currentTime;
+    }
+    return true; // allow all times if selected date is not today
+  });
+  const filteredEndHourOptions = hourOptions.filter((option) => {
+    if (isToday(selectedEndDate)) {
+      return option.value >= currentTime;
+    }
+    return true;
+  });
 
   useEffect(() => {
     if (!startDate.value) startDate.onChange(String(selectedDate));
@@ -133,7 +162,7 @@ export default function DateSelector({ form }: DateSelectorProps) {
           <div style={{ paddingLeft: "10px" }}>
             <Select
               label="Start time (EDT)"
-              options={hourOptions}
+              options={filteredHourOptions}
               value={selectedStartHour}
               onChange={handleStartTimeChange}
             />
@@ -161,7 +190,7 @@ export default function DateSelector({ form }: DateSelectorProps) {
             <div style={{ paddingLeft: "10px" }}>
               <Select
                 label="End time (EDT)"
-                options={hourOptions}
+                options={filteredEndHourOptions}
                 value={selectedEndHour}
                 onChange={handleEndTimeChange}
               />

@@ -61,6 +61,8 @@ export default async function createShippingDiscountServer(
 
     shopifyDiscountId =
       shippingDiscount?.discountCodeAppCreate?.codeAppDiscount?.discountId;
+
+    console.log("shopifyDiscountId", JSON.stringify(shippingDiscount, null, 2));
   }
 
   if (body.automaticOrCode === "AUTOMATIC") {

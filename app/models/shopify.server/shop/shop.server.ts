@@ -24,9 +24,8 @@ export async function getShopInfo(graphql: AdminGraphqlClient) {
     return data.data;
   } catch (error) {
     console.error("Error fetching shop info:", error);
+    throw error;
   }
-
-  return null;
 }
 
 export async function getShopID(graphql: AdminGraphqlClient) {
@@ -37,7 +36,6 @@ export async function getShopID(graphql: AdminGraphqlClient) {
     return data.data?.shop.id;
   } catch (error) {
     console.error("Error fetching shop ID:", error);
+    throw error;
   }
-
-  return null;
 }

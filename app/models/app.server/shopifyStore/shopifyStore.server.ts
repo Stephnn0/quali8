@@ -11,9 +11,8 @@ export async function createShopifyStore(
     return shopifyStore;
   } catch (error) {
     console.error("Error creating Shopify store:", error);
+    throw error;
   }
-
-  return null;
 }
 
 export async function updateShopifyStore(
@@ -26,9 +25,8 @@ export async function updateShopifyStore(
     return shopifyStore;
   } catch (error) {
     console.error("Error creating Shopify store:", error);
+    throw error;
   }
-
-  return null;
 }
 
 export async function getShopifyStore(
@@ -41,7 +39,6 @@ export async function getShopifyStore(
     return shopifyStore;
   } catch (error) {
     console.error("Error fetching Shopify store:", error);
+    throw error;
   }
-
-  return null;
 }

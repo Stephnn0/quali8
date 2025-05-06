@@ -8,8 +8,9 @@ import {
   createQualifierSchema,
   updateQualifierSchema,
 } from "app/routes/api.qualifiers/zod";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ZodError } from "zod";
+import action from "../../api.qualifiers/action/index";
 
 export type QualifierForm = ReturnType<typeof useQualifierForm>;
 
@@ -24,11 +25,11 @@ export type CustomerSegment = {
 
 export function useQualifierForm() {
   const navigate = useNavigate();
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<typeof action>();
   const shopify = useAppBridge();
 
   const loaderData = useLoaderData<typeof loader>();
-  const qualifier = loaderData?.payload.qualifier;
+  const qualifier = loaderData?.payload?.qualifier;
   const { name, description, conditionLogicType, conditions, customers } =
     qualifier || {};
 
@@ -79,10 +80,6 @@ export function useQualifierForm() {
               action: "/api/qualifiers",
             },
           );
-
-          shopify.toast.show("Qualifier created");
-
-          navigate("/app/qualifiers");
         } else {
           console.log("update");
 
@@ -106,10 +103,6 @@ export function useQualifierForm() {
               action: "/api/qualifiers",
             },
           );
-
-          shopify.toast.show("Qualifier updated");
-
-          navigate("/app/qualifiers");
         }
       } catch (error) {
         shopify.toast.show("Something went wrong");
@@ -128,6 +121,30 @@ export function useQualifierForm() {
       return { status: "success" };
     },
   });
+
+  useEffect(() => {
+    if (fetcher.state === "idle" && fetcher.data) {
+      if (
+        "errors" in fetcher.data &&
+        Array.isArray(fetcher.data.errors) &&
+        fetcher.data.errors.length
+      ) {
+        shopify.toast.show(
+          `Error: ${fetcher.data.errors[0]?.message}` || "An error occurred",
+        );
+      } else {
+        if ("code" in fetcher.data) {
+          const actionCode = fetcher.data.code;
+          if (actionCode === "created") {
+            shopify.toast.show("Qualifier Created");
+          } else if (actionCode === "updated") {
+            shopify.toast.show("Qualifier Updated");
+          }
+        }
+        navigate("/app/qualifiers");
+      }
+    }
+  }, [fetcher.state, fetcher.data]);
 
   return {
     ...form,

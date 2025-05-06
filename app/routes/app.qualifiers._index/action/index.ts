@@ -3,6 +3,7 @@ import { deleteQualifier } from "app/models/app.server/qualifiers/qualifier.serv
 import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
 import { deleteManyConditions } from "app/models/app.server/conditions/conditions.server";
+import { handleApiError } from "~/utils/server/handleApiResponse/handleApiError.server";
 
 export async function action({ request }: ActionFunctionArgs) {
   await authenticate.admin(request);
@@ -42,6 +43,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
     return null; // ! fixed to error
   } catch (error) {
-    console.error("Error in action:", error);
+    return handleApiError({ errors: error, code: "error" });
   }
 }

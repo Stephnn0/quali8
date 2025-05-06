@@ -35,6 +35,24 @@ export const handleApiError: HandleApiErrorFn = ({
         message: errors.message,
       },
     ];
+  } else {
+    console.warn("HandleApiError type: Unknown", errors);
+
+    errorsArray = [
+      {
+        __typename: "ApiError",
+        id: crypto.randomUUID(),
+        type: "unknown",
+        message:
+          typeof errors === "string"
+            ? errors
+            : typeof errors === "object" &&
+                errors !== null &&
+                "message" in errors
+              ? String(errors.message)
+              : "An unknown error occurred.",
+      },
+    ];
   }
 
   console.log(JSON.stringify(errorsArray, null, 2));

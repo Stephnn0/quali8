@@ -18,16 +18,15 @@ export async function getShopifyFunctions(graphql: AdminGraphqlClient) {
     return data?.data?.shopifyFunctions.edges;
   } catch (error) {
     console.error("Error fetching customers:", error);
+    throw error;
   }
-
-  return null;
 }
 
 export async function getFunctionId(
   functions: ShopifyFunctions,
   appHandle: string,
 ) {
-  const matchedFunction = functions.find(
+  const matchedFunction = functions?.find(
     (f: any) => f.node.app?.handle === appHandle,
   );
 

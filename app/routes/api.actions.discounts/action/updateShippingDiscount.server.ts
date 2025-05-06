@@ -15,7 +15,7 @@ export default async function updateShippingDiscountServer(
   authAdminContext: AuthAdminContext,
   body: UpdateBody,
 ) {
-  const { admin } = authAdminContext;
+  const { admin, session } = authAdminContext;
 
   const customerShopifyIds =
     body.customers && body.customers.map((c) => c.shopifyId);
@@ -61,6 +61,7 @@ export default async function updateShippingDiscountServer(
       limitUsagePerOneCustomer: body.limitUsagePerOneCustomer!,
       combinedWithOrderDiscounts: body.combinedWithOrderDiscounts!,
       combinedWithProductDiscounts: body.combinedWithProductDiscounts!,
+      shop: session.shop,
     });
 
     newShopifyDiscountId =
@@ -87,12 +88,12 @@ export default async function updateShippingDiscountServer(
       graphql: admin.graphql,
       title: body.codeOrName!,
       body: JSON.stringify(metafieldDataUpdate),
-      functionId: "92f98185-5407-46c4-85d9-11594cc32d07", // functionId
       startDate: formattedStartDate,
       endDate: formattedEndDate,
       shippingDiscountState: body.shippingDiscountState!,
       combinedWithOrderDiscounts: body.combinedWithOrderDiscounts!,
       combinedWithProductDiscounts: body.combinedWithProductDiscounts!,
+      shop: session.shop,
     });
 
     newShopifyDiscountId =
@@ -122,7 +123,9 @@ export default async function updateShippingDiscountServer(
           //
           qualifierIds: body.qualifierIds,
           qualifiers: {
-            connect: body.qualifierIds?.map((id: number) => ({ id })),
+            connect: (body?.qualifierIds ?? []).map((id: string) => ({
+              id: Number(id),
+            })),
           },
           //
           shippingRatesNames: body.shippingRatesNames,

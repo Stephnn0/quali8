@@ -13,15 +13,17 @@ import type {
   UpdateBody,
 } from "app/routes/api.actions.discounts/zod";
 import { zodApiActionsShippingDiscounts } from "app/routes/api.actions.discounts/zod";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ZodError } from "zod";
+import action from "../../api.actions.discounts/action/index";
 
 export type DiscountForm = ReturnType<typeof useDiscountForm>;
 
 export function useDiscountForm() {
   const loaderData = useLoaderData<typeof loader>();
+  const fetcher = useFetcher<typeof action>();
 
-  const shippingDiscount = loaderData?.payload.shippingDiscount;
+  const shippingDiscount = loaderData?.payload?.shippingDiscount;
 
   const {
     id,
@@ -49,7 +51,6 @@ export function useDiscountForm() {
   } = shippingDiscount || {};
 
   const navigate = useNavigate();
-  const fetcher = useFetcher();
   const shopify = useAppBridge();
 
   // Error states
@@ -136,8 +137,6 @@ export function useDiscountForm() {
             endTime: fieldValues.endTime, // (18
           };
 
-          console.log("bodyParsed", body);
-
           const bodyParsed = zodApiActionsShippingDiscounts.create.parse(body);
 
           fetcher.submit(bodyParsed as any, {
@@ -145,10 +144,6 @@ export function useDiscountForm() {
             encType: "application/json",
             action: "/api/actions/discounts",
           });
-
-          shopify.toast.show("Discount Created");
-
-          navigate("/app/actions/discounts");
         } else {
           console.log("update");
 
@@ -192,12 +187,10 @@ export function useDiscountForm() {
             encType: "application/json",
             action: `/api/actions/discounts`,
           });
-
-          shopify.toast.show("Discount Updated");
-
-          navigate("/app/actions/discounts");
         }
       } catch (error) {
+        // FRONTEND ERROR HANDLING
+
         if (error instanceof ZodError) {
           error.errors.forEach((err) => {
             if (err.path.includes("value")) {
@@ -216,6 +209,30 @@ export function useDiscountForm() {
       return { status: "success" };
     },
   });
+
+  useEffect(() => {
+    if (fetcher.state === "idle" && fetcher.data) {
+      if (
+        "errors" in fetcher.data &&
+        Array.isArray(fetcher.data.errors) &&
+        fetcher.data.errors.length
+      ) {
+        shopify.toast.show(
+          `Error: ${fetcher.data.errors[0]?.message}` || "An error occurred",
+        );
+      } else {
+        const actionCode =
+          "code" in fetcher.data ? fetcher.data.code : undefined;
+        if (actionCode === "created") {
+          shopify.toast.show("Discount Created");
+        } else if (actionCode === "updated") {
+          shopify.toast.show("Discount Updated");
+        }
+
+        navigate("/app/actions/discounts");
+      }
+    }
+  }, [fetcher.state, fetcher.data]);
 
   return {
     ...form,

@@ -24,7 +24,10 @@ export default function ShippingDiscount() {
     load: true,
   });
 
-  const initialPayload = initialData.data?.shippingDiscounts;
+  const initialPayload =
+    initialData.data && "shippingDiscounts" in initialData.data
+      ? initialData.data.shippingDiscounts
+      : [];
 
   const shippingDiscounts = initialPayload || [];
   const isBusy = initialData.state !== "idle";
@@ -82,6 +85,7 @@ export default function ShippingDiscount() {
             items={shippingDiscounts.map(({ id, ...shippingDiscounts }) => ({
               ...shippingDiscounts,
               id: String(id),
+              name: shippingDiscounts.codeOrName,
             }))}
             emptyState={emptyState}
           />

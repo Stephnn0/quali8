@@ -69,6 +69,7 @@ export async function createShippingAutomaticDiscount({
     return adminData;
   } catch (error) {
     console.log(error);
+    throw error;
   }
 }
 
@@ -137,6 +138,7 @@ export async function createShippingDiscount({
     return adminData;
   } catch (error) {
     console.log(error);
+    throw error;
   }
 }
 
@@ -158,6 +160,7 @@ export async function deleteShippingCodeDiscount(
     return adminData;
   } catch (error) {
     console.log(error);
+    throw error;
   }
 }
 
@@ -179,6 +182,7 @@ export async function deleteShippingAutomaticDiscount(
     return adminData;
   } catch (error) {
     console.log(error);
+    throw error;
   }
 }
 

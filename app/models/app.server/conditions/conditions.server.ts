@@ -24,6 +24,7 @@ export async function createCondition(
     return condition;
   } catch (error) {
     console.error("Error creating condition:", error);
+    throw error;
   }
 }
 
@@ -36,7 +37,7 @@ export async function getConditionByQualiferId(
     return condition;
   } catch (error) {
     console.error("Error fetching condition by qualifier ID:", error);
-    return null;
+    throw error;
   }
 }
 
@@ -49,6 +50,7 @@ export async function deleteCondition(
     return condition;
   } catch (error) {
     console.error("Error deleting condition:", error);
+    throw error;
   }
 }
 
@@ -61,5 +63,6 @@ export async function deleteManyConditions(
     return conditions;
   } catch (error) {
     console.error("Error deleting many conditions:", error);
+    throw error;
   }
 }

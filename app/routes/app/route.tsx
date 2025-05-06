@@ -8,7 +8,6 @@ import { authenticate } from "app/shopify.server";
 import { getAppStatus } from "app/services/setup/getAppStatus";
 import db from "app/db.server";
 import { getSubscription } from "./getSubscription";
-import { PUBLIC_ENV } from "~/constants/app.constants";
 
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
@@ -32,7 +31,7 @@ export default function App() {
   const { apiKey } = useLoaderData<typeof loader>();
 
   return (
-    <AppProvider isEmbeddedApp apiKey={PUBLIC_ENV.VITE_SHOPIFY_API_KEY}>
+    <AppProvider isEmbeddedApp apiKey={apiKey}>
       <NavMenu>
         <Link to="/app" rel="home">
           Home

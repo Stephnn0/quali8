@@ -5,7 +5,7 @@ import { useField, useForm } from "@shopify/react-form";
 import type action from "../../api.shopifyCustomers/action";
 import { conditionsSubmissionSchema } from "./zod";
 import { ZodError } from "zod";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export { action };
 
@@ -59,6 +59,16 @@ export function useFilterCustomersForm() {
       return { status: "success" };
     },
   });
+
+  useEffect(() => {
+    if (fetcher.state === "idle" && fetcher.data) {
+      if ("errors" in fetcher.data && fetcher.data.errors?.length) {
+        shopify.toast.show(
+          `Error: ${fetcher.data.errors[0]?.message}` || "An error occurred",
+        );
+      }
+    }
+  }, [fetcher.state, fetcher.data]);
 
   return {
     ...form,

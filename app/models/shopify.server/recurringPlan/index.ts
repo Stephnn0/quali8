@@ -22,9 +22,8 @@ async function find<T extends AppRecurringPlanFindFirstArgs>(
     >;
   } catch (error) {
     console.error("Error finding recurring plan:", error);
+    throw error;
   }
-
-  return null;
 }
 
 // -------------------------------------------------------

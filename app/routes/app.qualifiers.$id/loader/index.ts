@@ -4,6 +4,7 @@ import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
 import { handleApiSuccess } from "app/utils/handleApiSuccess";
 import type { QualifierLoaderData } from "../types";
+import { handleApiError } from "~/utils/server/handleApiResponse/handleApiError.server";
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const { session } = await authenticate.admin(request);
@@ -42,5 +43,6 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     });
   } catch (error) {
     console.error("Error fetching qualifier:", error);
+    return handleApiError({ errors: error, code: "error" });
   }
 }

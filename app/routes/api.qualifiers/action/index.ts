@@ -11,6 +11,7 @@ import {
   deleteManyConditions,
 } from "app/models/app.server/conditions/conditions.server";
 import { upsertCustomer } from "app/models/app.server/customers/customer.server";
+import { handleApiError } from "~/utils/server/handleApiResponse/handleApiError.server";
 
 export default async function action({ request }: ActionFunctionArgs) {
   try {
@@ -155,5 +156,6 @@ export default async function action({ request }: ActionFunctionArgs) {
     return { status: "error" };
   } catch (error) {
     console.error("API Qualifiers Action Error: ", error);
+    return handleApiError({ errors: error, code: "error" });
   }
 }

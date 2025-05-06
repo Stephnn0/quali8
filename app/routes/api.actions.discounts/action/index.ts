@@ -5,6 +5,7 @@ import { parseJSONBody } from "app/utils/parseJSONBody";
 import createShippingDiscountServer from "./createShippingDiscount.server";
 import { handleApiSuccess } from "app/utils/handleApiSuccess";
 import updateShippingDiscountServer from "./updateShippingDiscount.server";
+import { handleApiError } from "~/utils/server/handleApiResponse/handleApiError.server";
 
 const {
   ACTIONS_ZOD,
@@ -24,6 +25,8 @@ export default async function action({ request }: ActionFunctionArgs) {
     if (request.method === "POST") {
       switch (code) {
         case "create": {
+          // const co = true;
+          // if (co) throw new Error("hello world bro weeoe");
           const bodyParsed = CREATE.ZOD.parse(unsafeBody);
 
           const createdShippingDiscount = await createShippingDiscountServer(
@@ -68,5 +71,6 @@ export default async function action({ request }: ActionFunctionArgs) {
     return { payload: null };
   } catch (error) {
     console.error("API Get Customers Error: ", error);
+    return handleApiError({ errors: error, code: "error" });
   }
 }

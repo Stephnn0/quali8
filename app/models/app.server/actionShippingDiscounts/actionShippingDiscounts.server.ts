@@ -21,6 +21,7 @@ export async function getManyShippingDiscountActions(
     return { shippingDiscountActions, shippingDiscountActionsCount };
   } catch (error) {
     console.error("Error getting shippingDiscountActions:", error);
+    throw error;
   }
 }
 
@@ -34,6 +35,7 @@ export async function createActionShippingDiscount(
     return shippingDiscountAction;
   } catch (error) {
     console.error("Error creating shippingDiscountAction:", error);
+    throw error;
   }
 }
 
@@ -47,6 +49,7 @@ export async function deleteActionShippingDiscount(
     return shippingDiscountAction;
   } catch (error) {
     console.error("Error deleting shippingDiscountAction:", error);
+    throw error;
   }
 }
 
@@ -60,6 +63,7 @@ export async function getActionShippingDiscount(
     return shippingDiscountAction;
   } catch (error) {
     console.error("Error getting shippingDiscountAction:", error);
+    throw error;
   }
 }
 
@@ -73,5 +77,6 @@ export async function updateActionShippingDiscount(
     return shippingDiscountAction;
   } catch (error) {
     console.error("Error updating shippingDiscountAction:", error);
+    throw error;
   }
 }

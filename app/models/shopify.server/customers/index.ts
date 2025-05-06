@@ -15,7 +15,6 @@ export async function getCustomers(graphql: AdminGraphqlClient, query = "") {
     return data?.data?.customers.edges;
   } catch (error) {
     console.error("Error fetching customers:", error);
+    throw error;
   }
-
-  return null;
 }

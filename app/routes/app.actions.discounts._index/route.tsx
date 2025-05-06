@@ -269,7 +269,7 @@ export default function AllActions() {
           )}
         </Layout.Section>
         <Layout.Section>
-          <FooterHelp>All rights reserved. 8Instruments</FooterHelp>
+          <FooterHelp>@8Instruments. All rights reserved.</FooterHelp>
         </Layout.Section>
       </Layout>
 

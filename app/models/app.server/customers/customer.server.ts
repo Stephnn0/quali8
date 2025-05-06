@@ -10,6 +10,7 @@ export async function getManyCustomers(
     return customers;
   } catch (error) {
     console.error("Error fetching customers:", error);
+    throw error;
   }
 }
 
@@ -41,6 +42,7 @@ export async function createCustomer(
     return customer;
   } catch (error) {
     console.error("Error creating customer:", error);
+    throw error;
   }
 }
 
@@ -53,6 +55,7 @@ export async function createManyCustomers(
     return customers;
   } catch (error) {
     console.error("Error creating many customer:", error);
+    throw error;
   }
 }
 
@@ -77,7 +80,10 @@ export async function upsertCustomer(
         lastName: customer.lastName,
         shopifyStore: { connect: { shop: customer.shop } },
         qualifiers: { connect: { id: customer.qualifierId } },
-        amountSpent: customer.amountSpent,
+        amountSpent:
+          customer.amountSpent !== undefined
+            ? customer.amountSpent.toString()
+            : "0",
         orderCount: customer.orderCount,
         country: customer.country,
       },
@@ -87,7 +93,10 @@ export async function upsertCustomer(
         lastName: customer.lastName,
         shopifyStore: { connect: { shop: customer.shop } },
         qualifiers: { connect: { id: customer.qualifierId } },
-        amountSpent: customer.amountSpent,
+        amountSpent:
+          customer.amountSpent !== undefined
+            ? customer.amountSpent.toString()
+            : "0",
         orderCount: customer.orderCount,
         country: customer.country,
       },
@@ -96,5 +105,6 @@ export async function upsertCustomer(
     return result;
   } catch (error) {
     console.error("Error upserting customer:", error);
+    throw error;
   }
 }

@@ -6,6 +6,7 @@ import db from "app/db.server";
 import { getActionShippingDiscount } from "app/models/app.server/actionShippingDiscounts/actionShippingDiscounts.server";
 import { handleApiSuccess } from "app/utils/handleApiSuccess";
 import type { ActionShippingDiscountLoaderData } from "../types";
+import { handleApiError } from "~/utils/server/handleApiResponse/handleApiError.server";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const context = await authenticate.admin(request);
@@ -82,6 +83,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     });
   } catch (error) {
     console.log(error);
+    return handleApiError({ errors: error, code: "error" });
   }
-  return null;
 }

@@ -10,6 +10,7 @@ export async function createQualifier(
     return qualifier;
   } catch (error) {
     console.error("Error creating qualifier:", error);
+    throw error;
   }
 }
 
@@ -28,6 +29,7 @@ export async function getAllQualifiers(
     return qualifiers;
   } catch (error) {
     console.error("Error get all qualifiers qualifier:", error);
+    throw error;
   }
 }
 
@@ -46,6 +48,7 @@ export async function getQualifiersByShop(
     return { qualifiers, qualifiersCount };
   } catch (error) {
     console.error("Error fetching qualifiers:", error);
+    throw error;
   }
 }
 
@@ -68,6 +71,7 @@ export async function getQualifiersByShopWithCustomersAndConditions(
     return { qualifiers, qualifiersCount };
   } catch (error) {
     console.error("Error fetching qualifiers:", error);
+    throw error;
   }
 }
 
@@ -87,6 +91,7 @@ export async function getQualifierByIdWithConditionsAndCustomers(
     return qualifier;
   } catch (error) {
     console.error("Error fetching qualifier:", error);
+    throw error;
   }
 }
 
@@ -99,6 +104,7 @@ export async function getQualifierById(
     return qualifier;
   } catch (error) {
     console.error("Error fetching qualifier:", error);
+    throw error;
   }
 }
 
@@ -111,6 +117,7 @@ export async function deleteQualifier(
     return qualifier;
   } catch (error) {
     console.error("Error deleting qualifier:", error);
+    throw error;
   }
 }
 
@@ -123,5 +130,6 @@ export async function updateQualifier(
     return qualifier;
   } catch (error) {
     console.error("Error updating qualifier:", error);
+    throw error;
   }
 }

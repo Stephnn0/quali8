@@ -4,6 +4,7 @@ import { authenticate } from "app/shopify.server";
 import Dashboardcomponent from "app/components/Dashboardbanner";
 import Qualifiers from "./sections/Qualifiers/Qualifiers";
 import ShippingDiscount from "./sections/ShippingDiscounts/ShippingDiscounts";
+import { handleApiError } from "~/utils/server/handleApiResponse/handleApiError.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   await authenticate.admin(request);
@@ -11,7 +12,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   try {
     return { payload: null, code: "none" };
   } catch (error) {
-    return { errors: error, code: "not-found" };
+    return handleApiError({ errors: error, code: "error" });
   }
 };
 
@@ -23,7 +24,7 @@ export default function Index() {
 
       <Layout>
         <Layout.Section>
-          <Banner onDismiss={() => {}}>
+          <Banner>
             <p>
               Use your finance report to get detailed information about your
               business. <Link url="">Let us know what you think</Link>
@@ -38,13 +39,7 @@ export default function Index() {
           <ShippingDiscount />
         </Layout.Section>
         <Layout.Section>
-          <FooterHelp>
-            Learn more about{" "}
-            <Link url="https://help.shopify.com/manual/orders/fulfill-orders">
-              Use your finance report to get detailed information about your
-              business.
-            </Link>
-          </FooterHelp>
+          <FooterHelp>@8Instruments. All rights reserved.</FooterHelp>
         </Layout.Section>
       </Layout>
     </Page>
