@@ -26,6 +26,8 @@ export function wait(duration: number) {
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
+  console.log("---------------------- loader setup---------------------");
+
   const authAdminContext = await authenticate.admin(request);
   const { redirect } = authAdminContext;
 
@@ -36,6 +38,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
+  console.log("---------------------- action setup---------------------");
+
   const adminContext = await authenticate.admin(request);
 
   try {
@@ -76,14 +80,24 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 
 export default function Setup() {
+  console.log("---------------------- setup---------------------");
+
   const { isSetup } = useLoaderData<typeof loader>();
   const { errors: actionErrors } = useActionData<typeof action>() || {};
 
   const submit = useSubmit();
   const error = actionErrors && actionErrors?.length > 0;
 
+  console.log("isSetup", isSetup);
+  console.log("error", error);
+  console.log("actionErrors", actionErrors);
+
   useEffect(() => {
+    console.log("---------------------- useeffect setup---------------------");
+
     if (!isSetup && !error) {
+      console.log("---------------------- setup---------------------");
+
       submit({}, { method: "POST" });
     }
   }, [isSetup, submit, error]);

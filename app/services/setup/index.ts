@@ -26,7 +26,7 @@ export async function setupApp(
     admin: { graphql },
   } = authAdminContext;
 
-  console.log("----------------------1---------------------");
+  console.log("---------------------- setup 1---------------------");
   // App Status & ShopInfo
   const [{ isSetup, shopifyStore, shopInfo }, shopMetafieldsData, functions] =
     await Promise.all([
