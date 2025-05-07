@@ -24,7 +24,6 @@ import AppSurfaceLayout from "app/components/AppSurfaceLayout/AppSurfaceLayout";
 import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
 import { handleApiError } from "~/utils/server/handleApiResponse/handleApiError.server";
 import { boundary } from "@shopify/shopify-app-remix/server";
-import { PUBLIC_ENV } from "~/constants/app.constants";
 
 export function wait(duration: number) {
   const promise = new Promise<void>((resolve) => {
@@ -44,13 +43,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { isSetup } = await getAppStatus(authAdminContext, db, false);
   if (isSetup) throw redirect("/app");
 
-  return json({ isSetup });
+  return json({ isSetup, apiKey: process.env.SHOPIFY_API_KEY || "" });
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-  console.log("---------------------- action setup---------------------");
-
   const adminContext = await authenticate.admin(request);
+  console.log("---------------------- action setup---------------------");
 
   try {
     // Minimum 2 seconds setup duration to admire the design 🎨
@@ -90,33 +88,22 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 };
 
 export default function Setup() {
-  console.log("---------------------- setup---------------------");
+  console.log("---------------------- setup component---------------------");
 
-  const { isSetup } = useLoaderData<typeof loader>();
+  const { isSetup, apiKey } = useLoaderData<typeof loader>();
   const { errors: actionErrors } = useActionData<typeof action>() || {};
 
   const submit = useSubmit();
-
   const error = actionErrors && actionErrors?.length > 0;
 
-  console.log("isSetup", isSetup);
-  console.log("error", error);
-  console.log("actionErrors", actionErrors);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!isSetup && !error) {
-      console.log("---------------------- setup---------------------");
-      console.log("Submitting...");
-
-      submit({}, { method: "post" });
-
-      // fetcher.submit({}, { method: "post" });
-      console.log("---------------------- setup fini---------------------");
+      submit({}, { method: "POST" });
     }
   }, [isSetup, submit, error]);
 
   return (
-    <AppProvider isEmbeddedApp apiKey={PUBLIC_ENV.VITE_SHOPIFY_API_KEY}>
+    <AppProvider isEmbeddedApp apiKey={apiKey}>
       <AppSurfaceLayout>
         {error ? (
           <FullPageCardErrorState heading="There was an error during installation">
