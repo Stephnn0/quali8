@@ -1,8 +1,17 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
+import type {
+  ActionFunctionArgs,
+  HeadersFunction,
+  LoaderFunctionArgs,
+} from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
-import { useActionData, useLoaderData, useSubmit } from "@remix-run/react";
+import {
+  useActionData,
+  useLoaderData,
+  useRouteError,
+  useSubmit,
+} from "@remix-run/react";
 import { useEffect } from "react";
 import { getAppStatus } from "app/services/setup/getAppStatus";
 import { setupApp } from "app/services/setup";
@@ -14,6 +23,7 @@ import SetupGraphic from "./SetupGraphic/SetupGraphic";
 import AppSurfaceLayout from "app/components/AppSurfaceLayout/AppSurfaceLayout";
 import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
 import { handleApiError } from "~/utils/server/handleApiResponse/handleApiError.server";
+import { boundary } from "@shopify/shopify-app-remix/server";
 
 export function wait(duration: number) {
   const promise = new Promise<void>((resolve) => {
@@ -90,22 +100,28 @@ export default function Setup() {
   console.log("isSetup", isSetup);
   console.log("error", error);
   console.log("actionErrors", actionErrors);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    console.log("---------------------- useeffect setup---------------------");
-    console.log("Submittable?", !isSetup && !error);
-    if (!isSetup && !error) {
-      console.log("---------------------- setup---------------------");
-      console.log("Submitting...");
-
-      submit(
-        {},
-        {
-          method: "POST",
-          action: "/setup",
-          encType: "multipart/form-data",
-        },
+    const setupEffect = async () => {
+      console.log(
+        "---------------------- useeffect setup---------------------",
       );
-    }
+      console.log("Submittable?", !isSetup && !error);
+
+      try {
+        if (!isSetup && !error) {
+          console.log("---------------------- setup---------------------");
+          console.log("Submitting...");
+          submit({}, { method: "post" });
+          console.log("---------------------- setup fini---------------------");
+        }
+      } catch (error) {
+        console.error("Error in useEffect", error);
+        // Handle the error as needed
+      }
+    };
+
+    setupEffect();
   }, [isSetup, submit, error]);
 
   return (
@@ -126,3 +142,12 @@ export default function Setup() {
     </AppProvider>
   );
 }
+
+// Shopify needs Remix to catch some thrown responses, so that their headers are included in the response.
+export function ErrorBoundary() {
+  return boundary.error(useRouteError());
+}
+
+export const headers: HeadersFunction = (headersArgs) => {
+  return boundary.headers(headersArgs);
+};
