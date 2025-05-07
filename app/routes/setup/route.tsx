@@ -2,7 +2,7 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
-import { useActionData, useLoaderData, useSubmit } from "@remix-run/react";
+import { useActionData, useFetcher, useLoaderData } from "@remix-run/react";
 import { useEffect } from "react";
 import { getAppStatus } from "app/services/setup/getAppStatus";
 import { setupApp } from "app/services/setup";
@@ -85,7 +85,8 @@ export default function Setup() {
   const { isSetup } = useLoaderData<typeof loader>();
   const { errors: actionErrors } = useActionData<typeof action>() || {};
 
-  const submit = useSubmit();
+  // const submit = useSubmit();
+  const fetcher = useFetcher();
   const error = actionErrors && actionErrors?.length > 0;
 
   console.log("isSetup", isSetup);
@@ -99,12 +100,12 @@ export default function Setup() {
       console.log("---------------------- setup---------------------");
       console.log("Submitting...");
       formData.append("trigger", "true");
-      submit(formData, {
+      fetcher.submit(formData, {
         method: "POST",
-        action: "/setup",
+        action: "/api/setup",
       });
     }
-  }, [isSetup, submit, error]);
+  }, [isSetup, fetcher, error]);
 
   return (
     <AppProvider isEmbeddedApp apiKey={PUBLIC_ENV.VITE_SHOPIFY_API_KEY}>
