@@ -91,20 +91,18 @@ export default function Setup() {
   console.log("isSetup", isSetup);
   console.log("error", error);
   console.log("actionErrors", actionErrors);
-
+  const formData = new FormData();
   useEffect(() => {
     console.log("---------------------- useeffect setup---------------------");
     console.log("Submittable?", !isSetup && !error);
     if (!isSetup && !error) {
       console.log("---------------------- setup---------------------");
       console.log("Submitting...");
-      submit(
-        {},
-        {
-          method: "POST",
-          action: "/setup",
-        },
-      );
+      formData.append("trigger", "true");
+      submit(formData, {
+        method: "POST",
+        action: "/setup",
+      });
     }
   }, [isSetup, submit, error]);
 
