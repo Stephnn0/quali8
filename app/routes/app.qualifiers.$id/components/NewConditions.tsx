@@ -8,12 +8,12 @@ import {
   Text,
   EmptyState,
 } from "@shopify/polaris";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { DeleteIcon } from "@shopify/polaris-icons";
 import type { QualifierForm } from "../hooks";
 import type { FilterCustomersForm } from "../hooks/filterCustomers";
 import { ConditionValueInput } from "./DyanmicInputs";
-import conditionsImage from "app/assets/conditions.png";
+import conditionsImage from "~/assets/conditions.png";
 import {
   comparisonTypeMap,
   comparisonTypeOptions,
@@ -51,9 +51,9 @@ export default function NewConditions({
 
   const { formConditions: FilterCustomerCondtions } =
     formFilterCustomersConditions;
-
+  const initialized = useRef(false);
   useEffect(() => {
-    if (fetchedConditions) {
+    if (!initialized.current && fetchedConditions.length > 0) {
       setConditions(fetchedConditions);
       FilterCustomerCondtions.onChange(fetchedConditions);
     }
@@ -165,6 +165,7 @@ export default function NewConditions({
                     </FormLayout.Group>
                   </FormLayout>
                 </LegacyStack.Item>
+
                 <Button
                   icon={DeleteIcon}
                   onClick={() => removeCondition(index)}

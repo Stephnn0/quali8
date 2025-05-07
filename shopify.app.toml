@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "b9b7e1ced088bbaf2956013017ec52ad"
-application_url = "https://enemies-we-combinations-because.trycloudflare.com"
+application_url = "https://issued-awareness-authorization-iran.trycloudflare.com"
 embedded = true
 name = "quali8-dev-gamma"
 handle = "quali8-dev-gamma"
@@ -28,9 +28,9 @@ scopes = "write_products, read_customers, read_shipping, write_discounts, read_o
 
 [auth]
 redirect_urls = [
-  "https://enemies-we-combinations-because.trycloudflare.com/auth/callback",
-  "https://enemies-we-combinations-because.trycloudflare.com/auth/shopify/callback",
-  "https://enemies-we-combinations-because.trycloudflare.com/api/auth/callback"
+  "https://issued-awareness-authorization-iran.trycloudflare.com/auth/callback",
+  "https://issued-awareness-authorization-iran.trycloudflare.com/auth/shopify/callback",
+  "https://issued-awareness-authorization-iran.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]

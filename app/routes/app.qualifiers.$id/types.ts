@@ -9,10 +9,6 @@ type QualifiersWithCustomersAndConditions =
     })
   | null;
 
-export type QualifiersOnlyLoaderData = {
-  qualifier: Awaited<ReturnType<typeof getQualifierById>> | null;
-};
-
 export type QualifierLoaderData = {
   qualifier: QualifiersWithCustomersAndConditions;
 };

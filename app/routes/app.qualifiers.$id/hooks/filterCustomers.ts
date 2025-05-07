@@ -1,6 +1,3 @@
-// import type { Conditions } from "@prisma/client";
-// import { LogicType } from "@prisma/client";
-//
 import { useFetcher } from "@remix-run/react";
 import { useField, useForm } from "@shopify/react-form";
 import type action from "../../api.shopifyCustomers/action";
