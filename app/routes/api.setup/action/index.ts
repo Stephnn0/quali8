@@ -6,7 +6,7 @@ import db from "~/db.server";
 import { authenticate } from "~/shopify.server";
 
 export default async function action({ request }: ActionFunctionArgs) {
-  console.log("---------------------- action setup---------------------");
+  console.log("---------------------- action setup api---------------------");
 
   const adminContext = await authenticate.admin(request);
 
