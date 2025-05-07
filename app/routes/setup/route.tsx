@@ -8,6 +8,7 @@ import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
 import {
   useActionData,
+  useFetcher,
   useLoaderData,
   useRouteError,
   useSubmit,
@@ -96,6 +97,8 @@ export default function Setup() {
   const { errors: actionErrors } = useActionData<typeof action>() || {};
 
   const submit = useSubmit();
+
+  const fetcher = useFetcher();
   const error = actionErrors && actionErrors?.length > 0;
 
   console.log("isSetup", isSetup);
@@ -113,7 +116,7 @@ export default function Setup() {
         if (!isSetup && !error) {
           console.log("---------------------- setup---------------------");
           console.log("Submitting...");
-          submit({}, { method: "post" });
+          fetcher.submit({}, { method: "post" });
           console.log("---------------------- setup fini---------------------");
         }
       } catch (error) {
@@ -123,7 +126,7 @@ export default function Setup() {
     };
 
     setupEffect();
-  }, [isSetup, submit, error]);
+  }, [isSetup, fetcher, error]);
 
   return (
     <AppProvider isEmbeddedApp apiKey={PUBLIC_ENV.VITE_SHOPIFY_API_KEY}>
