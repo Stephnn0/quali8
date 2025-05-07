@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "b9b7e1ced088bbaf2956013017ec52ad"
-application_url = "https://eden-techniques-select-pursuit.trycloudflare.com"
+application_url = "https://eagle-patch-foreign-turkish.trycloudflare.com"
 embedded = true
 name = "quali8-dev-gamma"
 handle = "quali8-dev-gamma"
@@ -28,9 +28,9 @@ scopes = "write_products, read_customers, read_shipping, write_discounts, read_o
 
 [auth]
 redirect_urls = [
-  "https://eden-techniques-select-pursuit.trycloudflare.com/auth/callback",
-  "https://eden-techniques-select-pursuit.trycloudflare.com/auth/shopify/callback",
-  "https://eden-techniques-select-pursuit.trycloudflare.com/api/auth/callback"
+  "https://eagle-patch-foreign-turkish.trycloudflare.com/auth/callback",
+  "https://eagle-patch-foreign-turkish.trycloudflare.com/auth/shopify/callback",
+  "https://eagle-patch-foreign-turkish.trycloudflare.com/api/auth/callback"
 ]
 
 [pos]

@@ -26,7 +26,6 @@ export async function setupApp(
     admin: { graphql },
   } = authAdminContext;
 
-  console.log("---------------------- setup 1---------------------");
   // App Status & ShopInfo
   const [{ isSetup, shopifyStore, shopInfo }, shopMetafieldsData, functions] =
     await Promise.all([
@@ -36,16 +35,13 @@ export async function setupApp(
     ]);
 
   if (isSetup) return;
-  console.log("----------------------2---------------------");
 
   console.log("Setting up the app...");
 
   // Shopify Store - Create Initial Setup
   assertNonNullable(shopInfo); // * Throws
-  console.log("----------------------3---------------------");
 
   const functionId = await getFunctionId(functions, APP.APP_HANDLE);
-  console.log("----------------------4---------------------");
 
   await setupShopifyStore({
     authAdminContext,
@@ -54,10 +50,8 @@ export async function setupApp(
     status: "INSTALLED",
     functionId: functionId,
   });
-  console.log("----------------------5--------------------");
 
   await setupSubscriptionMetafield(authAdminContext, shopMetafieldsData, db);
-  console.log("----------------------6---------------------");
 
   await setupShopifyStore({
     authAdminContext,

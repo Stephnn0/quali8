@@ -7,8 +7,6 @@ export async function getAppStatus(
   db: PrismaClient,
   shouldRedirect: boolean = true,
 ) {
-  console.log("---------------------- getAppStatus---------------------");
-
   const {
     session: { shop },
     redirect,
@@ -28,12 +26,6 @@ export async function getAppStatus(
     shopifyStorePromise,
     shopInfoPromise,
   ]);
-
-  console.log(
-    "---------------------- shopifyStore---------------------",
-    shopifyStore,
-  );
-  console.log("---------------------- shopInfo---------------------", shopInfo);
 
   if (!shopifyStore && shouldRedirect) throw redirect("/setup");
   else if (!shopifyStore) return { isSetup: false, shopifyStore, shopInfo };
