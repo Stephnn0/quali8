@@ -106,27 +106,22 @@ export default function Setup() {
   console.log("actionErrors", actionErrors);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    const setupEffect = async () => {
-      console.log(
-        "---------------------- useeffect setup---------------------",
-      );
-      console.log("Submittable?", !isSetup && !error);
+    if (!isSetup && !error) {
+      console.log("---------------------- setup---------------------");
+      console.log("Submitting...");
 
-      try {
-        if (!isSetup && !error) {
-          console.log("---------------------- setup---------------------");
-          console.log("Submitting...");
-          fetcher.submit({}, { method: "post" });
-          console.log("---------------------- setup fini---------------------");
-        }
-      } catch (error) {
-        console.error("Error in useEffect", error);
-        // Handle the error as needed
-      }
-    };
+      fetch("/setup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ trigger: true }),
+      });
 
-    setupEffect();
-  }, [isSetup, fetcher, error]);
+      // fetcher.submit({}, { method: "post" });
+      console.log("---------------------- setup fini---------------------");
+    }
+  }, [isSetup, error]);
 
   return (
     <AppProvider isEmbeddedApp apiKey={PUBLIC_ENV.VITE_SHOPIFY_API_KEY}>
