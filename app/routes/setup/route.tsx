@@ -94,11 +94,17 @@ export default function Setup() {
 
   useEffect(() => {
     console.log("---------------------- useeffect setup---------------------");
-
+    console.log("Submittable?", !isSetup && !error);
     if (!isSetup && !error) {
       console.log("---------------------- setup---------------------");
-
-      submit({}, { method: "POST" });
+      console.log("Submitting...");
+      submit(
+        {},
+        {
+          method: "POST",
+          action: "/setup",
+        },
+      );
     }
   }, [isSetup, submit, error]);
 
