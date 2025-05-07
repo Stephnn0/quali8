@@ -6,6 +6,8 @@ import { useFetcherLoad } from "app/hooks/useFetcherLoad";
 import type { loader } from "app/routes/api.actions.discounts/route";
 import CardHeader from "../CardHeader/CardHeader";
 import quaim from "app/assets/q-im2.png";
+import { useAppSubscription } from "~/services/subscriptions/hooks/useAppSubscription";
+import { GatekeepAppPlanState } from "../../components/GatekeepState/GateKeepStatePlan";
 
 const emptyState = (
   <PlainEmptyState
@@ -19,7 +21,8 @@ const emptyState = (
 );
 
 export default function ShippingDiscount() {
-  const subHasQualifiers = true; // ! ----------------- for gatekeeping
+  const { subHasShippingDiscounts } = useAppSubscription();
+
   const initialData = useFetcherLoad<typeof loader>("/api/actions/discounts", {
     load: true,
   });
@@ -39,7 +42,7 @@ export default function ShippingDiscount() {
       action={{
         url: "/app/actions/discounts",
         content: "Go to all discounts",
-        disabled: false, // ! ----------------- for gatekeeping
+        disabled: !subHasShippingDiscounts,
       }}
       icon={<img src={quaim} alt="gift icon" />}
     />
@@ -68,7 +71,7 @@ export default function ShippingDiscount() {
     );
   };
 
-  if (isBusy || (!initialPayload && subHasQualifiers))
+  if (isBusy || (!initialPayload && subHasShippingDiscounts))
     return <ShippingDiscountSkeleton />;
 
   return (
@@ -76,7 +79,7 @@ export default function ShippingDiscount() {
       <BlockStack gap="400">
         {QualifierHeader}
 
-        {subHasQualifiers ? (
+        {subHasShippingDiscounts ? (
           <SplitList
             length={6}
             renderItem={renderItem}
@@ -90,7 +93,7 @@ export default function ShippingDiscount() {
             emptyState={emptyState}
           />
         ) : (
-          <h1>gatekeeping</h1>
+          <GatekeepAppPlanState />
         )}
       </BlockStack>
     </Card>

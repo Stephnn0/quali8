@@ -7,6 +7,7 @@ import {
   deleteShippingCodeDiscount,
 } from "app/models/shopify.server/discounts/discounts.server";
 import { handleApiError } from "~/utils/server/handleApiResponse/handleApiError.server";
+import { gatekeepRoute } from "~/services/subscriptions/gatekeepRoute";
 
 export async function action({ request }: ActionFunctionArgs) {
   const context = await authenticate.admin(request);
@@ -18,6 +19,12 @@ export async function action({ request }: ActionFunctionArgs) {
   const parsedBody = JSON.parse(body);
 
   try {
+    await gatekeepRoute(
+      { authAdminContext: context },
+      { hasShippingDiscounts: true },
+      "throw",
+    ); // * Throw
+
     if (request.method === "DELETE") {
       console.log("...DELETE Request...");
 

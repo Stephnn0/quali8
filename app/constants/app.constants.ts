@@ -41,4 +41,7 @@ export const APP = {
   ],
 
   STORES_WHITELIST: ["quali8-dev-gamma.myshopify.com"],
+
+  OPEN_APP_PLANS_PAGE: () =>
+    open(`shopify://admin/charges/quali8/pricing_plans`, "_top"),
 };

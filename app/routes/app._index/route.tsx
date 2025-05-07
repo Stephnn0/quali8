@@ -26,8 +26,8 @@ export default function Index() {
         <Layout.Section>
           <Banner>
             <p>
-              Use your finance report to get detailed information about your
-              business. <Link url="">Let us know what you think</Link>
+              Learn more about Quali8 on our blog.{" "}
+              <Link url="">We’d love to hear your thoughts!</Link>
             </p>
           </Banner>
         </Layout.Section>

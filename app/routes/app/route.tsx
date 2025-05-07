@@ -1,5 +1,11 @@
 import type { HeadersFunction, LoaderFunctionArgs } from "@remix-run/node";
-import { Link, Outlet, useLoaderData, useRouteError } from "@remix-run/react";
+import {
+  json,
+  Link,
+  Outlet,
+  useLoaderData,
+  useRouteError,
+} from "@remix-run/react";
 import { boundary } from "@shopify/shopify-app-remix/server";
 import { AppProvider } from "@shopify/shopify-app-remix/react";
 import { NavMenu } from "@shopify/app-bridge-react";
@@ -14,7 +20,11 @@ export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 export const loader = async (loaderContext: LoaderFunctionArgs) => {
   const authAdminContext = await authenticate.admin(loaderContext.request);
 
-  const [{ shopInfo, shopifyStore }] = await Promise.all([
+  const {
+    session: { shop },
+  } = authAdminContext;
+
+  const [{ shopInfo, shopifyStore }, subscription] = await Promise.all([
     //
     // Redirects to /setup if app needs to be setup
     getAppStatus(authAdminContext, db), // * Redirects
@@ -24,7 +34,13 @@ export const loader = async (loaderContext: LoaderFunctionArgs) => {
 
   console.log("App Status", shopInfo, shopifyStore);
 
-  return { apiKey: process.env.SHOPIFY_API_KEY || "" };
+  return json({
+    shop,
+    shopInfo,
+    shopifyStore,
+    subscription,
+    apiKey: process.env.SHOPIFY_API_KEY || "",
+  });
 };
 
 export default function App() {

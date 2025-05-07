@@ -6,6 +6,8 @@ import SplitList from "../../components/SplitList/SplitList";
 import PlainEmptyState from "app/components/PlainEmptyState/PlainEmptyState";
 import quaim from "app/assets/q-im2.png";
 import QualifierSkeleton from "./QualifierSkeleton";
+import { useAppSubscription } from "~/services/subscriptions/hooks/useAppSubscription";
+import { GatekeepAppPlanState } from "../../components/GatekeepState/GateKeepStatePlan";
 
 const emptyState = (
   <PlainEmptyState
@@ -19,7 +21,8 @@ const emptyState = (
 );
 
 export default function Qualifiers() {
-  const subHasQualifiers = true; // ! ----------------- for gatekeeping
+  const { subHasQualifiers } = useAppSubscription();
+
   const initialData = useFetcherLoad<typeof loader>("/api/qualifiers", {
     load: true,
   });
@@ -39,7 +42,7 @@ export default function Qualifiers() {
       action={{
         url: "/app/qualifiers",
         content: "Go to all qualifiers",
-        disabled: false, // ! ----------------- for gatekeeping
+        disabled: !subHasQualifiers,
       }}
       icon={<img src={quaim} alt="gift icon" />}
     />
@@ -86,7 +89,7 @@ export default function Qualifiers() {
             emptyState={emptyState}
           />
         ) : (
-          <h1>gatekeeping</h1>
+          <GatekeepAppPlanState />
         )}
       </BlockStack>
     </Card>

@@ -2,7 +2,7 @@ import { CalloutCard } from "@shopify/polaris";
 import image from "app/assets/disco.png";
 
 const PUBLIC_ENV = {
-  VITE_SHOPIFY_APP_HANDLE: "quali8-dev-gamma",
+  VITE_SHOPIFY_APP_HANDLE: "quali8", //
 };
 
 export function Billing() {

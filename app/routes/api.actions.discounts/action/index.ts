@@ -6,6 +6,7 @@ import createShippingDiscountServer from "./createShippingDiscount.server";
 import { handleApiSuccess } from "app/utils/handleApiSuccess";
 import updateShippingDiscountServer from "./updateShippingDiscount.server";
 import { handleApiError } from "~/utils/server/handleApiResponse/handleApiError.server";
+import { gatekeepRoute } from "~/services/subscriptions/gatekeepRoute";
 
 const {
   ACTIONS_ZOD,
@@ -22,6 +23,12 @@ export default async function action({ request }: ActionFunctionArgs) {
   );
 
   try {
+    await gatekeepRoute(
+      { authAdminContext: context },
+      { hasShippingDiscounts: true },
+      "throw",
+    ); // * Throw
+
     if (request.method === "POST") {
       switch (code) {
         case "create": {
