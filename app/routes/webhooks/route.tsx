@@ -4,6 +4,7 @@ import { authenticate } from "app/shopify.server";
 import { handleAppUninstalledWebhook } from "./handlers/handleAppUninstalledWebhook.server";
 import { handleAppSubscriptionUpdateWebhook } from "./handlers/handleAppSubscriptionUpdate.server";
 import db from "~/db.server";
+import { handleShopRedactWebhook } from "./handlers/handleShopRedactWebhook.server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const authWebhookContext = await authenticate.webhook(request);
@@ -40,6 +41,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
     case "SHOP_REDACT":
       console.log("Received SHOP_REDACT webhook");
+      await handleShopRedactWebhook(authWebhookContext);
       break;
 
     case "CUSTOMERS_REDACT":

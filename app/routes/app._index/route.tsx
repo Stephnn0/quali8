@@ -16,6 +16,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 };
 
+const redirectTo = () => {
+  window.open("https://www.8instruments.com/products", "_blank");
+};
+
 export default function Index() {
   return (
     <Page>
@@ -27,7 +31,9 @@ export default function Index() {
           <Banner>
             <p>
               Learn more about Quali8 on our blog.{" "}
-              <Link url="">We’d love to hear your thoughts!</Link>
+              <Link url="" onClick={redirectTo}>
+                We’d love to hear your thoughts!
+              </Link>
             </p>
           </Banner>
         </Layout.Section>

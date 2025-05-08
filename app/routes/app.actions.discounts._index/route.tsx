@@ -197,7 +197,12 @@ export default function AllActions() {
             title="Getting Started with Shipping Discounts?"
             primaryAction={{
               content: "Learn about getting started",
-              onAction: () => {},
+              onAction: () => {
+                window.open(
+                  "https://www.youtube.com/watch?v=JoejVhoby0s",
+                  "_blank",
+                );
+              },
             }}
             description="Watch this video to learn how to get started with Shipping Discounts."
           >

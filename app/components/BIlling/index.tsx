@@ -1,5 +1,5 @@
 import { CalloutCard } from "@shopify/polaris";
-import image from "app/assets/disco.png";
+import image from "app/assets/memv.png";
 
 const PUBLIC_ENV = {
   VITE_SHOPIFY_APP_HANDLE: "quali8", //
