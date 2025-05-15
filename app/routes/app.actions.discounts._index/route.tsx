@@ -1,9 +1,9 @@
 import {
   Link,
+  useFetcher,
   useLoaderData,
   useNavigate,
   useSearchParams,
-  useSubmit,
 } from "@remix-run/react";
 import {
   IndexTable,
@@ -22,14 +22,13 @@ import {
   EmptyState,
 } from "@shopify/polaris";
 import { loader } from "./loader";
-import { action } from "./action";
 
 import { DeleteIcon, EditIcon } from "@shopify/polaris-icons";
 import { useCallback, useState } from "react";
 import image from "app/assets/sds.png";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import quailifierlogo from "app/assets/disco.png";
-export { loader, action };
+export { loader };
 
 export default function AllActions() {
   const loaderData = useLoaderData<typeof loader>();
@@ -55,8 +54,6 @@ export default function AllActions() {
   };
   const { selectedResources, allResourcesSelected } =
     useIndexResourceState(discountActions);
-
-  const submit = useSubmit();
 
   const rowMarkup = discountActions?.map(
     (
@@ -137,6 +134,7 @@ export default function AllActions() {
   };
 
   const shopify = useAppBridge();
+  const fetcher = useFetcher();
 
   const handleDeleteConfirm = () => {
     setModalActive(false);
@@ -148,14 +146,14 @@ export default function AllActions() {
         shopifyDiscountId: selectedShippingDiscount.shopifyDiscountId,
         automaticOrCode: selectedShippingDiscount.automaticOrCode,
       };
-      submit(
+      fetcher.submit(
         {
           body: JSON.stringify(body),
         },
         {
           method: "DELETE",
           encType: "multipart/form-data",
-          action: `/app/actions/discounts`,
+          action: `/api/deleteDiscount`,
         },
       );
       shopify.toast.show("Discount deleted");

@@ -78,8 +78,12 @@ enum ConditionType {
 enum ComparisonType {
   equals
   not_equals
-
+  greater_than
+  less_than
+  greater_than_equals
+  less_than_equals
 }
+
 
 
 model Qualifiers {

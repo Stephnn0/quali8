@@ -1,9 +1,6 @@
 import { CalloutCard } from "@shopify/polaris";
 import image from "app/assets/memv.png";
-
-const PUBLIC_ENV = {
-  VITE_SHOPIFY_APP_HANDLE: "quali8", //
-};
+import { APP } from "~/constants/app.constants";
 
 export function Billing() {
   return (
@@ -12,7 +9,7 @@ export function Billing() {
       illustration={image}
       primaryAction={{
         content: "Choose a Plan",
-        url: `shopify://admin/charges/${PUBLIC_ENV.VITE_SHOPIFY_APP_HANDLE}/pricing_plans`,
+        url: `shopify://admin/charges/${APP.APP_HANDLE}/pricing_plans`,
       }}
     >
       <p>You need to subscribe to enjoy our services</p>
