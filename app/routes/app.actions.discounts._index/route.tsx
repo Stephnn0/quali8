@@ -182,7 +182,7 @@ export default function AllActions() {
   return (
     <Page
       backAction={{ url: "/app/actions" }}
-      title="My Actions"
+      title="My Promotions"
       primaryAction={
         <Link to="new">
           <Button variant="primary">Create Shipping Discount</Button>

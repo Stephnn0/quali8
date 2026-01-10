@@ -1,0 +1,110 @@
+model Campaign {
+  id          Int            @id @default(autoincrement())
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  name        String
+  status      CampaignStatus @default(DRAFT)
+
+  startAt     DateTime?
+  endAt       DateTime?
+
+  // Ownership
+  shop        String
+  shopifyStore ShopifyStore
+    @relation(fields: [shop], references: [shop], onDelete: Cascade)
+
+  // Relations
+  audiences   Audience[]
+  promotions  Promotion[]
+
+  @@index([shop])
+}
+
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  ACTIVE
+  ENDED
+}
+
+---------------------------------------------------------------
+
+model Audience {
+  id                   Int        @id @default(autoincrement())
+  createdAt            DateTime   @default(now())
+  updatedAt            DateTime   @updatedAt
+
+  name                 String
+  description          String
+  conditionLogicType   LogicType
+
+  // Ownership
+  shop                 String
+  shopifyStore         ShopifyStore
+    @relation(fields: [shop], references: [shop], onDelete: Cascade)
+
+  // Relations
+  conditions            Conditions[]
+  customers             Customers[] @relation("CustomerAudiences")
+  campaigns             Campaign[]
+
+}
+
+
+------------------------------------ removethis
+shippingDiscounts ShippingDiscountAction[]
+
+
+
+--------------------------------------
+
+model Conditions {
+  id             Int            @id @default(autoincrement())
+  type           ConditionType
+  comparisonType ComparisonType
+  value          String
+
+  audienceId     Int
+  audience       Audience
+    @relation(fields: [audienceId], references: [id], onDelete: Cascade)
+
+  shop           String
+  shopifyStore   ShopifyStore
+    @relation(fields: [shop], references: [shop], onDelete: Cascade)
+}
+
+
+----------------------------------------------
+
+model Promotion {
+  id          Int                 @id @default(autoincrement())
+  createdAt   DateTime            @default(now())
+
+  type        PromotionType
+  status      PromotionStatus     @default(INACTIVE)
+
+  // Campaign ownership
+  campaignId  Int
+  campaign    Campaign
+    @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  // Implementation (only one is set)
+  shippingDiscountId Int?
+  shippingDiscount   ShippingDiscountAction?
+
+  // Future-proofing
+  config      Json?   // for FREE_GIFT, BUNDLE, etc.
+}
+
+enum PromotionType {
+  SHIPPING_DISCOUNT
+  FREE_GIFT
+  BUNDLE
+  ORDER_DISCOUNT
+}
+
+enum PromotionStatus {
+  ACTIVE
+  INACTIVE
+}

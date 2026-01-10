@@ -19,7 +19,7 @@ export async function getAppStatus(
 
   const shopifyStorePromise = db.shopifyStore.findUnique({
     where: { shop },
-    select: { appVersion: true, status: true },
+    select: { appVersion: true, status: true, functionId: true },
   });
 
   const [shopifyStore, shopInfo] = await Promise.all([
@@ -41,5 +41,5 @@ export async function getAppStatus(
 
   if (!isSetup && shouldRedirect) throw redirect("/setup");
 
-  return { isSetup, shopifyStore, shopInfo };
+  return { isSetup, shopifyStore, shopInfo, functionId: shopifyStore?.functionId };
 }

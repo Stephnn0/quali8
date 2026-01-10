@@ -6,7 +6,7 @@ export default function CheckoutBlock({ type }: { type: any }) {
   const { subHasShippingDiscounts } = useAppSubscription();
 
   const primaryAction = {
-    content: "Perform Action",
+    content: "Create Promotion",
   };
 
   switch (type) {
@@ -19,6 +19,21 @@ export default function CheckoutBlock({ type }: { type: any }) {
           primaryAction={{
             ...primaryAction,
             url: "/app/actions/discounts",
+            disabled: !subHasShippingDiscounts,
+          }}
+        >
+          <img width="100%" alt="Date and time block" src={dateTimeBlockImg} />
+        </MediaCard>
+      );
+    case "product_editor":
+      return (
+        <MediaCard
+          portrait
+          title="Product Editor"
+          description="Edit you product's data on steroids"
+          primaryAction={{
+            ...primaryAction,
+            url: "/app/tools/products",
             disabled: !subHasShippingDiscounts,
           }}
         >

@@ -159,15 +159,15 @@ export default function Qualifiers() {
 
   return (
     <Page
-      title="Qualifiers"
+      title="Customer Target Groups"
       primaryAction={
         <Link to="new">
-          <Button variant="primary">Create Qualifier</Button>
+          <Button variant="primary">Create</Button>
         </Link>
       }
     >
       <Layout>
-        <Layout.Section>
+        {/* <Layout.Section>
           <MediaCard
             title="Getting Started with Qualifiers?"
             primaryAction={{
@@ -192,7 +192,7 @@ export default function Qualifiers() {
               src={image}
             />
           </MediaCard>
-        </Layout.Section>
+        </Layout.Section> */}
         <Layout.Section>
           {qualifiers.length > 0 ? (
             <Card>
@@ -223,7 +223,7 @@ export default function Qualifiers() {
           ) : (
             <Card>
               <EmptyState
-                heading="You have no qualifiers yet"
+                heading="You have no segments yet"
                 image={quailifierlogo}
                 action={{
                   content: "Create a qualifier",
@@ -234,10 +234,9 @@ export default function Qualifiers() {
                 fullWidth
               >
                 <p>
-                  Qualifiers are a way to group customers based on their
-                  behavior. You can use qualifiers to create segments of
-                  customers that you can target with specific marketing
-                  campaigns.
+                  Customer Segments are a way to group customers based on their
+                  behavior. You can use segments to create a group of
+                  customers that you can target with specific campaigns.
                 </p>
               </EmptyState>
             </Card>

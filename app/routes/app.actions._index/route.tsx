@@ -5,11 +5,13 @@ import smart from "app/assets/sss.png";
 
 export default function Actions() {
   return (
-    <Page title="Marketing Actions">
+    <Page title="Marketing Promotions">
       <Layout>
         <Layout.Section>
           <InlineGrid gap="600" columns={3}>
             <CheckoutBlock type="date_time_picker" />
+            {/* <CheckoutBlock type="product_editor" /> */}
+
             {/* <ComingSoonBlock
               image={loyalty}
               title={"Loyalty Program"}
@@ -17,13 +19,13 @@ export default function Actions() {
                 "Create a loyalty program based on customer behavior"
               }
             /> */}
-            <ComingSoonBlock
+            {/* <ComingSoonBlock
               image={smart}
               title={"Smart Recommendations"}
               description={
                 "Create smart recommendations based on customer behavior"
               }
-            />
+            /> */}
           </InlineGrid>
         </Layout.Section>
       </Layout>

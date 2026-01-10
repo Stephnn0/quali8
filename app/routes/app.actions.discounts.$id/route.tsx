@@ -12,6 +12,7 @@ import {
   Text,
   Checkbox,
   Divider,
+  Banner,
 } from "@shopify/polaris";
 import { loader } from "./loader";
 import { useDiscountForm } from "./hooks";
@@ -19,6 +20,7 @@ import { useState } from "react";
 import DateSelector from "./components/DateSelector";
 import { ShippingRates } from "./components/ShippingRates";
 import { PickQualifiers } from "./components/PickQualifiers";
+
 
 export { loader };
 
@@ -79,7 +81,15 @@ export default function ActionDiscounts() {
       {/* =========================================================================== */}
       {/* =========================================================================== */}
 
+
       <Layout>
+        <Layout.Section>
+        <Banner>
+            <p>
+              Shipping discounts don't need campaings since we leverage Shopify's built-in date range functionality.
+            </p>
+          </Banner>
+        </Layout.Section>
         <Layout.Section>
           <Card>
             <Card>
@@ -224,7 +234,7 @@ export default function ActionDiscounts() {
         </Layout.Section>
 
         {/* =========================================================================== */}
-        {/* =========================== ENABLE OR DISABLE ============================= */}
+        {/* =========================== PICK QUALIFIERS ============================= */}
         {/* =========================================================================== */}
         {/* =========================================================================== */}
 

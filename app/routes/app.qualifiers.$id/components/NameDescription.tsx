@@ -19,13 +19,13 @@ export default function NameDescriptionQualifier({
           {...name}
           autoComplete="off"
           label="Name"
-          placeholder="Enter qualifier name"
+          placeholder="Enter customer group name"
         />
         <TextField
           {...description}
           autoComplete="off"
           label="Description"
-          placeholder="Enter qualifier description"
+          placeholder="Enter customer group description"
         />
       </InlineGrid>
     </Card>

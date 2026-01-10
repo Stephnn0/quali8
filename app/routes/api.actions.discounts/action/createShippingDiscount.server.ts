@@ -23,6 +23,7 @@ export default async function createShippingDiscountServer(
   const metafieldData = {
     customers: customers,
     //
+    
     code: body.codeOrName,
     type: body.type, // percentage or fixed
     value: body.value,
@@ -112,12 +113,7 @@ export default async function createShippingDiscountServer(
     automaticOrCode: body.automaticOrCode!,
     //
     qualifierIds: body.qualifierIds,
-    qualifiers: body.qualifierIds?.length
-      ? {
-          connect: body.qualifierIds.map((id: string) => ({ id: Number(id) })),
-        }
-      : undefined,
-    //
+  
     shippingRatesNames: body.shippingRatesNames,
     shippingRateType: body.shippingRateType!,
     //

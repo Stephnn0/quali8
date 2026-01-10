@@ -37,11 +37,11 @@ export default function Qualifiers() {
 
   const QualifierHeader = (
     <CardHeader
-      title="Qualifiers"
-      subtitle="Segment your customers into groups based behavior."
+      title="Targeting Groups"
+      subtitle="Create powerful customer groups based on their behavior and apply promotions or campaigns to increase conversions."
       action={{
         url: "/app/qualifiers",
-        content: "Go to all qualifiers",
+        content: "Go to all audience groups",
         disabled: !subHasQualifiers,
       }}
       icon={<img src={quaim} alt="gift icon" />}

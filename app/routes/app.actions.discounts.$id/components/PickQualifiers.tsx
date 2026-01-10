@@ -75,10 +75,10 @@ export function PickQualifiers({ mockQualifiers, form }: PickQualifiersProps) {
     <>
       <Card>
         <Text variant="bodyMd" fontWeight="bold" as="p">
-          Pick Qualifier Group
+          Select your customer target group
         </Text>
         <Text variant="bodyMd" as="p">
-          Select the customer segments that will be used to qualify
+          On the checkout page, your target group condition will be applied.
         </Text>
         <br />
         <Button
@@ -87,7 +87,7 @@ export function PickQualifiers({ mockQualifiers, form }: PickQualifiersProps) {
             setModalActive(true);
           }}
         >
-          Choose Qualifiers
+          Select Target Group
         </Button>
         <br />
         <div style={{}}>
@@ -98,7 +98,7 @@ export function PickQualifiers({ mockQualifiers, form }: PickQualifiersProps) {
       <Modal
         open={modalActive}
         onClose={() => setModalActive(false)}
-        title="Select Qualifiers"
+        title="Select your Audience "
         primaryAction={{
           content: "Save",
           onAction: handleModalClose,
@@ -113,9 +113,9 @@ export function PickQualifiers({ mockQualifiers, form }: PickQualifiersProps) {
         <Modal.Section>
           {qualifiers!.length > 0 ? (
             <>
-              <TextContainer>Select one or more qualifiers below</TextContainer>
+              <TextContainer>Your audience conditions is what decides who gets the discount at checkout.</TextContainer>
               <OptionList
-                title="Select one or more qualifiers below"
+                title="Select one or more target groups below"
                 onChange={handleSelectionQualifierIdChange}
                 options={qualifiers?.map((q) => ({
                   label: q.name,

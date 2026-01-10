@@ -44,6 +44,10 @@ model ShopifyStore {
   shippingDiscounts     ShippingDiscountAction[]
   shopifySubscriptions ShopifySubscription[]
   shopData             ShopifyShopData?
+
+    // NEW
+  campaigns            Campaign[]
+
 }
 
 enum AppStatus {
@@ -85,7 +89,7 @@ enum ComparisonType {
 }
 
 
-
+// Audience
 model Qualifiers {
   id                   Int                   @id @default(autoincrement())
   createdAt            DateTime              @default(now())
@@ -101,7 +105,7 @@ model Qualifiers {
   conditions         Conditions[] 
   customers          Customers[]   @relation("CustomerQualifiers")
   //
-  shippingDiscounts       ShippingDiscountAction[]     @relation("ShippingDiscounts")
+  campaigns Campaign[]
 }
 
 model Conditions {
@@ -111,7 +115,7 @@ model Conditions {
   value          String
 
   //
-  qualifierId    Int
+  qualifierId    Int // audience
   qualifier      Qualifiers      @relation(fields: [qualifierId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   //
   shop                 String
@@ -164,8 +168,10 @@ model ShippingDiscountAction {
   shop           String
   shopifyStore   ShopifyStore         @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
   //
-  qualifiers     Qualifiers[]     @relation("ShippingDiscounts")
   //
+    promotions Promotion[]
+    //
+    //
   createdAt      DateTime             @default(now())
   updatedAt      DateTime             @default(now()) @updatedAt
 }
@@ -402,4 +408,86 @@ model ShopifyShopData {
   //
   shop            String       @unique
   shopifyStore    ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
+}
+
+
+// --------------------------------------------------------
+// --------------------------------------------------------
+// --------------------------------------------------------
+
+
+model Campaign {
+  id          Int            @id @default(autoincrement())
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  name        String
+  status      CampaignStatus @default(DRAFT)
+
+  startAt     DateTime?
+  endAt       DateTime?
+
+  // ---- Store ownership ----
+  shop        String
+  shopifyStore ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade)
+
+  holidayId   Int?
+  holiday     Holiday? @relation(fields: [holidayId], references: [id])
+
+  // Relations
+  audiences   Qualifiers[]
+  promotions  Promotion[]
+
+
+  @@index([shop])
+}
+
+enum CampaignStatus {
+  DRAFT
+  SCHEDULED
+  ACTIVE
+  ENDED
+}
+
+// Holiday is context, not control logic.
+model Holiday {
+  id        Int @id @default(autoincrement())
+  name      String
+  region    String
+  startDate DateTime
+  endDate   DateTime
+
+  campaigns Campaign[]
+}
+
+
+model Promotion {
+  id          Int                 @id @default(autoincrement())
+  createdAt   DateTime            @default(now())
+
+  type        PromotionType
+  status      PromotionStatus     @default(INACTIVE)
+
+  // Campaign ownership
+  campaignId  Int
+  campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  // Implementation (only one is set)
+  shippingDiscountId Int?
+  shippingDiscount   ShippingDiscountAction? @relation(fields: [shippingDiscountId], references: [id])
+
+  // Future-proofing
+  config      Json?   // for FREE_GIFT, BUNDLE, etc.
+}
+
+enum PromotionType {
+  SHIPPING_DISCOUNT
+  FREE_GIFT
+  BUNDLE
+  ORDER_DISCOUNT
+}
+
+enum PromotionStatus {
+  ACTIVE
+  INACTIVE
 }

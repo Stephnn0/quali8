@@ -1,0 +1,99 @@
+smarter “QualiScore” system
+
+1️⃣ What to Score
+
+Your scoring system should cover two layers:
+
+A. Metadata / SEO / Technical Quality
+
+Title quality:
+
+Length (50–70 chars ideal)
+
+Keyword usage
+
+Brand consistency
+
+Meta description:
+
+Length (150–160 chars ideal)
+
+Unique vs duplicated
+
+Presence of primary keyword
+
+URL / handle:
+
+Readable
+
+Includes target keyword
+
+Alt text on images:
+
+Relevant
+
+Present for every image
+
+H1 / subheadings:
+
+Proper structure
+
+Includes relevant keywords
+
+Structured data / schema (optional):
+
+Product type, price, availability, rating
+
+B. Content / UX Quality
+
+Readability / clarity:
+
+Use Flesch-Kincaid or similar scoring
+
+Sentence length, paragraph length
+
+Persuasiveness:
+
+Mentions benefits over features
+
+Includes social proof / trust signals
+
+Consistency with brand voice:
+
+Formal / casual / playful / technical
+
+Can be AI-checked
+
+Completeness:
+
+Bullets, specifications, size/color info
+
+SEO-friendliness:
+
+Primary and secondary keyword usage
+
+Keyword density, natural placement
+
+Emotional engagement / storytelling:
+
+Mentions problem → solution → benefit
+
+Avoids common mistakes:
+
+Typos
+
+Repetition
+
+Generic phrases like “best product ever”
+
+2️⃣ How to Score
+
+You can normalize all these into a 0–100 “QualiScore”, for example:
+
+Category Weight Metrics inside Scoring method
+Readability 20% Sentence/paragraph length, Flesch score AI + rules
+SEO / Metadata 20% Title, meta, alt text, URL Rules + AI
+Persuasiveness 20% Benefit-first copy, social proof AI semantic analysis
+Completeness / Features 20% Bullet points, specs Rules
+Brand voice & consistency 10% Tone, style AI comparison to brand template
+Error-free / grammar 10% Typos, grammar AI grammar check

@@ -103,6 +103,7 @@ export function useDiscountForm() {
       setValueError(null);
       setQualifierIdsError(null);
 
+      
       try {
         if (!shippingDiscount) {
           console.log("post");

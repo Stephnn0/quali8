@@ -41,6 +41,7 @@ export async function setupApp(
   // Shopify Store - Create Initial Setup
   assertNonNullable(shopInfo); // * Throws
 
+  
   const functionId = await getFunctionId(functions, APP.APP_HANDLE);
 
   await setupShopifyStore({

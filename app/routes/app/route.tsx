@@ -3,6 +3,7 @@ import {
   json,
   Link,
   Outlet,
+  redirect,
   useLoaderData,
   useRouteError,
 } from "@remix-run/react";
@@ -32,7 +33,14 @@ export const loader = async (loaderContext: LoaderFunctionArgs) => {
     getSubscription(loaderContext, authAdminContext),
   ]);
 
-  console.log("App Status", shopInfo, shopifyStore);
+
+  // ! fix this
+  if (!shopifyStore?.functionId) {
+    
+    console.log('shopifyStore?.functionId', shopifyStore?.functionId);
+  }
+
+  // console.log("App Status", shopInfo, shopifyStore);
 
   return json({
     shop,
@@ -52,9 +60,11 @@ export default function App() {
         <Link to="/app" rel="home">
           Home
         </Link>
-        <Link to="/app/qualifiers">qualifiers</Link>
-        <Link to="/app/actions">actions</Link>
-        <Link to="/app/settings">settings</Link>
+        {/* <Link to="/app/campaings">Campaigns</Link> */}
+        <Link to="/app/qualifiers">Audiences</Link>
+        <Link to="/app/actions">Promotions</Link>
+        {/* <Link to="/app/templates">Templates</Link> */}
+        <Link to="/app/settings">Subscriptions</Link>
       </NavMenu>
       <Outlet />
     </AppProvider>

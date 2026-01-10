@@ -27,7 +27,7 @@ export default function QualifiersForm() {
 
   return (
     <Page
-      title={!qualifier ? "Create Qualifier" : (qualifier?.name ?? "Qualifier")}
+      title={!qualifier ? "Create Customer Group" : (qualifier?.name ?? "Customer Group")}
       backAction={{ url: "/app/qualifiers" }}
     >
       <Layout>

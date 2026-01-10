@@ -1,0 +1,79 @@
+1️⃣ Data Collection
+
+Pull all product data via Shopify’s GraphQL API:
+
+Product title
+
+Current description
+
+Variants
+
+Tags / categories
+
+Images (optional if using AI for image-based description suggestions)
+
+Metadata (SEO info, alt text, URL handle)
+
+This is your raw input for processing.
+
+2️⃣ Scoring / Analysis
+
+Run each product through your QualiScore system:
+
+Readability
+
+SEO & metadata
+
+Brand voice consistency
+
+Completeness
+
+Persuasiveness
+
+Store the score and flagged improvement areas for each product.
+
+⚡ Tip: Flag products below a certain threshold (e.g., 70/100) for bulk AI improvements.
+
+3️⃣ Bulk Improvement / AI Rewrite
+
+For each product needing improvement, generate a prompt for OpenAI API (or other AI). Example prompt:
+
+5️⃣ Validation & Quality Check
+
+Optional: Run AI or rule-based check for:
+
+Grammar / spelling errors
+
+Readability score
+
+SEO keywords
+
+Brand tone
+
+Only push descriptions that pass a minimum threshold automatically; others can be flagged for merchant review.
+
+6️⃣ Bulk Push to Shopify
+
+Use GraphQL Admin API bulk mutation:
+
+Update product.descriptionHtml
+
+Update title / seoTitle / seoDescription if needed
+
+Update image alt text if part of AI workflow
+
+Optional: Provide rollback / versioning in case merchant wants to revert.
+
+7️⃣ Reporting & Feedback Loop
+
+Generate a post-update report:
+
+Old score → new score
+
+Improvements made
+
+Products still below threshold
+
+Conversion / engagement tracking (optional)
+
+This helps merchants see the value instantly.

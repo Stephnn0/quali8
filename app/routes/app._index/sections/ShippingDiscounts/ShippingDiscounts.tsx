@@ -38,7 +38,7 @@ export default function ShippingDiscount() {
   const QualifierHeader = (
     <CardHeader
       title="Shipping Discounts"
-      subtitle="Discount your shipping rates based on customer behavior."
+      subtitle="Reward your customers with discounts on shipping rates at checkout based on their behavior."
       action={{
         url: "/app/actions/discounts",
         content: "Go to all discounts",

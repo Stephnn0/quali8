@@ -27,6 +27,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const { session } = await authenticate.admin(request);
   const id = String(params.id || "");
   try {
+
+    
     if (id === "new") {
       return handleApiSuccess<QualifierLoaderData>({
         payload: {
