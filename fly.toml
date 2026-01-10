@@ -4,7 +4,7 @@
 #
 
 app = 'quali8'
-primary_region = 'mia'
+primary_region = 'ewr'
 
 [build]
 
