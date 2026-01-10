@@ -1,5 +1,5 @@
 import React from "react";
-import { Billing } from "~/components/BIlling";
+import { Billing } from "app/components/BIlling";
 
 const PLANS = [
   {

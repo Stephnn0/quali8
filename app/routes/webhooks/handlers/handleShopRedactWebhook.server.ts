@@ -1,5 +1,5 @@
 import type { AuthWebhookContext } from "./types";
-import db from "~/db.server";
+import db from "app/db.server";
 
 export async function handleShopRedactWebhook(
   authWebhookContext: AuthWebhookContext,

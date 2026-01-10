@@ -1,9 +1,9 @@
-import type { LoaderFunctionArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "react-router";
 import { getQualifiersByShopWithCustomersAndConditions } from "app/models/app.server/qualifiers/qualifier.server";
 import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
-import { handleApiError } from "~/utils/server/handleApiResponse/handleApiError.server";
-import { handleApiSuccess } from "~/utils/handleApiSuccess";
+import { handleApiError } from "app/utils/server/handleApiResponse/handleApiError.server";
+import { handleApiSuccess } from "app/utils/handleApiSuccess";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const { session } = await authenticate.admin(request);

@@ -1,7 +1,7 @@
-import { useRouteLoaderData } from "@remix-run/react";
+import { useRouteLoaderData } from "react-router";
 import { gatekeep } from "../gatekeep/gatekeep";
 import type { GateKeepArgs, GateKeepCriteria } from "../gatekeep/types";
-import type { loader } from "~/routes/app/route";
+import type { loader } from "app/routes/app/route";
 
 export function useAppLoaderData() {
   const loaderData = useRouteLoaderData<typeof loader>("routes/app");

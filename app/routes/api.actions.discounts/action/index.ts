@@ -1,13 +1,12 @@
-import type { ActionFunctionArgs } from "@remix-run/node";
+import type { ActionFunctionArgs } from "react-router";
 import { authenticate } from "app/shopify.server";
 import { $API$ACTIONS$DISCOUNTS } from "../constants";
 import { parseJSONBody } from "app/utils/parseJSONBody";
 import createShippingDiscountServer from "./createShippingDiscount.server";
 import { handleApiSuccess } from "app/utils/handleApiSuccess";
 import updateShippingDiscountServer from "./updateShippingDiscount.server";
-import { handleApiError } from "~/utils/server/handleApiResponse/handleApiError.server";
-import { gatekeepRoute } from "~/services/subscriptions/gatekeepRoute";
-
+import { gatekeepRoute } from "app/services/subscriptions/gatekeepRoute";
+import { handleApiError } from "app/utils/server/handleApiResponse/handleApiError.server";
 
 const {
   ACTIONS_ZOD,
@@ -82,3 +81,5 @@ export default async function action({ request }: ActionFunctionArgs) {
     return handleApiError({ errors: error, code: "error" });
   }
 }
+
+

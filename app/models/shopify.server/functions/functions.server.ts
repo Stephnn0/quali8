@@ -1,4 +1,4 @@
-import type { AdminGraphqlClient } from "@shopify/shopify-app-remix/server";
+import type { AdminGraphqlClient } from "@shopify/shopify-app-react-router/server";
 import { GRAPHQL_QUERY_SHOPIFY_FUNCTIONS } from "../graphql/functions";
 
 type ShopifyFunctions = Awaited<ReturnType<typeof getShopifyFunctions>>;

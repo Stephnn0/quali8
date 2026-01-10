@@ -1,10 +1,10 @@
-import type { LoaderFunctionArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "react-router";
 import { getQualifierByIdWithConditionsAndCustomers } from "app/models/app.server/qualifiers/qualifier.server";
 import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
 import { handleApiSuccess } from "app/utils/handleApiSuccess";
 import type { QualifierLoaderData } from "../types";
-import { handleApiError } from "~/utils/server/handleApiResponse/handleApiError.server";
+import { handleApiError } from "app/utils/server/handleApiResponse/handleApiError.server";
 
 // const mockQualifier = {
 //   name: "New Qualifier",

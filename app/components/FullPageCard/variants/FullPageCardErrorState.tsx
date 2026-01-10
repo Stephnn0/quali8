@@ -1,10 +1,10 @@
-import { useNavigate } from "@remix-run/react";
-import type { To } from "@remix-run/router/history";
+import { useNavigate } from "react-router";
+import type { To } from "@react-router/router/history";
 import type { EmptyStateProps } from "@shopify/polaris";
 import { EmptyState, Text } from "@shopify/polaris";
 import { EmailIcon } from "@shopify/polaris-icons";
 import type { PropsWithChildren } from "react";
-import domains from "~/assets/domains.svg";
+import domains from "app/assets/domains.svg";
 import { FullPageCard } from "..";
 
 type FullPageCardErrorStateProps = Partial<

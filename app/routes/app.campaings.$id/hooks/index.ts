@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import type { loader } from "../loader";
 import { lengthMoreThan, useField, useForm } from "@shopify/react-form";
-import { useFetcher, useLoaderData, useNavigate } from "@remix-run/react";
+import { useFetcher, useLoaderData, useNavigate } from "react-router";
 import action from "../../api.campaing/action/index";
 
 export type CampaingForm = ReturnType<typeof useCampaingForm>;

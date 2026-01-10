@@ -7,8 +7,8 @@ import { setupShopifyStore } from "./setupShopifyStore";
 import {
   getFunctionId,
   getShopifyFunctions,
-} from "~/models/shopify.server/functions/functions.server";
-import { APP } from "~/constants/app.constants";
+} from "app/models/shopify.server/functions/functions.server";
+import { APP } from "app/constants/app.constants";
 
 export function assertNonNullable<T>(
   value: T,

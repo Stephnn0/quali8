@@ -1,4 +1,4 @@
-import { APP_PLANS } from "~/constants/plans";
+import { APP_PLANS } from "app/constants/plans";
 import { useAppLoaderData, useGatekeepFeature } from "./useGatekeepFeature";
 
 export function useAppSubscription() {

@@ -1,4 +1,3 @@
-import { json } from "@remix-run/node";
 import { z } from "zod";
 import type { BaseApiResponse, UnifiedResponseData } from "./types";
 
@@ -57,17 +56,20 @@ export const handleApiError: HandleApiErrorFn = ({
 
   console.log(JSON.stringify(errorsArray, null, 2));
 
-  return json(
-    { errors: errorsArray, payload: null, code, id: Date.now() },
-    { status, headers, statusText },
-  );
-};
+  return {
+    errors: errorsArray,
+    payload: null,
+    code,
+    id: Date.now(),
+  };
+
+}
 
 // ------------------------------ Prototypes of Method
 // ------------------------------
 type HandleApiErrorFn = (
   params: HandleApiErrorFnParams,
-) => ReturnType<typeof json<UnifiedResponseData<null, ApiError[]>>>;
+) => UnifiedResponseData<null, ApiError[]>;
 
 type HandleApiErrorFnParams = BaseApiResponse & {
   errors: any;

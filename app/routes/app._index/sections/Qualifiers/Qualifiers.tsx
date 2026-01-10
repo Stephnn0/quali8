@@ -6,7 +6,7 @@ import SplitList from "../../components/SplitList/SplitList";
 import PlainEmptyState from "app/components/PlainEmptyState/PlainEmptyState";
 import quaim from "app/assets/q-im2.png";
 import QualifierSkeleton from "./QualifierSkeleton";
-import { useAppSubscription } from "~/services/subscriptions/hooks/useAppSubscription";
+import { useAppSubscription } from "app/services/subscriptions/hooks/useAppSubscription";
 import { GatekeepAppPlanState } from "../../components/GatekeepState/GateKeepStatePlan";
 
 const emptyState = (

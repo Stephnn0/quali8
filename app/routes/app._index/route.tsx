@@ -1,10 +1,10 @@
-import type { LoaderFunctionArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "react-router";
 import { Banner, FooterHelp, Layout, Link, Page } from "@shopify/polaris";
 import { authenticate } from "app/shopify.server";
 import Dashboardcomponent from "app/components/Dashboardbanner";
 import Qualifiers from "./sections/Qualifiers/Qualifiers";
 import ShippingDiscount from "./sections/ShippingDiscounts/ShippingDiscounts";
-import { handleApiError } from "~/utils/server/handleApiResponse/handleApiError.server";
+import { handleApiError } from "app/utils/server/handleApiResponse/handleApiError.server";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   await authenticate.admin(request);

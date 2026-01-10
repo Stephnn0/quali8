@@ -1,4 +1,4 @@
-import type { AdminGraphqlClient } from "@shopify/shopify-app-remix/server";
+import type { AdminGraphqlClient } from "@shopify/shopify-app-react-router/server";
 import type { UpdateMetafieldDefinitionMutationVariables } from "app/types/admin.generated";
 import { APP_SUBSCRIPTION_METAFIELD } from "./contants";
 import { updateMetafieldDefinition } from "app/models/shopify.server/metafield";

@@ -1,9 +1,8 @@
-import type { ActionFunctionArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import type { ActionFunctionArgs } from "react-router";
 import { authenticate } from "app/shopify.server";
 import { handleAppUninstalledWebhook } from "./handlers/handleAppUninstalledWebhook.server";
 import { handleAppSubscriptionUpdateWebhook } from "./handlers/handleAppSubscriptionUpdate.server";
-import db from "~/db.server";
+import db from "app/db.server";
 import { handleShopRedactWebhook } from "./handlers/handleShopRedactWebhook.server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -45,16 +44,16 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       break;
 
     case "CUSTOMERS_REDACT":
-      return json({
+      return {
         message: "Customer data redaction processed successfully.",
         status: 200,
-      });
+      }
 
     case "CUSTOMERS_DATA_REQUEST":
-      return json({
+      return {
         message: "Customer data request processed successfully.",
         status: 200,
-      });
+      }
 
     default:
       throw new Response("Unhandled webhook topic", { status: 404 });

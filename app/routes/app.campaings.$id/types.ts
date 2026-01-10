@@ -1,5 +1,5 @@
 import type { Prisma } from "@prisma/client";
-import { getQualifiersByShop } from "~/models/app.server/qualifiers/qualifier.server";
+import { getQualifiersByShop } from "app/models/app.server/qualifiers/qualifier.server";
 
 type CampaignWithRelations = Prisma.CampaignGetPayload<{
   include: {

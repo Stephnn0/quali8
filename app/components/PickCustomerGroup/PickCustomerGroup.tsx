@@ -8,7 +8,7 @@ import {
   TextContainer,
 } from "@shopify/polaris";
 import { useState } from "react";
-import { useNavigate } from "@remix-run/react";
+import { useNavigate } from "react-router";
 import quailifierlogo from "app/assets/qualifier-logo.png";
 import type { getAllQualifiers } from "~/models/app.server/qualifiers/qualifier.server";
 import { CampaingForm } from "~/routes/app.campaings.$id/hooks";

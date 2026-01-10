@@ -1,11 +1,11 @@
-import type { LoaderFunctionArgs } from "@remix-run/node";
-import { getCampaignByIdWithRelations } from "~/models/app.server/campaings";
-import { authenticate } from "~/shopify.server";
-import { handleApiSuccess } from "~/utils/handleApiSuccess";
-import { handleApiError } from "~/utils/server/handleApiResponse/handleApiError.server";
+import type { LoaderFunctionArgs } from "react-router";
+import { getCampaignByIdWithRelations } from "app/models/app.server/campaings";
+import { authenticate } from "app/shopify.server";
+import { handleApiSuccess } from "app/utils/handleApiSuccess";
+import { handleApiError } from "app/utils/server/handleApiResponse/handleApiError.server";
 import db from "app/db.server";
 import type { CampaignLoaderData } from "../types";
-import { getQualifiersByShop } from "~/models/app.server/qualifiers/qualifier.server";
+import { getQualifiersByShop } from "app/models/app.server/qualifiers/qualifier.server";
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const context = await authenticate.admin(request);

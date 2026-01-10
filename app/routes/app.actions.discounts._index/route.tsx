@@ -1,10 +1,4 @@
-import {
-  Link,
-  useFetcher,
-  useLoaderData,
-  useNavigate,
-  useSearchParams,
-} from "@remix-run/react";
+import { Link, useFetcher, useLoaderData, useNavigate, useSearchParams } from "react-router";
 import {
   IndexTable,
   Page,

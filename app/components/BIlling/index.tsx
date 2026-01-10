@@ -1,6 +1,6 @@
 import { CalloutCard } from "@shopify/polaris";
 import image from "app/assets/memv.png";
-import { APP } from "~/constants/app.constants";
+import { APP } from "app/constants/app.constants";
 
 export function Billing() {
   return (

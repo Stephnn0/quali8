@@ -1,9 +1,9 @@
-import type { ActionFunctionArgs } from "@remix-run/node";
+import type { ActionFunctionArgs } from "react-router";
 import { deleteQualifier } from "app/models/app.server/qualifiers/qualifier.server";
 import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
 import { deleteManyConditions } from "app/models/app.server/conditions/conditions.server";
-import { handleApiError } from "~/utils/server/handleApiResponse/handleApiError.server";
+import { handleApiError } from "app/utils/server/handleApiResponse/handleApiError.server";
 
 export async function action({ request }: ActionFunctionArgs) {
   await authenticate.admin(request);

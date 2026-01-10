@@ -1,13 +1,13 @@
-import type { ActionFunctionArgs } from "@remix-run/node";
-import { deleteActionShippingDiscount } from "~/models/app.server/actionShippingDiscounts/actionShippingDiscounts.server";
+import type { ActionFunctionArgs } from "react-router";
+import { deleteActionShippingDiscount } from "app/models/app.server/actionShippingDiscounts/actionShippingDiscounts.server";
 import {
   deleteShippingAutomaticDiscount,
   deleteShippingCodeDiscount,
-} from "~/models/shopify.server/discounts/discounts.server";
-import { gatekeepRoute } from "~/services/subscriptions/gatekeepRoute";
-import { authenticate } from "~/shopify.server";
-import db from "~/db.server";
-import { handleApiError } from "~/utils/server/handleApiResponse/handleApiError.server";
+} from "app/models/shopify.server/discounts/discounts.server";
+import { gatekeepRoute } from "app/services/subscriptions/gatekeepRoute";
+import { authenticate } from "app/shopify.server";
+import db from "app/db.server";
+import { handleApiError } from "app/utils/server/handleApiResponse/handleApiError.server";
 
 export default async function action({ request }: ActionFunctionArgs) {
   const context = await authenticate.admin(request);

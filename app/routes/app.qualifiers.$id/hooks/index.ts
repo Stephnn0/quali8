@@ -1,4 +1,4 @@
-import { useFetcher, useLoaderData, useNavigate } from "@remix-run/react";
+import { useFetcher, useLoaderData, useNavigate } from "react-router";
 import { useField, useForm } from "@shopify/react-form";
 import type { loader } from "../loader";
 import action from "../../api.qualifiers/action/index";

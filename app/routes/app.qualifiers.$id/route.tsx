@@ -6,7 +6,7 @@ import { OperatorQualifier } from "./components/OperatorQualifier";
 import CustomersQueryQualifier from "./components/CustomersQueryQualifier";
 import NewCondtions from "./components/NewConditions";
 import { useFilterCustomersForm } from "./hooks/filterCustomers";
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData } from "react-router";
 
 export { loader };
 

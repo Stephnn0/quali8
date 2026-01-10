@@ -1,4 +1,4 @@
-import { Link } from "@remix-run/react";
+import { Link } from "react-router";
 import { BlockStack, Button, Text } from "@shopify/polaris";
 import { ExternalIcon } from "@shopify/polaris-icons";
 import type { ReactNode } from "react";

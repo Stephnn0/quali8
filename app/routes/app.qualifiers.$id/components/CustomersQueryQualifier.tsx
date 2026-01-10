@@ -7,7 +7,7 @@ import {
   Spinner,
 } from "@shopify/polaris";
 import type { CustomerSegment, QualifierForm } from "../hooks";
-import { Form } from "@remix-run/react";
+import { Form } from "react-router";
 import { useEffect, useState } from "react";
 
 import type action from "../../api.shopifyCustomers/action";

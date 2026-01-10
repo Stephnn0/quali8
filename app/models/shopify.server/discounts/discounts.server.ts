@@ -1,4 +1,4 @@
-import type { AdminGraphqlClient } from "@shopify/shopify-app-remix/server";
+import type { AdminGraphqlClient } from "@shopify/shopify-app-react-router/server";
 import {
   GRAPHQL_MUTATION_CREATE_AUTOMATIC_DISCOUNT,
   GRAPHQL_MUTATION_CREATE_DISCOUNT,
@@ -6,8 +6,8 @@ import {
   GRAPHQL_MUTATION_DELETE_CODE_DISCOUNT,
 } from "../graphql/discounts";
 import { APP } from "app/constants/app.constants";
-import { getShopifyStore } from "~/models/app.server/shopifyStore/shopifyStore.server";
-import db from "~/db.server";
+import db from "app/db.server";
+import { getShopifyStore } from "app/models/app.server/shopifyStore/shopifyStore.server";
 
 type CreateAutomaticShippingDiscountParams = {
   graphql: AdminGraphqlClient;

@@ -1,29 +1,19 @@
-import type {
-  ActionFunctionArgs,
-  HeadersFunction,
-  LoaderFunctionArgs,
-} from "@remix-run/node";
-import { json } from "@remix-run/node";
+import type { ActionFunctionArgs, HeadersFunction, LoaderFunctionArgs } from "react-router";
 import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
-import {
-  useActionData,
-  useLoaderData,
-  useRouteError,
-  useSubmit,
-} from "@remix-run/react";
+import { useActionData, useLoaderData, useRouteError, useSubmit } from "react-router";
 import { useEffect } from "react";
 import { getAppStatus } from "app/services/setup/getAppStatus";
 import { setupApp } from "app/services/setup";
 import { Text } from "@shopify/polaris";
 import { FullPageCardErrorState } from "app/components/FullPageCard/variants/FullPageCardErrorState";
-import { AppProvider } from "@shopify/shopify-app-remix/react";
+import { AppProvider } from "@shopify/shopify-app-react-router/react";
 import { FullPageCard } from "app/components/FullPageCard";
 import SetupGraphic from "./SetupGraphic/SetupGraphic";
 import AppSurfaceLayout from "app/components/AppSurfaceLayout/AppSurfaceLayout";
 import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
-import { handleApiError } from "~/utils/server/handleApiResponse/handleApiError.server";
-import { boundary } from "@shopify/shopify-app-remix/server";
+import { handleApiError } from "app/utils/server/handleApiResponse/handleApiError.server";
+import { boundary } from "@shopify/shopify-app-react-router/server";
 
 export function wait(duration: number) {
   const promise = new Promise<void>((resolve) => {
@@ -41,7 +31,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { isSetup } = await getAppStatus(authAdminContext, db, false);
   if (isSetup) throw redirect("/app");
 
-  return json({ isSetup, apiKey: process.env.SHOPIFY_API_KEY || "" });
+  return { isSetup, apiKey: process.env.SHOPIFY_API_KEY || "" }
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
@@ -98,7 +88,7 @@ export default function Setup() {
   }, [isSetup, submit, error]);
 
   return (
-    <AppProvider isEmbeddedApp apiKey={apiKey}>
+    <AppProvider embedded apiKey={apiKey}>
       <AppSurfaceLayout>
         {error ? (
           <FullPageCardErrorState heading="There was an error during installation">

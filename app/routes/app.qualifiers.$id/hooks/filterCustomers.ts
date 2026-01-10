@@ -1,4 +1,4 @@
-import { useFetcher } from "@remix-run/react";
+import { useFetcher } from "react-router";
 import { useField, useForm } from "@shopify/react-form";
 import type action from "../../api.shopifyCustomers/action";
 import { conditionsSubmissionSchema } from "./zod";

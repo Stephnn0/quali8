@@ -1,20 +1,18 @@
-import type { HeadersFunction, LoaderFunctionArgs } from "@remix-run/node";
-import {
-  json,
-  Link,
-  Outlet,
-  redirect,
-  useLoaderData,
-  useRouteError,
-} from "@remix-run/react";
-import { boundary } from "@shopify/shopify-app-remix/server";
-import { AppProvider } from "@shopify/shopify-app-remix/react";
+import type { HeadersFunction, LoaderFunctionArgs } from "react-router";
+import {  Link, Outlet, redirect, useLoaderData, useRouteError } from "react-router";
+import { boundary } from "@shopify/shopify-app-react-router/server";
+import { AppProvider } from "@shopify/shopify-app-react-router/react";
 import { NavMenu } from "@shopify/app-bridge-react";
 import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
 import { authenticate } from "app/shopify.server";
 import { getAppStatus } from "app/services/setup/getAppStatus";
 import db from "app/db.server";
 import { getSubscription } from "./getSubscription";
+//
+//
+import { AppProvider as PolarisProvider } from "@shopify/polaris";
+import enTranslations from "@shopify/polaris/locales/en.json";
+
 
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
@@ -42,20 +40,21 @@ export const loader = async (loaderContext: LoaderFunctionArgs) => {
 
   // console.log("App Status", shopInfo, shopifyStore);
 
-  return json({
+  return {
     shop,
     shopInfo,
     shopifyStore,
     subscription,
     apiKey: process.env.SHOPIFY_API_KEY || "",
-  });
+  }
 };
 
 export default function App() {
   const { apiKey } = useLoaderData<typeof loader>();
 
   return (
-    <AppProvider isEmbeddedApp apiKey={apiKey}>
+    <AppProvider embedded={true} apiKey={apiKey} >
+      <PolarisProvider i18n={enTranslations}>
       <NavMenu>
         <Link to="/app" rel="home">
           Home
@@ -67,6 +66,7 @@ export default function App() {
         <Link to="/app/settings">Subscriptions</Link>
       </NavMenu>
       <Outlet />
+      </PolarisProvider>
     </AppProvider>
   );
 }

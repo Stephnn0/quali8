@@ -6,7 +6,7 @@ import { useFetcherLoad } from "app/hooks/useFetcherLoad";
 import type { loader } from "app/routes/api.actions.discounts/route";
 import CardHeader from "../CardHeader/CardHeader";
 import quaim from "app/assets/q-im2.png";
-import { useAppSubscription } from "~/services/subscriptions/hooks/useAppSubscription";
+import { useAppSubscription } from "app/services/subscriptions/hooks/useAppSubscription";
 import { GatekeepAppPlanState } from "../../components/GatekeepState/GateKeepStatePlan";
 
 const emptyState = (

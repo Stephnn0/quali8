@@ -1,4 +1,4 @@
-import type { AdminGraphqlClient } from "@shopify/shopify-app-remix/server";
+import type { AdminGraphqlClient } from "@shopify/shopify-app-react-router/server";
 import {
   GRAPHQL_MUTATION_METAFIELD_DEFINITION_CREATE,
   GRAPHQL_MUTATION_METAFIELD_DEFINITION_UPDATE,

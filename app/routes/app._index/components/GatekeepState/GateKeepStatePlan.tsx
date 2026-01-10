@@ -1,6 +1,6 @@
-import type { PlainEmptyStateProps } from "~/components/PlainEmptyState/PlainEmptyState";
-import PlainEmptyState from "~/components/PlainEmptyState/PlainEmptyState";
-import { APP } from "~/constants/app.constants";
+import type { PlainEmptyStateProps } from "app/components/PlainEmptyState/PlainEmptyState";
+import PlainEmptyState from "app/components/PlainEmptyState/PlainEmptyState";
+import { APP } from "app/constants/app.constants";
 
 export function GatekeepAppPlanState(props: Partial<PlainEmptyStateProps>) {
   return (

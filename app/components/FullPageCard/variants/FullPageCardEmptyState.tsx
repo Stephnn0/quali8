@@ -1,5 +1,5 @@
-import { useNavigate } from "@remix-run/react";
-import type { To } from "@remix-run/router/history";
+import { useNavigate } from "react-router";
+import type { To } from "@react-router/router/history";
 import type { EmptyStateProps } from "@shopify/polaris";
 import { EmptyState, Text } from "@shopify/polaris";
 import type { PropsWithChildren } from "react";

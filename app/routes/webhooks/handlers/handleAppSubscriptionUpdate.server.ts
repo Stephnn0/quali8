@@ -1,7 +1,7 @@
 import { SubscriptionStatus, type PrismaClient } from "@prisma/client";
 import type { AuthWebhookContext } from "./types";
-import { appSubscriptionModel } from "~/models/shopify.server/appSubscription";
-import { shopifySubscriptionModel } from "~/models/app.server/shopifySubscriptions/subscriptions.server";
+import { appSubscriptionModel } from "app/models/shopify.server/appSubscription";
+import { shopifySubscriptionModel } from "app/models/app.server/shopifySubscriptions/subscriptions.server";
 import type { ZodType } from "zod";
 import { z } from "zod";
 

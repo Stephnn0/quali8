@@ -1,6 +1,6 @@
 import { MediaCard } from "@shopify/polaris";
 import dateTimeBlockImg from "app/assets/sds.png";
-import { useAppSubscription } from "~/services/subscriptions/hooks/useAppSubscription";
+import { useAppSubscription } from "app/services/subscriptions/hooks/useAppSubscription";
 
 export default function CheckoutBlock({ type }: { type: any }) {
   const { subHasShippingDiscounts } = useAppSubscription();

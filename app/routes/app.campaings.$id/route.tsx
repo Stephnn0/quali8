@@ -2,8 +2,8 @@ import { Button, ButtonGroup, Card, InlineGrid, Layout, Page, PageActions, Text 
 import NameDurationCampaing from "./components/NameDurationCampaing";
 import { useCampaingForm } from "./hooks";
 import DateSelectorsCampaing from "./components/DateSelector";
-import { PickCustomerGroup } from "~/components/PickCustomerGroup/PickCustomerGroup";
-import { useLoaderData } from "@remix-run/react";
+import { PickCustomerGroup } from "app/components/PickCustomerGroup/PickCustomerGroup";
+import { useLoaderData } from "react-router";
 import { loader } from "./loader";
 
 export { loader };

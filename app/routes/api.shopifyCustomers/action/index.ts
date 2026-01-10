@@ -1,8 +1,8 @@
-import type { ActionFunctionArgs } from "@remix-run/node";
+import type { ActionFunctionArgs } from "react-router";
 import { getCustomers } from "app/models/shopify.server/customers";
 import { authenticate } from "app/shopify.server";
 import { buildCustomerQuery } from "app/utils/queryEngine";
-import { handleApiError } from "~/utils/server/handleApiResponse/handleApiError.server";
+import { handleApiError } from "app/utils/server/handleApiResponse/handleApiError.server";
 
 export default async function action({ request }: ActionFunctionArgs) {
   const { admin } = await authenticate.admin(request);

@@ -9,9 +9,9 @@ import {
 } from "@shopify/polaris";
 import type { DiscountForm } from "../hooks";
 import { useState } from "react";
-import { useNavigate } from "@remix-run/react";
+import { useNavigate } from "react-router";
 import quailifierlogo from "app/assets/qualifier-logo.png";
-import type { getAllQualifiers } from "~/models/app.server/qualifiers/qualifier.server";
+import type { getAllQualifiers } from "app/models/app.server/qualifiers/qualifier.server";
 
 type PickQualifiersProps = {
   mockQualifiers: Awaited<ReturnType<typeof getAllQualifiers>>;

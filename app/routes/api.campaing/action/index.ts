@@ -1,7 +1,7 @@
-import type { ActionFunctionArgs } from "@remix-run/node";
-import { createCampaign } from "~/models/app.server/campaings";
-import { authenticate } from "~/shopify.server";
-import { handleApiError } from "~/utils/server/handleApiResponse/handleApiError.server";
+import type { ActionFunctionArgs } from "react-router";
+import { createCampaign } from "app/models/app.server/campaings";
+import { authenticate } from "app/shopify.server";
+import { handleApiError } from "app/utils/server/handleApiResponse/handleApiError.server";
 import db from "app/db.server";
 
 export default async function action({ request }: ActionFunctionArgs) {

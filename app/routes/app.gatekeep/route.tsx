@@ -1,4 +1,4 @@
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData } from "react-router";
 import { loader } from "./loader";
 import { codeMap } from "./codeMap";
 import { Page } from "@shopify/polaris";

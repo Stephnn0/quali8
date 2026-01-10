@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { InlineGrid, Layout, Card, Text } from "@shopify/polaris";
 import { CampaingForm } from "../hooks";
-import CustomDatePicker from "~/routes/app.actions.discounts.$id/components/DatePicker";
+import CustomDatePicker from "app/routes/app.actions.discounts.$id/components/DatePicker";
 
 type DateSelectorsCampaingProps = {
   form: CampaingForm;

@@ -13,7 +13,7 @@ import { DeleteIcon } from "@shopify/polaris-icons";
 import type { QualifierForm } from "../hooks";
 import type { FilterCustomersForm } from "../hooks/filterCustomers";
 import { ConditionValueInput } from "./DyanmicInputs";
-import conditionsImage from "~/assets/conditions.png";
+import conditionsImage from "app/assets/conditions.png";
 import {
   comparisonTypeMap,
   comparisonTypeOptions,

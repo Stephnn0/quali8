@@ -1,4 +1,4 @@
-import type { LoaderFunctionArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "react-router";
 import { getQualifiersByShop } from "app/models/app.server/qualifiers/qualifier.server";
 import { getDeliveryProfiles } from "app/models/shopify.server/deliveryProfiles/deliveryProfiles.server";
 import { authenticate } from "app/shopify.server";
@@ -6,7 +6,7 @@ import db from "app/db.server";
 import { getActionShippingDiscount } from "app/models/app.server/actionShippingDiscounts/actionShippingDiscounts.server";
 import { handleApiSuccess } from "app/utils/handleApiSuccess";
 import type { ActionShippingDiscountLoaderData } from "../types";
-import { handleApiError } from "~/utils/server/handleApiResponse/handleApiError.server";
+import { handleApiError } from "app/utils/server/handleApiResponse/handleApiError.server";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const context = await authenticate.admin(request);

@@ -1,4 +1,4 @@
-import type { AdminGraphqlClient } from "@shopify/shopify-app-remix/server";
+import type { AdminGraphqlClient } from "@shopify/shopify-app-react-router/server";
 import { SHOP_METAFIELD_CONSTANTS } from "./contants";
 import { GRAPHQL_QUERY_APP_ID_AND_SHOP_ID_WITH_METAFIELDS } from "app/models/shopify.server/graphql/app";
 
