@@ -14,6 +14,8 @@ import AppSurfaceLayout from "app/components/AppSurfaceLayout/AppSurfaceLayout";
 import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
 import { handleApiError } from "app/utils/server/handleApiResponse/handleApiError.server";
 import { boundary } from "@shopify/shopify-app-react-router/server";
+import { AppProvider as PolarisProvider } from "@shopify/polaris";
+import enTranslations from "@shopify/polaris/locales/en.json";
 
 export function wait(duration: number) {
   const promise = new Promise<void>((resolve) => {
@@ -89,6 +91,7 @@ export default function Setup() {
 
   return (
     <AppProvider embedded apiKey={apiKey}>
+      <PolarisProvider i18n={enTranslations}>
       <AppSurfaceLayout>
         {error ? (
           <FullPageCardErrorState heading="There was an error during installation">
@@ -102,6 +105,7 @@ export default function Setup() {
           </FullPageCard>
         )}
       </AppSurfaceLayout>
+      </PolarisProvider>
     </AppProvider>
   );
 }
