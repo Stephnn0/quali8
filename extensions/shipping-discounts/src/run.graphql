@@ -28,6 +28,12 @@ query RunInput {
             id
             title
             vendor
+            inCollections {
+              collectionId
+            }
+            hasTags {
+              tag
+            }
             
           }
         }

@@ -1,0 +1,9 @@
+query DeliveryInput($id: ID!) {
+  discountNode(id: $id) {
+    metafield(key: "quali8_shipping_discounts") {
+      value
+      jsonValue
+      type
+    }
+  }
+} 

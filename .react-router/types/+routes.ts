@@ -46,8 +46,16 @@ type Pages = {
   "/app": {
     params: {};
   };
+  "/app/actions/bundles": {
+    params: {};
+  };
   "/app/tools/products": {
     params: {};
+  };
+  "/app/actions/bundles/:id": {
+    params: {
+      "id": string;
+    };
   };
   "/app/actions/discounts": {
     params: {};
@@ -87,7 +95,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/api/actions/discounts" | "/api/shopifyCustomers" | "/api/deleteDiscount" | "/api/qualifiers" | "/api/campaing" | "/auth/login" | "/webhooks" | "/auth/*" | "/setup" | "/app" | "/app/tools/products" | "/app/actions/discounts" | "/app/actions/discounts/:id" | "/app/campaings" | "/app/settings" | "/app/actions" | "/app/campaings/:id" | "/app/qualifiers" | "/app/qualifiers/:id" | "/app/gatekeep";
+    page: "/" | "/api/actions/discounts" | "/api/shopifyCustomers" | "/api/deleteDiscount" | "/api/qualifiers" | "/api/campaing" | "/auth/login" | "/webhooks" | "/auth/*" | "/setup" | "/app" | "/app/actions/bundles" | "/app/tools/products" | "/app/actions/bundles/:id" | "/app/actions/discounts" | "/app/actions/discounts/:id" | "/app/campaings" | "/app/settings" | "/app/actions" | "/app/campaings/:id" | "/app/qualifiers" | "/app/qualifiers/:id" | "/app/gatekeep";
   };
   "routes/api.actions.discounts/route.tsx": {
     id: "routes/api.actions.discounts";
@@ -131,11 +139,19 @@ type RouteFiles = {
   };
   "routes/app/route.tsx": {
     id: "routes/app";
-    page: "/app" | "/app/tools/products" | "/app/actions/discounts" | "/app/actions/discounts/:id" | "/app/campaings" | "/app/settings" | "/app/actions" | "/app/campaings/:id" | "/app/qualifiers" | "/app/qualifiers/:id" | "/app/gatekeep";
+    page: "/app" | "/app/actions/bundles" | "/app/tools/products" | "/app/actions/bundles/:id" | "/app/actions/discounts" | "/app/actions/discounts/:id" | "/app/campaings" | "/app/settings" | "/app/actions" | "/app/campaings/:id" | "/app/qualifiers" | "/app/qualifiers/:id" | "/app/gatekeep";
+  };
+  "routes/app.actions.bundles._index/route.tsx": {
+    id: "routes/app.actions.bundles._index";
+    page: "/app/actions/bundles";
   };
   "routes/app.tools.products._index/route.tsx": {
     id: "routes/app.tools.products._index";
     page: "/app/tools/products";
+  };
+  "routes/app.actions.bundles.$id/route.tsx": {
+    id: "routes/app.actions.bundles.$id";
+    page: "/app/actions/bundles/:id";
   };
   "routes/app.actions.discounts/route.tsx": {
     id: "routes/app.actions.discounts";
@@ -200,7 +216,9 @@ type RouteModules = {
   "routes/auth.$": typeof import("./app/routes/auth.$.tsx");
   "routes/setup": typeof import("./app/routes/setup/route.tsx");
   "routes/app": typeof import("./app/routes/app/route.tsx");
+  "routes/app.actions.bundles._index": typeof import("./app/routes/app.actions.bundles._index/route.tsx");
   "routes/app.tools.products._index": typeof import("./app/routes/app.tools.products._index/route.tsx");
+  "routes/app.actions.bundles.$id": typeof import("./app/routes/app.actions.bundles.$id/route.tsx");
   "routes/app.actions.discounts": typeof import("./app/routes/app.actions.discounts/route.tsx");
   "routes/app.actions.discounts._index": typeof import("./app/routes/app.actions.discounts._index/route.tsx");
   "routes/app.actions.discounts.$id": typeof import("./app/routes/app.actions.discounts.$id/route.tsx");

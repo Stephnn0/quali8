@@ -1,5 +1,5 @@
 import type { HeadersFunction, LoaderFunctionArgs } from "react-router";
-import {  Link, Outlet, redirect, useLoaderData, useRouteError } from "react-router";
+import { Link, Outlet, redirect, useLoaderData, useRouteError } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { AppProvider } from "@shopify/shopify-app-react-router/react";
 import { NavMenu } from "@shopify/app-bridge-react";
@@ -12,6 +12,7 @@ import { getSubscription } from "./getSubscription";
 //
 import { AppProvider as PolarisProvider } from "@shopify/polaris";
 import enTranslations from "@shopify/polaris/locales/en.json";
+import { getShopifyFunctions } from "app/models/shopify.server/functions/functions.server";
 
 
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
@@ -32,9 +33,14 @@ export const loader = async (loaderContext: LoaderFunctionArgs) => {
   ]);
 
 
+  const functions = await getShopifyFunctions(authAdminContext.admin.graphql);
+
+  console.log('-----------------------------------------functions', JSON.stringify(functions, null, 2));
+
+
   // ! fix this
   if (!shopifyStore?.functionId) {
-    
+
     console.log('shopifyStore?.functionId', shopifyStore?.functionId);
   }
 
@@ -55,17 +61,17 @@ export default function App() {
   return (
     <AppProvider embedded={true} apiKey={apiKey} >
       <PolarisProvider i18n={enTranslations}>
-      <NavMenu>
-        <Link to="/app" rel="home">
-          Home
-        </Link>
-        {/* <Link to="/app/campaings">Campaigns</Link> */}
-        <Link to="/app/qualifiers">Audiences</Link>
-        <Link to="/app/actions">Promotions</Link>
-        {/* <Link to="/app/templates">Templates</Link> */}
-        <Link to="/app/settings">Subscriptions</Link>
-      </NavMenu>
-      <Outlet />
+        <NavMenu>
+          <Link to="/app" rel="home">
+            Home
+          </Link>
+          {/* <Link to="/app/campaings">Campaigns</Link> */}
+          <Link to="/app/qualifiers">Audiences</Link>
+          <Link to="/app/actions">Promotions</Link>
+          {/* <Link to="/app/templates">Templates</Link> */}
+          <Link to="/app/settings">Subscriptions</Link>
+        </NavMenu>
+        <Outlet />
       </PolarisProvider>
     </AppProvider>
   );

@@ -20,6 +20,7 @@ import { useState } from "react";
 import DateSelector from "./components/DateSelector";
 import { ShippingRates } from "./components/ShippingRates";
 import { PickQualifiers } from "./components/PickQualifiers";
+import { ProductConditionsComponent } from "./components/ProductConditionComponent";
 
 
 export { loader };
@@ -209,7 +210,9 @@ export default function ActionDiscounts() {
         {/* ============  COMBINE DISCOUNT WITH PRODUCTS/ORDERS ======================= */}
         {/* =========================================================================== */}
         {/* =========================================================================== */}
-
+        {/* <Layout.Section>
+          <ProductConditionsComponent />
+        </Layout.Section> */}
         <Layout.Section>
           <Card>
             <Text variant="bodyMd" as="p" fontWeight="bold">
