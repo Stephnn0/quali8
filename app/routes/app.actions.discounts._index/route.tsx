@@ -175,7 +175,9 @@ export default function AllActions() {
 
   return (
     <Page
-      backAction={{ url: "/app/actions" }}
+      backAction={{
+        onAction: () => navigate("/app/actions"),
+      }}
       title="My Promotions"
       primaryAction={
         <Link to="new">

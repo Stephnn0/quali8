@@ -1,13 +1,17 @@
-import { MediaCard } from "@shopify/polaris";
+import { Button, MediaCard } from "@shopify/polaris";
 import dateTimeBlockImg from "app/assets/sds.png";
 import { useAppSubscription } from "app/services/subscriptions/hooks/useAppSubscription";
+import { useNavigate } from "react-router";
 
 export default function CheckoutBlock({ type }: { type: any }) {
   const { subHasShippingDiscounts } = useAppSubscription();
 
+  const navigate = useNavigate();
   const primaryAction = {
     content: "Create Promotion",
+    onClick: () => navigate("/app/actions/discounts"),
   };
+
 
   switch (type) {
     case "date_time_picker":
@@ -18,7 +22,6 @@ export default function CheckoutBlock({ type }: { type: any }) {
           description="Create shipping discounts based on customer qualifiers"
           primaryAction={{
             ...primaryAction,
-            url: "/app/actions/discounts",
             disabled: !subHasShippingDiscounts,
           }}
         >

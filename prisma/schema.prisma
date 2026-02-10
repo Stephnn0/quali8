@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -26,28 +25,26 @@ model Session {
   emailVerified Boolean?  @default(false)
 }
 
-
 model ShopifyStore {
-  id                   Int                   @id @default(autoincrement())
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @default(now()) @updatedAt
+  id                   Int                      @id @default(autoincrement())
+  createdAt            DateTime                 @default(now())
+  updatedAt            DateTime                 @default(now()) @updatedAt
   //
-  shop                 String                @unique
+  shop                 String                   @unique
   shopifyPlan          String? // TODO - Delete after all stores are using the new shopData
   status               AppStatus
-  appVersion           String                @default("0.0.0")
+  appVersion           String                   @default("0.0.0")
   functionId           String?
   //
   qualifiers           Qualifiers[]
-  customers            Customers[]   
-  conditions           Conditions[]      
-  shippingDiscounts     ShippingDiscountAction[]
+  customers            Customers[]
+  conditions           Conditions[]
+  shippingDiscounts    ShippingDiscountAction[]
   shopifySubscriptions ShopifySubscription[]
   shopData             ShopifyShopData?
 
-    // NEW
-  campaigns            Campaign[]
-
+  // NEW
+  campaigns Campaign[]
 }
 
 enum AppStatus {
@@ -60,7 +57,6 @@ enum LogicType {
   AND
   OR
 }
-
 
 enum ConditionType {
   customer_tag
@@ -78,7 +74,6 @@ enum ConditionType {
   accepts_marketing
 }
 
-
 enum ComparisonType {
   equals
   not_equals
@@ -88,92 +83,95 @@ enum ComparisonType {
   less_than_equals
 }
 
-
 // Audience
 model Qualifiers {
-  id                   Int                   @id @default(autoincrement())
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @default(now()) @updatedAt
+  id                 Int          @id @default(autoincrement())
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @default(now()) @updatedAt
   //
-  shop                 String
-  shopifyStore         ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
+  shop               String
+  shopifyStore       ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
   //
   name               String
   description        String
   conditionLogicType LogicType
   //
-  conditions         Conditions[] 
-  customers          Customers[]   @relation("CustomerQualifiers")
+  conditions         Conditions[]
+  customers          Customers[]  @relation("CustomerQualifiers")
   //
-  campaigns Campaign[]
+  campaigns          Campaign[]
 }
 
 model Conditions {
   id             Int            @id @default(autoincrement())
-  type           ConditionType 
+  type           ConditionType
   comparisonType ComparisonType
   value          String
 
   //
-  qualifierId    Int // audience
-  qualifier      Qualifiers      @relation(fields: [qualifierId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  qualifierId  Int // audience
+  qualifier    Qualifiers   @relation(fields: [qualifierId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   //
-  shop                 String
-  shopifyStore         ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
+  shop         String
+  shopifyStore ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model Customers {
-  id                   Int         @id @default(autoincrement())
-  shopifyId            String      @unique
-  email                String?     
-  firstName            String?
-  lastName             String?
+  id           Int          @id @default(autoincrement())
+  shopifyId    String       @unique
+  email        String?
+  firstName    String?
+  lastName     String?
   //
-  country              String?
-  amountSpent          String?
-  orderCount           Int?
-  qualifiers           Qualifiers[] @relation("CustomerQualifiers")
+  country      String?
+  amountSpent  String?
+  orderCount   Int?
+  qualifiers   Qualifiers[] @relation("CustomerQualifiers")
   //
-  shop                 String
-  shopifyStore         ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
+  shop         String
+  shopifyStore ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
   //
 }
 
-
 model ShippingDiscountAction {
-  id               Int               @id @default(autoincrement())
-  shopifyDiscountId  String           @unique
+  id                           Int                   @id @default(autoincrement())
+  shopifyDiscountId            String                @unique
   //
-  shippingDiscountState          ShippingDiscountState
-  limitUsagePerOneCustomer       Boolean @default(false)
-  combinedWithOrderDiscounts     Boolean @default(false)
-  combinedWithProductDiscounts   Boolean @default(false)
+  shippingDiscountState        ShippingDiscountState
+  limitUsagePerOneCustomer     Boolean               @default(false)
+  combinedWithOrderDiscounts   Boolean               @default(false)
+  combinedWithProductDiscounts Boolean               @default(false)
   //
-  automaticOrCode  String             // 'CODE' or 'AUTOMATIC'
-  codeOrName       String  
-  type             DiscountType       // percentage or fixed 
-  value            Int
+  automaticOrCode              String // 'CODE' or 'AUTOMATIC'
+  codeOrName                   String
+  type                         DiscountType // percentage or fixed 
+  value                        Int
   //            
-  shippingRateType ShippingRateType
-  shippingRatesNames String[]          //! fixed this maybe by handle or name
-  qualifierIds   String[]
+  shippingRateType             ShippingRateType
+  shippingRatesNames           String[] //! fixed this maybe by handle or name
+  qualifierIds                 String[]
   //
-  startDate      String?
-  startTime      String?
-  hasEndDate     Boolean              @default(false)
-  endDate        String?
-  endTime        String?
+  appliesToAllCustomers        Boolean               @default(false)
   //
-    //
-  shop           String
-  shopifyStore   ShopifyStore         @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
+  isMinimumCartValueEnabled    Boolean               @default(false)
+  minimumCartValue             Float?                @default(0)
+  //
+  startDate                    String?
+  startTime                    String?
+  hasEndDate                   Boolean               @default(false)
+  endDate                      String?
+  endTime                      String?
   //
   //
-    promotions Promotion[]
-    //
-    //
-  createdAt      DateTime             @default(now())
-  updatedAt      DateTime             @default(now()) @updatedAt
+  shop                         String
+  shopifyStore                 ShopifyStore          @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
+  //
+  //
+  promotions                   Promotion[]
+  //
+  //
+  createdAt                    DateTime              @default(now())
+  updatedAt                    DateTime              @default(now()) @updatedAt
 }
 
 enum MarketingActionType {
@@ -191,12 +189,10 @@ enum ShippingRateType {
   SELECTED_RATES
 }
 
-
 enum ShippingDiscountState {
   ENABLED
   DISABLED
 }
-
 
 // https://shopify.dev/docs/api/admin-graphql/latest/objects/AppSubscription
 // https://shopify.dev/docs/apps/launch/billing/subscription-billing
@@ -343,7 +339,7 @@ model RecurringPlan {
   // This is because our Gatekeeper system uses these columns to determine the limits and amounts for the merchant, and it's easier to automate this way.
   // 
   hasQualifiers        Boolean                @default(false)
-  hasShippingDiscounts            Boolean                @default(false)
+  hasShippingDiscounts Boolean                @default(false)
   //
   //
   read_generalApis     Boolean /// Whether the merchant can read general APIs
@@ -385,8 +381,6 @@ enum Unstable_UsagePlanLevel {
   PAY_AS_YOU_GO
 }
 
-
-
 model ShopifyShopData {
   id              Int          @id @default(autoincrement())
   createdAt       DateTime     @default(now())
@@ -410,34 +404,31 @@ model ShopifyShopData {
   shopifyStore    ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
 }
 
-
 // --------------------------------------------------------
 // --------------------------------------------------------
 // --------------------------------------------------------
-
 
 model Campaign {
-  id          Int            @id @default(autoincrement())
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  name        String
-  status      CampaignStatus @default(DRAFT)
+  name   String
+  status CampaignStatus @default(DRAFT)
 
-  startAt     DateTime?
-  endAt       DateTime?
+  startAt DateTime?
+  endAt   DateTime?
 
   // ---- Store ownership ----
-  shop        String
+  shop         String
   shopifyStore ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade)
 
-  holidayId   Int?
-  holiday     Holiday? @relation(fields: [holidayId], references: [id])
+  holidayId Int?
+  holiday   Holiday? @relation(fields: [holidayId], references: [id])
 
   // Relations
-  audiences   Qualifiers[]
-  promotions  Promotion[]
-
+  audiences  Qualifiers[]
+  promotions Promotion[]
 
   @@index([shop])
 }
@@ -451,7 +442,7 @@ enum CampaignStatus {
 
 // Holiday is context, not control logic.
 model Holiday {
-  id        Int @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   name      String
   region    String
   startDate DateTime
@@ -460,24 +451,23 @@ model Holiday {
   campaigns Campaign[]
 }
 
-
 model Promotion {
-  id          Int                 @id @default(autoincrement())
-  createdAt   DateTime            @default(now())
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
 
-  type        PromotionType
-  status      PromotionStatus     @default(INACTIVE)
+  type   PromotionType
+  status PromotionStatus @default(INACTIVE)
 
   // Campaign ownership
-  campaignId  Int
-  campaign    Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaignId Int
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 
   // Implementation (only one is set)
   shippingDiscountId Int?
   shippingDiscount   ShippingDiscountAction? @relation(fields: [shippingDiscountId], references: [id])
 
   // Future-proofing
-  config      Json?   // for FREE_GIFT, BUNDLE, etc.
+  config Json? // for FREE_GIFT, BUNDLE, etc.
 }
 
 enum PromotionType {

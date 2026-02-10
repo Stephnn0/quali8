@@ -7,7 +7,11 @@ query RunInput {
     }
   }
   cart {
+
     cost {
+      subtotalAmount {
+        amount
+      }
       totalAmount {
         amount
       }
@@ -24,6 +28,7 @@ query RunInput {
             id
             title
             vendor
+            
           }
         }
       }

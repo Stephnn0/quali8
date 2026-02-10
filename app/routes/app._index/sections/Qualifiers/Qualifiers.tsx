@@ -4,21 +4,22 @@ import CardHeader from "../CardHeader/CardHeader";
 import { BlockStack, Card, ResourceItem, Text } from "@shopify/polaris";
 import SplitList from "../../components/SplitList/SplitList";
 import PlainEmptyState from "app/components/PlainEmptyState/PlainEmptyState";
-import quaim from "app/assets/q-im2.png";
+import quaim from "app/assets/customer-segment-icon.png";
 import QualifierSkeleton from "./QualifierSkeleton";
 import { useAppSubscription } from "app/services/subscriptions/hooks/useAppSubscription";
 import { GatekeepAppPlanState } from "../../components/GatekeepState/GateKeepStatePlan";
 
 const emptyState = (
   <PlainEmptyState
-    title="There are no qualifiers to show"
-    description="Your qualifiers will appear here once you add them."
+    title="There are no customer groups to show"
+    description="Your customer groups will appear here once you add them."
     action={{
       url: "/app/qualifiers/new",
-      content: "Create qualifier",
+      content: "Create customer group",
     }}
   />
 );
+
 
 export default function Qualifiers() {
   const { subHasQualifiers } = useAppSubscription();
@@ -44,11 +45,11 @@ export default function Qualifiers() {
         content: "Go to all audience groups",
         disabled: !subHasQualifiers,
       }}
-      icon={<img src={quaim} alt="gift icon" />}
+      icon={<img src={quaim} alt="gift icon" style={{ width: "25px", height: "25px" }} />}
     />
   );
 
-  const resourceName = { singular: "qualifier", plural: "qualifiers" };
+  const resourceName = { singular: "customer group", plural: "customer groups" };
 
   const renderItem = (item: any) => {
     const { id, name } = item;

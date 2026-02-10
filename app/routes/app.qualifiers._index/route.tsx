@@ -17,7 +17,7 @@ import { DeleteIcon, EditIcon } from "@shopify/polaris-icons";
 import image from "app/assets/ccc.png";
 import { useCallback, useState } from "react";
 import { useAppBridge } from "@shopify/app-bridge-react";
-import quailifierlogo from "app/assets/q-im.png";
+import quailifierlogo from "app/assets/customer-segment-icon.png";
 
 export { loader };
 
@@ -220,7 +220,7 @@ export default function Qualifiers() {
                 heading="You have no segments yet"
                 image={quailifierlogo}
                 action={{
-                  content: "Create a qualifier",
+                  content: "Create customer group",
                   onAction: () => {
                     navigate("/app/qualifiers/new");
                   },
