@@ -1,5 +1,5 @@
 import type { AuthAdminContext } from "app/types/utility/shopify";
-import type { UpdateBody } from "../zod";
+import type { Customer, UpdateBody } from "../zod";
 import { updateActionShippingDiscount } from "app/models/app.server/actionShippingDiscounts/actionShippingDiscounts.server";
 import {
   createShippingAutomaticDiscount,
@@ -17,16 +17,22 @@ export default async function updateShippingDiscountServer(
 ) {
   const { admin, session } = authAdminContext;
 
-  const customerShopifyIds =
-    body.customers && body.customers.map((c) => c.shopifyId);
-
-  const customers = await getCustomersByIds(customerShopifyIds, db);
+  let customers: Customer[] = [];
+  if (!body.appliesToAllCustomers) {
+    const customerShopifyIds =
+      body.customers && body.customers.map((c) => c.shopifyId);
+    customers = await getCustomersByIds(customerShopifyIds, db);
+  }
 
   const metafieldDataUpdate = {
     id: body.id,
     shopifyDiscountId: body.shopifyDiscountId,
     //
     customers: customers,
+    //
+    appliesToAllCustomers: body.appliesToAllCustomers,
+    isMinimumCartValueEnabled: body.isMinimumCartValueEnabled,
+    minimumCartValue: body.minimumCartValue,
     //
     code: body.codeOrName,
     type: body.type, // ! percentage or fixed
@@ -122,12 +128,9 @@ export default async function updateShippingDiscountServer(
           automaticOrCode: body.automaticOrCode!,
           //
           qualifierIds: body.qualifierIds,
-          qualifiers: {
-            connect: (body?.qualifierIds ?? []).map((id: string) => ({
-              id: Number(id),
-            })),
-          },
           //
+
+
           shippingRatesNames: body.shippingRatesNames,
           shippingRateType: body.shippingRateType!,
           //
@@ -136,6 +139,10 @@ export default async function updateShippingDiscountServer(
           hasEndDate: body.hasEndDate,
           endDate: body.endDate,
           endTime: body.endTime,
+          //
+          appliesToAllCustomers: body.appliesToAllCustomers,
+          isMinimumCartValueEnabled: body.isMinimumCartValueEnabled,
+          minimumCartValue: body.minimumCartValue,
         },
       },
       db,

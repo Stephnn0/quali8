@@ -1,4 +1,4 @@
-import { useLoaderData } from "react-router";
+import { useLoaderData, useNavigate } from "react-router";
 import {
   Button,
   ButtonGroup,
@@ -71,10 +71,15 @@ export default function ActionDiscounts() {
     shippingDiscountState.value = selectedDiscountState;
   };
 
+  const navigate = useNavigate();
+
   return (
     <Page
       title="Shipping Discounts"
-      backAction={{ content: "Back", url: "/app/actions/discounts" }}
+      backAction={{
+        content: "Back",
+        onAction: () => navigate("/app/actions/discounts"),
+      }}
     >
       {/* =========================================================================== */}
       {/* =================================== REWARDS =============================== */}
@@ -84,7 +89,7 @@ export default function ActionDiscounts() {
 
       <Layout>
         <Layout.Section>
-        <Banner>
+          <Banner>
             <p>
               Shipping discounts don't need campaings since we leverage Shopify's built-in date range functionality.
             </p>
@@ -239,6 +244,7 @@ export default function ActionDiscounts() {
         {/* =========================================================================== */}
 
         <Layout.Section>
+
           <PickQualifiers
             mockQualifiers={loaderData?.payload?.qualifiers?.qualifiers}
             form={form}

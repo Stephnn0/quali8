@@ -6,6 +6,9 @@ export const PUBLIC_ENV = {
   VITE_SHOPIFY_API_KEY,
 } as const;
 
+
+const APP_HANDLE = "quali8"; // `quali8` or `quali8-dev-gamma`
+
 export const APP = {
   APP_HANDLE: "quali8", // "quali8" quali8-dev-gamma
   FUNCTION_ID: "92f98185-5407-46c4-85d9-11594cc32d07",
@@ -43,5 +46,5 @@ export const APP = {
   STORES_WHITELIST: ["quali8-dev-gamma.myshopify.com"],
 
   OPEN_APP_PLANS_PAGE: () =>
-    open(`shopify://admin/charges/quali8/pricing_plans`, "_top"),
+    open(`shopify://admin/charges/${APP_HANDLE}/pricing_plans`, "_top"),
 };

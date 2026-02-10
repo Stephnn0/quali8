@@ -6,7 +6,7 @@ import { OperatorQualifier } from "./components/OperatorQualifier";
 import CustomersQueryQualifier from "./components/CustomersQueryQualifier";
 import NewCondtions from "./components/NewConditions";
 import { useFilterCustomersForm } from "./hooks/filterCustomers";
-import { useLoaderData } from "react-router";
+import { useLoaderData, useNavigate } from "react-router";
 
 export { loader };
 
@@ -25,10 +25,14 @@ export default function QualifiersForm() {
 
   const conditions = qualifier ? qualifier.conditions : [];
 
+  const navigate = useNavigate();
+
   return (
     <Page
       title={!qualifier ? "Create Customer Group" : (qualifier?.name ?? "Customer Group")}
-      backAction={{ url: "/app/qualifiers" }}
+      backAction={{
+        onAction: () => navigate("/app/qualifiers"),
+      }}
     >
       <Layout>
         <Layout.Section>

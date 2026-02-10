@@ -22,8 +22,7 @@ const create: ZodSchema<Create> = z
     automaticOrCode: z.enum(["AUTOMATIC", "CODE"]), // (9
     //
     qualifierIds: z
-      .array(z.string())
-      .min(1, "At least one qualifier is required"), //  (10
+      .array(z.string()).optional().default([]),
     customers: z.array(z.object({ shopifyId: z.string(), id: z.number() })), // (11
     //
     shippingRateType: z.enum(["ALL_RATES", "SELECTED_RATES"]), // (12
@@ -34,6 +33,10 @@ const create: ZodSchema<Create> = z
     hasEndDate: z.boolean(), // (16
     startTime: z.string().optional(), // (17
     endTime: z.string().optional(), // (18
+    //
+    appliesToAllCustomers: z.boolean(), // (19
+    isMinimumCartValueEnabled: z.boolean(), // (20
+    minimumCartValue: z.number()
   })
   .superRefine((data, context) => {
     if (data.type === "percentage") {
@@ -42,6 +45,25 @@ const create: ZodSchema<Create> = z
           code: z.ZodIssueCode.custom,
           message: "Value must be less than or equal to 100%",
           path: ["value"],
+        });
+      }
+
+    }
+    if (data.isMinimumCartValueEnabled) {
+      if (data.minimumCartValue <= 0) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Minimum cart value must be greater than 0",
+          path: ["minimumCartValue"],
+        });
+      }
+    }
+    if (!data.appliesToAllCustomers) {
+      if (data.qualifierIds.length === 0) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "At least one customer target group is required",
+          path: ["qualifierIds"],
         });
       }
     }
@@ -69,7 +91,7 @@ const update: ZodSchema<Update> = z
     //
     qualifierIds: z
       .array(z.string())
-      .min(1, "At least one qualifier is required"), //  (10
+      .optional().default([]),
     customers: z.array(z.object({ shopifyId: z.string(), id: z.number() })),
     //
     shippingRateType: z.enum(["ALL_RATES", "SELECTED_RATES"]), // (12
@@ -80,6 +102,10 @@ const update: ZodSchema<Update> = z
     hasEndDate: z.boolean(), // (16
     startTime: z.string().optional(), // (17
     endTime: z.string().optional(), // (18
+    //
+    appliesToAllCustomers: z.boolean(), // (19
+    isMinimumCartValueEnabled: z.boolean(), // (20
+    minimumCartValue: z.number()
   })
   .superRefine((data, context) => {
     if (data.type === "percentage") {
@@ -88,6 +114,24 @@ const update: ZodSchema<Update> = z
           code: z.ZodIssueCode.custom,
           message: "Value must be less than or equal to 100%",
           path: ["value"],
+        });
+      }
+    }
+    if (data.isMinimumCartValueEnabled) {
+      if (data.minimumCartValue <= 0) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Minimum cart value must be greater than 0",
+          path: ["minimumCartValue"],
+        });
+      }
+    }
+    if (!data.appliesToAllCustomers) {
+      if (data.qualifierIds.length === 0) {
+        context.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "At least one customer target group is required",
+          path: ["qualifierIds"],
         });
       }
     }
@@ -106,7 +150,7 @@ export type UpdateBody = z.infer<typeof update>;
 
 type Update = Omit<
   Partial<Omit<ShippingDiscountAction, "createdAt" | "updatedAt">> &
-    Required<Pick<ShippingDiscountAction, "id" | "shopifyDiscountId">>,
+  Required<Pick<ShippingDiscountAction, "id" | "shopifyDiscountId">>,
   "createdAt" | "updatedAt"
 > & {
   action: "update";
@@ -120,7 +164,7 @@ type Create = Omit<
       "createdAt" | "updatedAt" | "startDate" | "endDate"
     >
   > &
-    Required<Pick<ShippingDiscountAction, "codeOrName">>,
+  Required<Pick<ShippingDiscountAction, "codeOrName">>,
   "createdAt" | "updatedAt"
 > & {
   action: "create";

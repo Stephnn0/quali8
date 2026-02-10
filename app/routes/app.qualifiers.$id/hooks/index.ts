@@ -25,6 +25,7 @@ export type LogicType = "AND" | "OR";
 export type CustomerSegment = {
   shopifyId: string;
   firstName: string;
+  lastName: string;
   createdAt: string;
   country: string;
   amountSpent: number;

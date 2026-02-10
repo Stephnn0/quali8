@@ -25,6 +25,7 @@ export function useDiscountForm() {
 
   const shippingDiscount = loaderData?.payload?.shippingDiscount;
 
+
   const {
     id,
     shopifyDiscountId,
@@ -37,6 +38,10 @@ export function useDiscountForm() {
     shippingRateType,
     shippingRatesNames,
     qualifierIds,
+    //
+    appliesToAllCustomers,
+    isMinimumCartValueEnabled,
+    minimumCartValue,
     //
     startDate,
     startTime,
@@ -84,6 +89,11 @@ export function useDiscountForm() {
         value: [],
         validates: [lengthMoreThan(0, "Customers is required")],
       }),
+      //
+      appliesToAllCustomers: useField(appliesToAllCustomers || false),
+      isMinimumCartValueEnabled: useField(isMinimumCartValueEnabled || false),
+      minimumCartValue: useField(minimumCartValue || 0),
+      //
       qualifierIds: useField<string[]>({
         value: qualifierIds || [],
         validates: [lengthMoreThan(0, "Qualifiers are required")],
@@ -103,7 +113,8 @@ export function useDiscountForm() {
       setValueError(null);
       setQualifierIdsError(null);
 
-      
+
+
       try {
         if (!shippingDiscount) {
           console.log("post");
@@ -136,6 +147,10 @@ export function useDiscountForm() {
             hasEndDate: fieldValues.hasEndDate, // (16
             endDate: fieldValues.endDate, // (17
             endTime: fieldValues.endTime, // (18
+            //
+            appliesToAllCustomers: fieldValues.appliesToAllCustomers, // (19
+            isMinimumCartValueEnabled: fieldValues.isMinimumCartValueEnabled, // (20
+            minimumCartValue: fieldValues.minimumCartValue, // (21
           };
 
           const bodyParsed = zodApiActionsShippingDiscounts.create.parse(body);
@@ -179,6 +194,10 @@ export function useDiscountForm() {
             hasEndDate: fieldValues.hasEndDate, // (18
             endDate: fieldValues.endDate, // (19
             endTime: fieldValues.endTime, // (20
+            //
+            appliesToAllCustomers: fieldValues.appliesToAllCustomers, // (21
+            isMinimumCartValueEnabled: fieldValues.isMinimumCartValueEnabled, // (22
+            minimumCartValue: fieldValues.minimumCartValue, // (23
           };
 
           const bodyParsed = zodApiActionsShippingDiscounts.update.parse(body);

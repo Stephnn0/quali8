@@ -63,7 +63,7 @@ export default function CustomersQueryQualifier({
     useIndexResourceState(customerSegments);
 
   const rowMarkup = customerSegments?.map(
-    ({ shopifyId, firstName, country, amountSpent, orderCount }, index) => (
+    ({ shopifyId, firstName, lastName, country, amountSpent, orderCount }, index) => (
       <IndexTable.Row
         id={shopifyId}
         key={shopifyId}
@@ -72,12 +72,12 @@ export default function CustomersQueryQualifier({
       >
         <IndexTable.Cell>
           <Text variant="bodyMd" fontWeight="bold" as="span">
-            {firstName}
+            {firstName} {lastName}
           </Text>
         </IndexTable.Cell>
         <IndexTable.Cell>{country}</IndexTable.Cell>
         <IndexTable.Cell>${amountSpent}</IndexTable.Cell>
-        <IndexTable.Cell>{orderCount}</IndexTable.Cell>
+        {/* <IndexTable.Cell>{orderCount}</IndexTable.Cell> */}
       </IndexTable.Row>
     ),
   );
@@ -114,7 +114,7 @@ export default function CustomersQueryQualifier({
                 { title: "Name" },
                 { title: "Country" },
                 { title: "Amount Spent" },
-                { title: "Orders" },
+                // { title: "Orders" },
               ]}
             >
               {rowMarkup}
