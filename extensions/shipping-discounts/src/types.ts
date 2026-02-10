@@ -22,4 +22,8 @@ export type ParsedBody = {
   hasEndDate: boolean;
   endDate: string; // ISO string date
   endTime: string; // Hour as a string
+  //
+  appliesToAllCustomers: boolean;
+  isMinimumCartValueEnabled: boolean;
+  minimumCartValue: number;
 };

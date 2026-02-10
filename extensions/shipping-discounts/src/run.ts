@@ -25,17 +25,38 @@ export function run(input: RunInput): FunctionRunResult {
   // );
   //!  ------------------------------ TESTING END-----------------------------------
 
-  if (input.cart.buyerIdentity === null) {
-    return EMPTY_DISCOUNT;
+  console.log("-----------------input.cart.cost.s", JSON.stringify(input.cart.cost.subtotalAmount, null, 2));
+
+
+  if (parsedBody.isMinimumCartValueEnabled) {
+    if (input.cart.cost.subtotalAmount.amount < parsedBody.minimumCartValue) {
+      return EMPTY_DISCOUNT;
+    }
   }
+
+
+  // ! change 1
+  if (!parsedBody.appliesToAllCustomers) {
+    if (input.cart.buyerIdentity === null) {
+      return EMPTY_DISCOUNT;
+    }
+  }
+
+
 
   const customerId = input.cart.buyerIdentity?.customer?.id;
 
-  const isCustomerInList = parsedBody.customers.some(
-    (customer: Customer) => customer.shopifyId === customerId,
-  );
+  const isCustomerInList =
+    !!customerId &&
+    parsedBody.customers.some(
+      (customer: Customer) => customer.shopifyId === customerId,
+    );
 
-  if (isCustomerInList) {
+  const isEligibleCustomer =
+    parsedBody.appliesToAllCustomers || isCustomerInList;
+
+  // change this to handle applies to all customers 
+  if (isEligibleCustomer) {
     console.log("... customer in list ...");
     const deliveryOptions: Target[] = [];
 

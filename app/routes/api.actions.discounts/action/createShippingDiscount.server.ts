@@ -1,5 +1,5 @@
 import type { AuthAdminContext } from "app/types/utility/shopify";
-import type { CreateBody } from "../zod";
+import type { CreateBody, Customer } from "../zod";
 import { createActionShippingDiscount } from "app/models/app.server/actionShippingDiscounts/actionShippingDiscounts.server";
 import db from "app/db.server";
 import {
@@ -13,17 +13,24 @@ export default async function createShippingDiscountServer(
   authAdminContext: AuthAdminContext,
   body: CreateBody,
 ) {
+  console.log("------------------createShippingDiscountServer ---------------");
+  console.log("body", JSON.stringify(body, null, 2));
   const { admin, session } = authAdminContext;
 
-  const customerShopifyIds =
-    body.customers && body.customers.map((c) => c.shopifyId);
-
-  const customers = await getCustomersByIds(customerShopifyIds, db);
+  let customers: Customer[] = [];
+  if (!body.appliesToAllCustomers) {
+    const customerShopifyIds =
+      body.customers && body.customers.map((c) => c.shopifyId);
+    customers = await getCustomersByIds(customerShopifyIds, db);
+  }
 
   const metafieldData = {
     customers: customers,
     //
-    
+    appliesToAllCustomers: body.appliesToAllCustomers,
+    isMinimumCartValueEnabled: body.isMinimumCartValueEnabled,
+    minimumCartValue: body.minimumCartValue,
+    //
     code: body.codeOrName,
     type: body.type, // percentage or fixed
     value: body.value,
@@ -31,6 +38,7 @@ export default async function createShippingDiscountServer(
     shippingRateType: body.shippingRateType, // ALL_RATES or CUSTOMED_RATES
     shippingRatesNames: body.shippingRatesNames,
   };
+
 
   let shippingDiscount;
   let shopifyDiscountId;
@@ -113,7 +121,7 @@ export default async function createShippingDiscountServer(
     automaticOrCode: body.automaticOrCode!,
     //
     qualifierIds: body.qualifierIds,
-  
+
     shippingRatesNames: body.shippingRatesNames,
     shippingRateType: body.shippingRateType!,
     //
@@ -122,6 +130,10 @@ export default async function createShippingDiscountServer(
     hasEndDate: body.hasEndDate,
     endDate: body.endDate,
     endTime: body.endTime,
+    //
+    appliesToAllCustomers: body.appliesToAllCustomers,
+    isMinimumCartValueEnabled: body.isMinimumCartValueEnabled,
+    minimumCartValue: body.minimumCartValue,
   };
 
   if (shippingDiscount) {

@@ -1,16 +1,19 @@
 import {
   Button,
   Card,
+  Checkbox,
+  Divider,
   EmptyState,
   Modal,
   OptionList,
   Text,
   TextContainer,
+  TextField,
 } from "@shopify/polaris";
 import type { DiscountForm } from "../hooks";
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import quailifierlogo from "app/assets/qualifier-logo.png";
+import quailifierlogo from "app/assets/customer-segment-icon.png";
 import type { getAllQualifiers } from "app/models/app.server/qualifiers/qualifier.server";
 
 type PickQualifiersProps = {
@@ -20,7 +23,7 @@ type PickQualifiersProps = {
 
 export function PickQualifiers({ mockQualifiers, form }: PickQualifiersProps) {
   const { fields } = form;
-  const { customers, qualifierIds } = fields;
+  const { customers, qualifierIds, appliesToAllCustomers, isMinimumCartValueEnabled, minimumCartValue } = fields;
   const [selectedQualifiersIds, setSelectedQualifiersIds] = useState<string[]>(
     qualifierIds.value || [],
   );
@@ -73,6 +76,7 @@ export function PickQualifiers({ mockQualifiers, form }: PickQualifiersProps) {
 
   return (
     <>
+
       <Card>
         <Text variant="bodyMd" fontWeight="bold" as="p">
           Select your customer target group
@@ -82,9 +86,11 @@ export function PickQualifiers({ mockQualifiers, form }: PickQualifiersProps) {
         </Text>
         <br />
         <Button
+          disabled={appliesToAllCustomers.value}
           onClick={() => {
             setTemporarySelected(selectedQualifiersIds);
             setModalActive(true);
+
           }}
         >
           Select Target Group
@@ -93,6 +99,33 @@ export function PickQualifiers({ mockQualifiers, form }: PickQualifiersProps) {
         <div style={{}}>
           <p>{selectedQualifiersDisplay}</p>
         </div>
+
+        <br />
+        <Checkbox
+          label="Applies to all customers"
+          checked={appliesToAllCustomers.value}
+          onChange={(value) => appliesToAllCustomers.onChange(value)}
+        />
+
+        <Divider />
+        <br />
+        <Checkbox
+          label="Enable minimum cart value"
+          checked={isMinimumCartValueEnabled.value}
+          onChange={(value) => isMinimumCartValueEnabled.onChange(value)}
+        />
+        <br />
+
+
+        {isMinimumCartValueEnabled.value && (
+          <TextField
+            label="Minimum cart value"
+            value={String(minimumCartValue.value)}
+            onChange={(value) => minimumCartValue.onChange(Number(value))}
+            autoComplete="off"
+          />
+        )}
+
       </Card>
 
       <Modal
@@ -128,10 +161,10 @@ export function PickQualifiers({ mockQualifiers, form }: PickQualifiersProps) {
           ) : (
             <Card>
               <EmptyState
-                heading="You have no qualifiers yet"
+                heading="You have no customer target groups yet"
                 image={quailifierlogo}
                 action={{
-                  content: "Create a qualifier",
+                  content: "Create a customer target group",
                   onAction: () => {
                     navigate("/app/qualifiers/new");
                   },
@@ -139,10 +172,9 @@ export function PickQualifiers({ mockQualifiers, form }: PickQualifiersProps) {
                 fullWidth
               >
                 <p>
-                  Qualifiers are a way to group customers based on their
-                  behavior. You can use qualifiers to create segments of
-                  customers that you can target with specific marketing
-                  campaigns.
+                  Customer target groups are a way to group customers based on their
+                  behavior. You can use customer target groups to create segments of
+                  customers that you can target with specific discounts.
                 </p>
               </EmptyState>
             </Card>

@@ -5,7 +5,7 @@ import PlainEmptyState from "app/components/PlainEmptyState/PlainEmptyState";
 import { useFetcherLoad } from "app/hooks/useFetcherLoad";
 import type { loader } from "app/routes/api.actions.discounts/route";
 import CardHeader from "../CardHeader/CardHeader";
-import quaim from "app/assets/q-im2.png";
+import quaim from "app/assets/dis.png"
 import { useAppSubscription } from "app/services/subscriptions/hooks/useAppSubscription";
 import { GatekeepAppPlanState } from "../../components/GatekeepState/GateKeepStatePlan";
 
@@ -44,7 +44,7 @@ export default function ShippingDiscount() {
         content: "Go to all discounts",
         disabled: !subHasShippingDiscounts,
       }}
-      icon={<img src={quaim} alt="gift icon" />}
+      icon={<img src={quaim} alt="gift icon" style={{ width: "30px", height: "30px" }} />}
     />
   );
 
