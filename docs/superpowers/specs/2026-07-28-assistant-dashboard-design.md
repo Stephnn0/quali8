@@ -1,6 +1,10 @@
 # Niche-aware AI assistant dashboard — design plan
 
-Date: 2026-07-28 · Status: awaiting approval, no code yet
+Date: 2026-07-28 · Status: v1 implemented (branch assistant-dashboard)
+Decisions: Gemini key provisioned (Cloud Run); gemini-2.5-flash; the
+dashboard is replaced entirely; gated behind the new Advance plan
+($25/month, handle "advance", level ADVANCE) — Free/Pro see the pitch +
+upgrade CTA.
 Vision: the app dashboard adapts to the merchant's business — "your
 assistant to get the shop ready for the occasions that matter in your
 niche." SEO and marketing/conversion tracking come later; v1 is the
