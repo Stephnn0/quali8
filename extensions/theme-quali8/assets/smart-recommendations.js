@@ -2,14 +2,15 @@
  * Quali8 — Smart Recommendations.
  *
  * Fetches occasion/recipient/budget-aware product picks from the app proxy
- * and renders a subtle filter row above a scroll-snap product carousel.
- * Selections persist in sessionStorage so the cart block continues where
- * the product page left off. All DOM is built with createElement/
- * textContent — never innerHTML with remote data.
+ * and renders rounded filter dropdowns above a scroll-snap product
+ * carousel. Selections persist in sessionStorage so the cart block
+ * continues where the product page left off. All DOM is built with
+ * createElement/textContent — never innerHTML with remote data.
  *
- * Add-to-cart posts form-encoded to the Ajax Cart API (the most
- * theme-compatible shape) and surfaces failures inline instead of failing
- * silently.
+ * Add-to-cart posts form-encoded to the Ajax Cart API; when a variant is
+ * rejected (stale id, sold out) and the product handle is known, it
+ * re-resolves an available variant from the storefront product JSON and
+ * retries once before surfacing the error inline.
  */
 (function () {
   var ROOT =
@@ -36,6 +37,21 @@
     if (className) node.className = className;
     if (text != null) node.textContent = text;
     return node;
+  }
+
+  function svgIcon(pathD, viewBox) {
+    var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", viewBox || "0 0 16 16");
+    svg.setAttribute("aria-hidden", "true");
+    var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("d", pathD);
+    path.setAttribute("fill", "none");
+    path.setAttribute("stroke", "currentColor");
+    path.setAttribute("stroke-width", "1.8");
+    path.setAttribute("stroke-linecap", "round");
+    path.setAttribute("stroke-linejoin", "round");
+    svg.appendChild(path);
+    return svg;
   }
 
   function readSelection() {
@@ -79,11 +95,11 @@
     });
   }
 
-  function addToCart(variantGid) {
-    // Form-encoded is the most broadly compatible Ajax Cart API shape —
-    // JSON bodies are mishandled by some cart apps that intercept fetch.
+  // --- Cart ----------------------------------------------------------------
+
+  function postToCart(variantId) {
     var body = new FormData();
-    body.append("id", numericId(variantGid));
+    body.append("id", String(variantId));
     body.append("quantity", "1");
 
     return fetch(ROOT + "cart/add.js", {
@@ -103,30 +119,114 @@
     });
   }
 
-  /** Subtle inline select for the filter row. */
-  function filterSelect(placeholder, options, selectedSlug, onPick) {
-    var select = document.createElement("select");
-    select.className = "q8-recs__filter";
-    select.setAttribute("aria-label", placeholder);
+  /** Storefront-truth fallback: resolve a currently-available variant. */
+  function resolveAvailableVariant(handle) {
+    return fetch(ROOT + "products/" + handle + ".js", {
+      headers: { Accept: "application/json" },
+    })
+      .then(function (response) {
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        return response.json();
+      })
+      .then(function (product) {
+        var variants = (product && product.variants) || [];
+        var available = variants.filter(function (variant) {
+          return variant.available;
+        })[0];
+        return available ? available.id : null;
+      });
+  }
 
-    var any = document.createElement("option");
-    any.value = "";
-    any.textContent = placeholder;
-    select.appendChild(any);
+  function addToCart(product) {
+    var firstId = numericId(product.variantId);
+    return postToCart(firstId).catch(function (originalError) {
+      if (!product.handle) throw originalError;
+      // The recommended variant may have gone stale — ask the storefront
+      // itself which variant is available and retry once.
+      return resolveAvailableVariant(product.handle).then(function (liveId) {
+        if (!liveId || String(liveId) === firstId) throw originalError;
+        return postToCart(liveId);
+      });
+    });
+  }
 
-    options.forEach(function (option) {
-      var node = document.createElement("option");
-      node.value = option.slug;
-      node.textContent = option.label;
-      if (option.slug === selectedSlug) node.selected = true;
-      select.appendChild(node);
+  // --- Filter dropdowns ----------------------------------------------------
+
+  var openMenu = null;
+
+  function closeOpenMenu() {
+    if (!openMenu) return;
+    openMenu.menu.hidden = true;
+    openMenu.button.setAttribute("aria-expanded", "false");
+    openMenu = null;
+  }
+
+  document.addEventListener("click", function (event) {
+    if (openMenu && !openMenu.wrap.contains(event.target)) closeOpenMenu();
+  });
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") closeOpenMenu();
+  });
+
+  /**
+   * Rounded pill dropdown: a button that opens a floating options card.
+   * `allLabel` is the cleared state ("Any occasion").
+   */
+  function filterDropdown(allLabel, options, selectedSlug, onPick) {
+    var wrap = el("div", "q8-recs__dd");
+    var selected = options.filter(function (option) {
+      return option.slug === selectedSlug;
+    })[0];
+
+    var button = el("button", "q8-recs__dd-btn");
+    button.type = "button";
+    button.setAttribute("aria-haspopup", "listbox");
+    button.setAttribute("aria-expanded", "false");
+    if (selected) button.classList.add("q8-recs__dd-btn--active");
+    button.appendChild(
+      el("span", "q8-recs__dd-label", selected ? selected.label : allLabel),
+    );
+    button.appendChild(svgIcon("M 4 6.5 L 8 10.5 L 12 6.5"));
+
+    var menu = el("div", "q8-recs__dd-menu");
+    menu.setAttribute("role", "listbox");
+    menu.hidden = true;
+
+    function option(label, slug, isSelected) {
+      var item = el("button", "q8-recs__dd-option", label);
+      item.type = "button";
+      item.setAttribute("role", "option");
+      item.setAttribute("aria-selected", isSelected ? "true" : "false");
+      if (isSelected) {
+        item.classList.add("q8-recs__dd-option--selected");
+        item.appendChild(svgIcon("M 3.5 8.5 L 6.5 11.5 L 12.5 4.5"));
+      }
+      item.addEventListener("click", function () {
+        closeOpenMenu();
+        onPick(slug);
+      });
+      return item;
+    }
+
+    menu.appendChild(option(allLabel, null, !selected));
+    options.forEach(function (item) {
+      menu.appendChild(option(item.label, item.slug, item.slug === selectedSlug));
     });
 
-    if (selectedSlug) select.classList.add("q8-recs__filter--active");
-    select.addEventListener("change", function () {
-      onPick(select.value || null);
+    button.addEventListener("click", function (event) {
+      event.stopPropagation();
+      var isOpen = openMenu && openMenu.menu === menu;
+      closeOpenMenu();
+      if (!isOpen) {
+        menu.hidden = false;
+        button.setAttribute("aria-expanded", "true");
+        openMenu = { wrap: wrap, menu: menu, button: button };
+      }
     });
-    return select;
+
+    wrap.appendChild(button);
+    wrap.appendChild(menu);
+    return wrap;
   }
 
   function arrowButton(direction) {
@@ -136,25 +236,16 @@
       "aria-label",
       direction === "prev" ? "Previous products" : "More products",
     );
-    var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("viewBox", "0 0 16 16");
-    svg.setAttribute("aria-hidden", "true");
-    var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute(
-      "d",
-      direction === "prev" ? "M 10 3 L 5 8 L 10 13" : "M 6 3 L 11 8 L 6 13",
+    button.appendChild(
+      svgIcon(direction === "prev" ? "M 10 3 L 5 8 L 10 13" : "M 6 3 L 11 8 L 6 13"),
     );
-    path.setAttribute("fill", "none");
-    path.setAttribute("stroke", "currentColor");
-    path.setAttribute("stroke-width", "1.8");
-    path.setAttribute("stroke-linecap", "round");
-    path.setAttribute("stroke-linejoin", "round");
-    svg.appendChild(path);
-    button.appendChild(svg);
     return button;
   }
 
+  // --- Render ---------------------------------------------------------------
+
   function render(block, data, selection) {
+    closeOpenMenu();
     block.textContent = "";
 
     if (!data.products.length && !selection.touched) {
@@ -164,7 +255,6 @@
     }
     block.hidden = false;
 
-    // --- Header: heading + carousel arrows -------------------------------
     var header = el("div", "q8-recs__header");
     var heading = block.dataset.heading;
     if (heading) header.appendChild(el("h2", "q8-recs__heading", heading));
@@ -177,13 +267,11 @@
     header.appendChild(arrows);
     block.appendChild(header);
 
-    // --- Subtle filter row ------------------------------------------------
     if (block.dataset.showPicker === "true") {
       var filters = el("div", "q8-recs__filters");
-      filters.appendChild(el("span", "q8-recs__filters-label", "Refine"));
       if (data.occasions.length) {
         filters.appendChild(
-          filterSelect(
+          filterDropdown(
             "Any occasion",
             data.occasions.map(function (occasion) {
               return {
@@ -199,12 +287,12 @@
         );
       }
       filters.appendChild(
-        filterSelect("Anyone", data.recipients, selection.recipient, function (slug) {
+        filterDropdown("Anyone", data.recipients, selection.recipient, function (slug) {
           update(block, { recipient: slug });
         }),
       );
       filters.appendChild(
-        filterSelect("Any budget", data.budgets, selection.budget, function (slug) {
+        filterDropdown("Any budget", data.budgets, selection.budget, function (slug) {
           update(block, { budget: slug });
         }),
       );
@@ -223,7 +311,6 @@
       return;
     }
 
-    // --- Carousel ---------------------------------------------------------
     var track = el("div", "q8-recs__track");
     data.products.forEach(function (product) {
       track.appendChild(productCard(block, product));
@@ -235,7 +322,6 @@
     block.appendChild(errorLine);
     block.q8ErrorLine = errorLine;
 
-    // Arrow behavior: scroll one viewport of cards, hide when not needed
     function syncArrows() {
       var overflow = track.scrollWidth > track.clientWidth + 4;
       arrows.hidden = !overflow;
@@ -252,7 +338,6 @@
     });
     track.addEventListener("scroll", syncArrows, { passive: true });
     window.addEventListener("resize", syncArrows, { passive: true });
-    // Layout isn't final until images/styles settle
     requestAnimationFrame(syncArrows);
   }
 
@@ -300,7 +385,7 @@
         button.disabled = true;
         if (block.q8ErrorLine) block.q8ErrorLine.hidden = true;
 
-        addToCart(product.variantId)
+        addToCart(product)
           .then(function () {
             if (
               block.dataset.afterAdd === "cart" ||
@@ -321,7 +406,8 @@
             button.disabled = false;
             if (block.q8ErrorLine) {
               block.q8ErrorLine.textContent =
-                "Couldn't add to cart: " + (error && error.message ? error.message : "please try again.");
+                "Couldn't add to cart: " +
+                (error && error.message ? error.message : "please try again.");
               block.q8ErrorLine.hidden = false;
             }
             if (window.console && console.error) {
