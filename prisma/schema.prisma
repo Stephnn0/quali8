@@ -49,6 +49,7 @@ model ShopifyStore {
   // NEW
   campaigns Campaign[]
   bundles   Bundle[]
+  occasions Occasion[]
 }
 
 enum AppStatus {
@@ -348,6 +349,7 @@ model RecurringPlan {
   hasQualifiers        Boolean                @default(false)
   hasShippingDiscounts Boolean                @default(false)
   hasBundles           Boolean                @default(false)
+  hasRecommendations   Boolean                @default(false)
   //
   //
   read_generalApis     Boolean /// Whether the merchant can read general APIs
@@ -549,4 +551,56 @@ enum BundleStatus {
 
 enum BundleType {
   CLASSIC
+}
+
+
+/// A merchant-defined shopping occasion ("Mother's Day", "Sympathy", ...)
+/// powering the Smart Recommendations storefront blocks. The date window is
+/// recurring yearly (month/day pairs); null months mean "always relevant"
+/// (e.g. Birthday).
+model Occasion {
+  id         Int               @id @default(autoincrement())
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @default(now()) @updatedAt
+  //
+  name       String
+  slug       String /// Storefront identifier + tag suffix (q8:occasion:<slug>)
+  status     OccasionStatus    @default(ACTIVE)
+  startMonth Int? /// 1-12
+  startDay   Int? /// 1-31
+  endMonth   Int?
+  endDay     Int?
+  position   Int               @default(0)
+  //
+  products   OccasionProduct[]
+  //
+  shop         String
+  shopifyStore ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([shop, slug])
+  @@index([shop, status])
+}
+
+enum OccasionStatus {
+  ACTIVE
+  INACTIVE
+}
+
+/// A curated product for an occasion. Snapshots (title/price/image) are taken
+/// from the admin resource picker on save — re-saving refreshes them. Same
+/// pattern as BundleItem.
+model OccasionProduct {
+  id         Int      @id @default(autoincrement())
+  //
+  productId  String /// Shopify GID (`gid://shopify/Product/123`)
+  variantId  String /// Default variant GID so the storefront can add-to-cart
+  title      String
+  price      Float
+  imageUrl   String?
+  position   Int      @default(0)
+  //
+  occasionId Int
+  occasion   Occasion @relation(fields: [occasionId], references: [id], onDelete: Cascade)
+
+  @@index([occasionId])
 }
