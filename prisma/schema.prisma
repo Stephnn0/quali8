@@ -99,6 +99,9 @@ model Qualifiers {
   name               String
   description        String
   conditionLogicType LogicType
+  /// When membership was last synced from Shopify (save or manual refresh).
+  /// Null for audiences created before this column existed.
+  lastSyncedAt       DateTime?
   //
   conditions         Conditions[]
   customers          Customers[]  @relation("CustomerQualifiers")
