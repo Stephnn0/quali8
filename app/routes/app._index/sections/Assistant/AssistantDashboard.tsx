@@ -1,4 +1,4 @@
-import { useFetcher } from "react-router";
+import { useFetcher, useNavigate } from "react-router";
 import {
   Badge,
   BlockStack,
@@ -13,7 +13,6 @@ import { RefreshIcon } from "@shopify/polaris-icons";
 import type {
   AssistantBrief,
   BriefChecklistItem,
-  BriefOccasion,
 } from "app/services/assistant/briefSchema";
 import styles from "./styles.module.css";
 
@@ -47,9 +46,18 @@ function daysAway(isoDate: string): number {
   return Math.max(0, Math.round((target - today) / (24 * 60 * 60 * 1000)));
 }
 
-function OccasionCard({ occasion, index }: { occasion: BriefOccasion; index: number }) {
+export type RailEntry = {
+  specialDateId: number;
+  name: string;
+  date: string;
+  whyItMatters: string;
+  suggestedAction: string | null;
+};
+
+function OccasionCard({ entry, index }: { entry: RailEntry; index: number }) {
+  const navigate = useNavigate();
   const [from, to] = ART_GRADIENTS[index % ART_GRADIENTS.length];
-  const days = daysAway(occasion.date);
+  const days = daysAway(entry.date);
 
   return (
     <article className={styles.occasionCard}>
@@ -57,15 +65,26 @@ function OccasionCard({ occasion, index }: { occasion: BriefOccasion; index: num
         className={styles.occasionArt}
         style={{ background: `linear-gradient(135deg, ${from}, ${to})` }}
       >
-        <span className={styles.occasionDate}>{dateBadge(occasion.date)}</span>
+        <span className={styles.occasionDate}>{dateBadge(entry.date)}</span>
       </div>
       <div className={styles.occasionBody}>
-        <h3 className={styles.occasionName}>{occasion.name}</h3>
+        <h3 className={styles.occasionName}>{entry.name}</h3>
         <span className={styles.occasionDays}>
           {days === 0 ? "Today" : days === 1 ? "Tomorrow" : `In ${days} days`}
         </span>
-        <p className={styles.occasionWhy}>{occasion.whyItMatters}</p>
-        <div className={styles.occasionAction}>{occasion.suggestedAction}</div>
+        <p className={styles.occasionWhy}>{entry.whyItMatters}</p>
+        {entry.suggestedAction ? (
+          <div className={styles.occasionAction}>{entry.suggestedAction}</div>
+        ) : null}
+        <div style={{ marginTop: "0.5rem" }}>
+          <Button
+            size="slim"
+            fullWidth
+            onClick={() => navigate(`/app/special-dates/${entry.specialDateId}`)}
+          >
+            Manage
+          </Button>
+        </div>
       </div>
     </article>
   );
@@ -75,6 +94,7 @@ type Props = {
   nicheLabel: string;
   country: string | null;
   brief: AssistantBrief;
+  rail: RailEntry[];
   source: "AI" | "FALLBACK";
   generatedAt: string;
   checklistDone: string[];
@@ -84,6 +104,7 @@ export default function AssistantDashboard({
   nicheLabel,
   country,
   brief,
+  rail,
   source,
   generatedAt,
   checklistDone,
@@ -145,10 +166,10 @@ export default function AssistantDashboard({
           Coming up for your shop
         </Text>
         <div className={styles.rail}>
-          {brief.occasions.map((occasion, index) => (
+          {rail.map((entry, index) => (
             <OccasionCard
-              key={`${occasion.name}-${occasion.date}`}
-              occasion={occasion}
+              key={entry.specialDateId}
+              entry={entry}
               index={index}
             />
           ))}

@@ -7,7 +7,9 @@ import {
 import { upcomingCoreDates } from "./coreDates";
 import { buildFallbackBrief } from "./fallbackBriefs";
 import { generateJson } from "./gemini.server";
+import { syncSpecialDatesFromBrief } from "./specialDates.server";
 import { nicheLabel } from "./taxonomy";
+import { recordAiUsage } from "./usage.server";
 
 const BRIEF_MAX_AGE_DAYS = 7;
 
@@ -113,7 +115,7 @@ export async function getOrGenerateBrief(
   let brief: AssistantBrief | null = null;
   let source: "AI" | "FALLBACK" = "AI";
 
-  const raw = await generateJson(
+  const result = await generateJson(
     buildPrompt(
       profile.niche,
       profile.nicheLabel || nicheLabel(profile.niche),
@@ -124,7 +126,8 @@ export async function getOrGenerateBrief(
     ),
     GEMINI_BRIEF_SCHEMA as unknown as Record<string, unknown>,
   );
-  brief = sanitizeBrief(raw, now);
+  await recordAiUsage(db, shop, "brief", result?.usage);
+  brief = sanitizeBrief(result?.data ?? null, now);
 
   if (!brief) {
     brief = buildFallbackBrief(profile.niche, profile.country, now);
@@ -148,6 +151,9 @@ export async function getOrGenerateBrief(
       generatedAt: now,
     },
   });
+
+  // The brief's occasions become managed SpecialDate rows
+  await syncSpecialDatesFromBrief(db, shop, brief.occasions);
 
   return { brief, source, generatedAt: saved.generatedAt };
 }

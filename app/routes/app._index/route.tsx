@@ -10,6 +10,7 @@ import {
   getOrGenerateBrief,
   type BriefRecord,
 } from "app/services/assistant/brief.server";
+import { getUpcomingSpecialDates } from "app/services/assistant/specialDates.server";
 import type { AssistantBrief } from "app/services/assistant/briefSchema";
 import AssistantUpsell from "./sections/Assistant/AssistantUpsell";
 import OnboardingCard from "./sections/Assistant/OnboardingCard";
@@ -23,6 +24,13 @@ type LoaderData =
       nicheLabel: string;
       country: string | null;
       brief: AssistantBrief;
+      rail: Array<{
+        specialDateId: number;
+        name: string;
+        date: string;
+        whyItMatters: string;
+        suggestedAction: string | null;
+      }>;
       source: "AI" | "FALLBACK";
       generatedAt: string;
       checklistDone: string[];
@@ -59,7 +67,7 @@ export const loader = async ({
         text: "",
       })),
     ]);
-    const suggestedNiche = await inferNiche(sample.text);
+    const suggestedNiche = await inferNiche(sample.text, { db, shop: session.shop });
     return {
       state: "onboarding",
       suggestedNiche,
@@ -108,11 +116,29 @@ export const loader = async ({
     };
   }
 
+  // The rail shows managed SpecialDate rows: the brief's occasions (synced
+  // at generation) enriched with suggested actions, plus merchant dates.
+  const specialDates = await getUpcomingSpecialDates(db, session.shop);
+  const actionByKey = new Map(
+    record.brief.occasions.map((occasion) => [
+      `${occasion.name}|${occasion.date}`,
+      occasion.suggestedAction,
+    ]),
+  );
+  const rail = specialDates.slice(0, 8).map((entry) => ({
+    specialDateId: entry.id,
+    name: entry.name,
+    date: entry.date,
+    whyItMatters: entry.whyItMatters ?? "",
+    suggestedAction: actionByKey.get(`${entry.name}|${entry.date}`) ?? null,
+  }));
+
   return {
     state: "ready",
     nicheLabel: profile.nicheLabel,
     country: profile.country,
     brief: record.brief,
+    rail,
     source: record.source,
     generatedAt: record.generatedAt.toISOString(),
     checklistDone: profile.checklistDone,
@@ -139,6 +165,7 @@ export default function Index() {
             nicheLabel={data.nicheLabel}
             country={data.country}
             brief={data.brief}
+            rail={data.rail}
             source={data.source}
             generatedAt={data.generatedAt}
             checklistDone={data.checklistDone}
