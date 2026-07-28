@@ -40,6 +40,7 @@ export async function handleAppSubscriptionUpdateWebhook(
   } catch (error) {
     console.error(
       `${webhookId} - Error in appSubscriptionUpdateWebhookHandler`,
+      error,
     );
   }
 }

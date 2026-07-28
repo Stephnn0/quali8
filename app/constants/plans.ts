@@ -3,6 +3,10 @@ export const APP_PLANS = {
     price: 0,
     name: "Free",
     level: "FREE",
+    // Managed-pricing plan handle in the Partner Dashboard. Unlike the
+    // subscription name (localized) and shopifyPlanID (numeric id), the
+    // handle is what AppRecurringPricing.planHandle returns at runtime.
+    shopifyPlanHandle: "free",
     trialDays: null,
     // Check for when importing in the client
     shopifyPlanID:
@@ -20,6 +24,8 @@ export const APP_PLANS = {
   BASIC: {
     name: "Pro",
     level: "BASIC",
+    // The Partner Dashboard plan is still handled/named "Basic".
+    shopifyPlanHandle: "basic",
     trialDays: 5,
 
     // Check for when importing in the client

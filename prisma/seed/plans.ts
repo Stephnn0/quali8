@@ -3,23 +3,27 @@ import { type Prisma, type PrismaClient } from '@prisma/client';
 import { APP_PLANS } from 'app/constants/plans';
 
 export async function seedPlans(db: PrismaClient) {
+  // shopifyPlanHandle is app-side only — RecurringPlan has no such column
+  const { shopifyPlanHandle: _freeHandle, ...FREE } = APP_PLANS.FREE;
+  const { shopifyPlanHandle: _basicHandle, ...BASIC } = APP_PLANS.BASIC;
+
   const PLANS: Prisma.RecurringPlanCreateInput[] = [
     {
-        ...APP_PLANS.FREE,
+        ...FREE,
         code: 'free-monthly',
         interval: "EVERY_30_DAYS",
         read_generalApis: false,
         write_generalApis: false
     },
     {
-        ...APP_PLANS.FREE,
+        ...FREE,
         code: 'free-annual',
         interval: "ANNUAL",
         read_generalApis: false,
         write_generalApis: false
     },
     {
-        ...APP_PLANS.BASIC,
+        ...BASIC,
         price: 10.00,
         code: 'pro-monthly',
         interval: "EVERY_30_DAYS",
@@ -27,7 +31,7 @@ export async function seedPlans(db: PrismaClient) {
         write_generalApis: false
     },
     {
-        ...APP_PLANS.BASIC,
+        ...BASIC,
         price: 108,
         code: 'pro-annual',
         interval: "ANNUAL",
