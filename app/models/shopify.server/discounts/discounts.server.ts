@@ -49,14 +49,16 @@ export async function createShippingAutomaticDiscount({
       title: title,
       startsAt: startDate,
       endsAt: endDate,
-      combinesWith: {
-        orderDiscounts: combinedWithOrderDiscounts,
-        productDiscounts: combinedWithProductDiscounts,
-      },
+      // The mutation declares these as flat variables, not a combinesWith object
+      orderDiscounts: combinedWithOrderDiscounts,
+      productDiscounts: combinedWithProductDiscounts,
+      shippingDiscounts: false,
       metafields: {
         key: APP.FUNCTION_METAFIELD_KEY,
         value: body,
-        type: "string",
+        // "string" is a legacy metafield type Shopify rejects on current API
+        // versions; the value is JSON and the function JSON.parses it
+        type: "json",
       },
     };
 
@@ -65,6 +67,20 @@ export async function createShippingAutomaticDiscount({
     });
 
     const { data: adminData } = await response.json();
+
+    const payload = adminData?.discountAutomaticAppCreate;
+    if (payload?.userErrors?.length) {
+      throw new Error(
+        `Could not create the automatic shipping discount: ${payload.userErrors
+          .map((userError) => userError.message)
+          .join("; ")}`,
+      );
+    }
+    if (!payload?.automaticAppDiscount?.discountId) {
+      throw new Error(
+        "Could not create the automatic shipping discount: Shopify returned no discount id",
+      );
+    }
 
     return adminData;
   } catch (error) {
@@ -116,16 +132,17 @@ export async function createShippingDiscount({
       startsAt: startDate,
       endsAt: endDate,
       code: code,
-      combinesWith: {
-        orderDiscounts: combinedWithOrderDiscounts,
-        productDiscounts: combinedWithProductDiscounts,
-        shippingDiscounts: false,
-      },
+      // The mutation declares these as flat variables, not a combinesWith object
+      orderDiscounts: combinedWithOrderDiscounts,
+      productDiscounts: combinedWithProductDiscounts,
+      shippingDiscounts: false,
       appliesOncePerCustomer: limitUsagePerOneCustomer,
       metafields: {
         key: APP.FUNCTION_METAFIELD_KEY,
         value: body,
-        type: "string",
+        // "string" is a legacy metafield type Shopify rejects on current API
+        // versions; the value is JSON and the function JSON.parses it
+        type: "json",
       },
     };
 
@@ -134,6 +151,20 @@ export async function createShippingDiscount({
     });
 
     const { data: adminData } = await response.json();
+
+    const payload = adminData?.discountCodeAppCreate;
+    if (payload?.userErrors?.length) {
+      throw new Error(
+        `Could not create the shipping discount code: ${payload.userErrors
+          .map((userError) => userError.message)
+          .join("; ")}`,
+      );
+    }
+    if (!payload?.codeAppDiscount?.discountId) {
+      throw new Error(
+        "Could not create the shipping discount code: Shopify returned no discount id",
+      );
+    }
 
     return adminData;
   } catch (error) {
