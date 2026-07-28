@@ -101,9 +101,29 @@ function parseConfig(jsonValue: unknown): ParsedBody | null {
     typeof jsonValue === "string" ? safeJsonParse(jsonValue) : jsonValue;
   if (raw == null || typeof raw !== "object") return null;
 
-  const body = raw as Partial<ParsedBody>;
-  if (typeof body.value !== "string") return null;
+  const body = raw as Partial<Omit<ParsedBody, "value">> & {
+    value?: unknown;
+    minimumCartValue?: unknown;
+  };
+
+  // The app writes `value` as a number (zod validates z.number()); older
+  // configs stored a string. Accept both — rejecting numbers made every
+  // discount "valid but not applicable" at checkout.
+  const value =
+    typeof body.value === "number"
+      ? String(body.value)
+      : typeof body.value === "string"
+        ? body.value
+        : null;
+  if (value === null || value.trim() === "") return null;
   if (body.type !== "percentage" && body.type !== "fixed") return null;
+
+  const minimumCartValue =
+    typeof body.minimumCartValue === "number"
+      ? body.minimumCartValue
+      : typeof body.minimumCartValue === "string"
+        ? Number.parseFloat(body.minimumCartValue) || 0
+        : 0;
 
   return {
     shippingRateType:
@@ -112,7 +132,7 @@ function parseConfig(jsonValue: unknown): ParsedBody | null {
         : "ALL_RATES",
     type: body.type,
     code: typeof body.code === "string" ? body.code : "",
-    value: body.value,
+    value: value,
     customers: Array.isArray(body.customers) ? body.customers : [],
     shippingRatesNames: Array.isArray(body.shippingRatesNames)
       ? body.shippingRatesNames
@@ -124,8 +144,7 @@ function parseConfig(jsonValue: unknown): ParsedBody | null {
     endTime: typeof body.endTime === "string" ? body.endTime : "",
     appliesToAllCustomers: Boolean(body.appliesToAllCustomers),
     isMinimumCartValueEnabled: Boolean(body.isMinimumCartValueEnabled),
-    minimumCartValue:
-      typeof body.minimumCartValue === "number" ? body.minimumCartValue : 0,
+    minimumCartValue: minimumCartValue,
   };
 }
 

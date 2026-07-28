@@ -163,6 +163,33 @@ describe("cartDeliveryOptionsDiscountsGenerateRun", () => {
     ).toHaveLength(1);
   });
 
+  it("accepts numeric value and minimumCartValue (what the app writes)", () => {
+    // Regression: zod validates value as z.number(), so the metafield JSON
+    // carries numbers — a strict string check made every discount "valid
+    // but not applicable" at checkout.
+    const result = cartDeliveryOptionsDiscountsGenerateRun(
+      input({ metafield: config({ value: 1, type: "percentage" }) }),
+    );
+    expect(
+      result.operations[0].deliveryDiscountsAdd!.candidates[0].value,
+    ).toEqual({ percentage: { value: 1 } });
+
+    const withMinimum = cartDeliveryOptionsDiscountsGenerateRun(
+      input({
+        subtotal: "80.0",
+        metafield: config({
+          value: 5,
+          type: "fixed",
+          isMinimumCartValueEnabled: true,
+          minimumCartValue: 50,
+        }),
+      }),
+    );
+    expect(
+      withMinimum.operations[0].deliveryDiscountsAdd!.candidates[0].value,
+    ).toEqual({ fixedAmount: { amount: 5 } });
+  });
+
   it("supports legacy string metafields", () => {
     const result = cartDeliveryOptionsDiscountsGenerateRun(
       input({ metafield: JSON.stringify(config()) }),
