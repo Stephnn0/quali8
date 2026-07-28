@@ -36,7 +36,7 @@ const PLAN_CARDS = [
     ],
   },
   {
-    name: APP_PLANS.BASIC.name, // "Pro" — the paid plan
+    name: APP_PLANS.BASIC.name, // "Pro" — the mid paid plan
     price: "$10/month",
     priceDetail: `or $108/year (save 10%) · ${APP_PLANS.BASIC.trialDays}-day free trial`,
     description: "Everything in Free, plus the discounts that convert.",
@@ -45,6 +45,19 @@ const PLAN_CARDS = [
       "Shipping discounts at checkout — automatic or code-based, targeted at your Audiences",
       "Promotion controls: minimum cart value, selected shipping rates, start and end dates",
       "Product bundles (frequently bought together) with automatic checkout discounts",
+      "Smart Recommendations blocks for your product and cart pages",
+    ],
+  },
+  {
+    name: APP_PLANS.ADVANCE.name,
+    price: "$25/month",
+    priceDetail: `${APP_PLANS.ADVANCE.trialDays}-day free trial`,
+    description: "Everything in Pro, plus your AI shop assistant.",
+    features: [
+      "Everything in the Pro plan",
+      "AI assistant dashboard tailored to your niche",
+      "Upcoming occasion radar for your business and country",
+      "Store-readiness checklists generated for each season",
     ],
   },
 ] as const;
@@ -117,10 +130,10 @@ export default function Settings() {
         </Card>
 
         {/* Plan comparison */}
-        <InlineGrid columns={{ xs: 1, sm: 2 }} gap="400">
+        <InlineGrid columns={{ xs: 1, sm: 2, md: 3 }} gap="400">
           {PLAN_CARDS.map((plan) => {
             const isCurrent = plan.name === currentPlanName;
-            const isPaidCard = plan.name === APP_PLANS.BASIC.name;
+            const isPaidCard = plan.name !== APP_PLANS.FREE.name;
 
             return (
               <Card key={plan.name}>

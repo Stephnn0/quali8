@@ -28,7 +28,8 @@ type AppPlanCode =
   | "AP012"
   | "AP013"
   | "AP014"
-  | "AP015";
+  | "AP015"
+  | "AP016";
 
 // (DP) Developer Preview
 // Use this code to redirect when the user cannot access when the store is in Developer Preview

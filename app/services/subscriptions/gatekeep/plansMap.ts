@@ -44,5 +44,5 @@ export const SHOP_PLANS_MAP: Record<
 export const APP_PLANS_MAP: Record<(typeof APP.PLANS)[number], number> = {
   [APP_PLANS.FREE.name]: 0,
   [APP_PLANS.BASIC.name]: 1,
-  // Better than pro...
+  [APP_PLANS.ADVANCE.name]: 2,
 } as const;
