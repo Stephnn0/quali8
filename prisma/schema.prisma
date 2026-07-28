@@ -53,6 +53,8 @@ model ShopifyStore {
 
   storeProfile   StoreProfile?
   dashboardBrief DashboardBrief?
+  specialDates   SpecialDate[]
+  aiUsage        AiUsage[]
 }
 
 enum AppStatus {
@@ -648,4 +650,107 @@ model DashboardBrief {
 enum BriefSource {
   AI
   FALLBACK
+}
+
+
+/// A date that matters for this shop: upserted from AI briefs (source AI)
+/// or created by the merchant. Parent of per-date to-dos and executed
+/// actions (SEO metadata updates, and future marketing actions).
+model SpecialDate {
+  id               Int               @id @default(autoincrement())
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @default(now()) @updatedAt
+  //
+  name             String
+  date             String /// ISO yyyy-mm-dd
+  whyItMatters     String?
+  source           SpecialDateSource @default(MERCHANT)
+  archived         Boolean           @default(false)
+  /// Set once the AI to-do starter set has been generated (lazy, on first
+  /// open of the manage page) — prevents regenerating after user deletes.
+  todosGeneratedAt DateTime?
+  //
+  todos            SpecialDateTodo[]
+  seoActions       SeoMetaAction[]
+  //
+  shop             String
+  shopifyStore     ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
+
+  @@unique([shop, name, date])
+  @@index([shop, date])
+}
+
+enum SpecialDateSource {
+  AI
+  MERCHANT
+}
+
+model SpecialDateTodo {
+  id            Int               @id @default(autoincrement())
+  createdAt     DateTime          @default(now())
+  //
+  title         String
+  description   String?
+  kind          TodoKind          @default(GENERAL)
+  source        SpecialDateSource @default(MERCHANT)
+  done          Boolean           @default(false)
+  position      Int               @default(0)
+  //
+  specialDateId Int
+  specialDate   SpecialDate @relation(fields: [specialDateId], references: [id], onDelete: Cascade)
+  shop          String
+
+  @@index([specialDateId])
+  @@index([shop])
+}
+
+enum TodoKind {
+  SEO
+  MARKETING
+  GENERAL
+}
+
+/// Audit trail of applied SEO metadata updates. Previous values are stored
+/// so a future revert is a single mutation.
+model SeoMetaAction {
+  id                     Int             @id @default(autoincrement())
+  createdAt              DateTime        @default(now())
+  //
+  resourceType           SeoResourceType
+  resourceId             String /// Shopify GID
+  resourceTitle          String
+  previousSeoTitle       String?
+  previousSeoDescription String?
+  newSeoTitle            String
+  newSeoDescription      String
+  //
+  specialDateId          Int
+  specialDate            SpecialDate @relation(fields: [specialDateId], references: [id], onDelete: Cascade)
+  shop                   String
+
+  @@index([specialDateId])
+  @@index([shop, createdAt])
+}
+
+enum SeoResourceType {
+  PRODUCT
+  COLLECTION
+}
+
+/// Per-store AI token accounting — one row per Gemini call. DB-only for
+/// now; aggregate when billing or limits need it.
+model AiUsage {
+  id           Int      @id @default(autoincrement())
+  createdAt    DateTime @default(now())
+  //
+  feature      String /// brief | niche-inference | date-todos | seo-meta
+  model        String
+  inputTokens  Int      @default(0)
+  outputTokens Int      @default(0)
+  totalTokens  Int      @default(0)
+  //
+  shop         String
+  shopifyStore ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([shop, createdAt])
 }

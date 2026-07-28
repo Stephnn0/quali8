@@ -59,7 +59,7 @@ export const loader = async ({
         text: "",
       })),
     ]);
-    const suggestedNiche = await inferNiche(sample.text);
+    const suggestedNiche = await inferNiche(sample.text, { db, shop: session.shop });
     return {
       state: "onboarding",
       suggestedNiche,
