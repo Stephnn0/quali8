@@ -118,10 +118,13 @@ check + `Cache-Control: public, max-age=60` for shopper-agnostic requests
 6. **Verification** — unit tests, `npm run build`, manual pass on the dev
    store with `shopify app dev`, then `npm run deploy` for the extension.
 
-## Open decisions (assumed defaults, flag if you want different)
+## Decisions (locked 2026-07-28)
 
-1. Plan gating: limited free tier + full Pro (assumed) vs all-Pro vs all-free.
-2. Customer-saved personal occasions: deferred to phase 2 (assumed).
-3. AI ranking: deferred; rules v1 (assumed).
-4. Recipient/budget options: merchant-editable lists with sensible seeds
-   (assumed) vs fixed sets.
+1. Plan gating: **entire feature is Pro-only** (`hasRecommendations` on the
+   paid plan, gatekeep code AP015).
+2. Customer-saved personal occasions: deferred to phase 2; v1 is
+   merchant-created occasions, shopper-selected in the widget.
+3. Rules-based ranking, no AI in v1.
+4. Recipients and budget bands are **fixed built-in vocabularies**
+   (`app/services/recommendations/constants.ts`) — no settings model/UI in
+   v1, simplifying the original plan.
