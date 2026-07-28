@@ -1,6 +1,7 @@
 import {
   Badge,
   BlockStack,
+  Button,
   Card,
   Divider,
   InlineGrid,
@@ -8,11 +9,16 @@ import {
   ProgressBar,
   Text,
 } from "@shopify/polaris";
+import { ExportIcon } from "@shopify/polaris-icons";
 import {
   computeAudienceStats,
   type AudienceMember,
 } from "app/services/audiences/audienceStats";
 import { describeCondition } from "app/services/audiences/describeCondition";
+import {
+  membersToCsv,
+  type CsvMember,
+} from "app/services/audiences/membersCsv";
 
 const money = (amount: number) =>
   new Intl.NumberFormat("en", { style: "currency", currency: "USD" }).format(
@@ -20,7 +26,7 @@ const money = (amount: number) =>
   );
 
 type Props = {
-  customers: AudienceMember[];
+  customers: Array<AudienceMember & Partial<CsvMember>>;
   conditions: Array<{ type: string; comparisonType: string; value: string }>;
   conditionLogicType: string;
   lastSyncedAt?: string | Date | null;
@@ -35,6 +41,16 @@ export function AudienceInsights({
 }: Props) {
   const stats = computeAudienceStats(customers);
 
+  const handleExport = () => {
+    const csv = membersToCsv(customers as CsvMember[]);
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "audience-members.csv";
+    anchor.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <Card>
       <BlockStack gap="400">
@@ -42,13 +58,22 @@ export function AudienceInsights({
           <Text as="h2" variant="headingMd">
             Audience insights
           </Text>
-          {lastSyncedAt ? (
-            <Text as="span" tone="subdued" variant="bodySm">
-              Last synced {new Date(lastSyncedAt).toLocaleDateString()}
-            </Text>
-          ) : (
-            <Badge tone="attention">Never synced</Badge>
-          )}
+          <InlineStack gap="200" blockAlign="center">
+            {lastSyncedAt ? (
+              <Text as="span" tone="subdued" variant="bodySm">
+                Last synced {new Date(lastSyncedAt).toLocaleDateString()}
+              </Text>
+            ) : (
+              <Badge tone="attention">Never synced</Badge>
+            )}
+            <Button
+              icon={ExportIcon}
+              onClick={handleExport}
+              disabled={stats.memberCount === 0}
+            >
+              Export CSV
+            </Button>
+          </InlineStack>
         </InlineStack>
 
         <InlineGrid columns={{ xs: 2, sm: 4 }} gap="400">
