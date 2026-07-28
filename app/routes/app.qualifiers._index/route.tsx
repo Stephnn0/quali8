@@ -25,6 +25,7 @@ import { useCallback, useState } from "react";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import emptyImage from "app/assets/customer-segment-icon.png";
 import { describeCondition } from "app/services/audiences/describeCondition";
+import { CustomerInsightsSection } from "./components/insights/CustomerInsightsSection";
 import { loader, type AudienceRow } from "./loader";
 
 export { loader };
@@ -82,6 +83,7 @@ export default function Audiences() {
   const loaderData = useLoaderData<typeof loader>();
   const audiences = loaderData?.payload?.audiences ?? [];
   const summary = loaderData?.payload?.summary;
+  const insights = loaderData?.payload?.insights ?? null;
 
   const [selectedAudience, setSelectedAudience] = useState<{
     id: number;
@@ -231,21 +233,32 @@ export default function Audiences() {
       }}
     >
       <Layout>
+        {insights ? (
+          <Layout.Section>
+            <CustomerInsightsSection insights={insights} />
+          </Layout.Section>
+        ) : null}
+
         {summary && audiences.length > 0 ? (
           <Layout.Section>
-            <InlineGrid columns={{ xs: 1, sm: 3 }} gap="400">
-              <StatCard label="Audiences" value={String(summary.audienceCount)} />
-              <StatCard
-                label="Customers reached"
-                value={String(summary.reachedCustomers)}
-                detail="Distinct customers across all audiences"
-              />
-              <StatCard
-                label="Revenue represented"
-                value={money(summary.totalRevenue)}
-                detail="Lifetime spend of reached customers"
-              />
-            </InlineGrid>
+            <BlockStack gap="400">
+              <Text as="h2" variant="headingMd">
+                Audience reach
+              </Text>
+              <InlineGrid columns={{ xs: 1, sm: 3 }} gap="400">
+                <StatCard label="Audiences" value={String(summary.audienceCount)} />
+                <StatCard
+                  label="Customers reached"
+                  value={String(summary.reachedCustomers)}
+                  detail="Distinct customers across all audiences"
+                />
+                <StatCard
+                  label="Revenue represented"
+                  value={money(summary.totalRevenue)}
+                  detail="Lifetime spend of reached customers"
+                />
+              </InlineGrid>
+            </BlockStack>
           </Layout.Section>
         ) : null}
 

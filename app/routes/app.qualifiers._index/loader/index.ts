@@ -8,11 +8,16 @@ import {
   type AudienceStats,
   type AudienceSummary,
 } from "app/services/audiences/audienceStats";
+import {
+  computeCustomerInsights,
+  type CustomerInsights,
+} from "app/services/audiences/customerInsights";
+import { getCustomerInsightsSample } from "app/models/shopify.server/customers";
 import { handleApiError } from "app/utils/server/handleApiResponse/handleApiError.server";
 import { handleApiSuccess } from "app/utils/handleApiSuccess";
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const { session } = await authenticate.admin(request);
+  const { session, admin } = await authenticate.admin(request);
 
   const url = new URL(request.url);
   const page = parseInt(url.searchParams.get("page") || "1", 10);
@@ -21,6 +26,17 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const skip = (page - 1) * itemsPerPage;
 
   try {
+    // Analytics must not break the page — degrade to a hidden section instead.
+    const insightsPromise: Promise<CustomerInsights | null> =
+      getCustomerInsightsSample(admin.graphql)
+        .then((sample) =>
+          computeCustomerInsights(sample.customers, sample.totalCustomers),
+        )
+        .catch((error) => {
+          console.error("Customer insights unavailable:", error);
+          return null;
+        });
+
     const qualifiers = await getQualifiersByShopWithCustomersAndConditions(
       {
         where: { shop: session.shop },
@@ -30,6 +46,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
       },
       db,
     );
+
+    const insights = await insightsPromise;
 
     const audiences = (qualifiers?.qualifiers ?? []).map((qualifier) => ({
       id: qualifier.id,
@@ -52,6 +70,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       payload: {
         audiences,
         summary,
+        insights,
         itemsPerPage,
         page,
         total: qualifiers?.qualifiersCount ?? 0,
@@ -82,6 +101,7 @@ export type AudienceRow = {
 export type AudiencesIndexData = {
   audiences: AudienceRow[];
   summary: AudienceSummary;
+  insights: CustomerInsights | null;
   itemsPerPage: number;
   page: number;
   total: number;

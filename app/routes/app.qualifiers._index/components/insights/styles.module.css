@@ -1,0 +1,122 @@
+.vizRoot {
+  /* Validated categorical slots (dataviz reference palette) + neutral Other */
+  --viz-cat-1: #2a78d6;
+  --viz-cat-2: #eb6834;
+  --viz-cat-3: #1baf7a;
+  --viz-cat-4: #eda100;
+  --viz-cat-5: #e87ba4;
+  --viz-other: #8a8a85;
+  /* Brand violet for single-series magnitude charts (≥3:1 on white) */
+  --viz-series: #5c3d99;
+  --viz-track: #f1f1f1;
+}
+
+.donutLayout {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.donutChart {
+  flex: 0 0 auto;
+}
+
+.donutCenterValue {
+  font-size: 1.25rem;
+  font-weight: 650;
+  fill: #202223;
+}
+
+.donutCenterLabel {
+  font-size: 0.6875rem;
+  fill: #6d7175;
+}
+
+.donutSlice {
+  cursor: default;
+  transition: opacity 120ms ease;
+}
+
+.donutMuted {
+  opacity: 0.35;
+}
+
+.legendTable {
+  flex: 1 1 12rem;
+  min-width: 11rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.legendRow {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 0.5rem;
+  padding: 0.125rem 0.375rem;
+}
+
+.legendRowActive {
+  background: #f6f6f7;
+}
+
+.legendSwatch {
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 0.1875rem;
+}
+
+/* Horizontal bar list (spend distribution) */
+.barRow {
+  display: grid;
+  grid-template-columns: 7.5rem 1fr 2.5rem;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.barTrack {
+  height: 0.75rem;
+  border-radius: 0.375rem;
+  background: var(--viz-track);
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 0 0.25rem 0.25rem 0;
+  background: var(--viz-series);
+  min-width: 2px;
+}
+
+.barFillEmpty {
+  background: transparent;
+  min-width: 0;
+}
+
+/* Column chart (new customers per month) */
+.columnChart {
+  width: 100%;
+  max-width: 34rem;
+  display: block;
+}
+
+.columnValue {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  fill: #202223;
+  text-anchor: middle;
+}
+
+.columnLabel {
+  font-size: 0.6875rem;
+  fill: #6d7175;
+  text-anchor: middle;
+}
+
+.columnBaseline {
+  stroke: #e1e3e5;
+  stroke-width: 1;
+}
