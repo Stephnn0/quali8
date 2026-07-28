@@ -50,6 +50,9 @@ model ShopifyStore {
   campaigns Campaign[]
   bundles   Bundle[]
   occasions Occasion[]
+
+  storeProfile   StoreProfile?
+  dashboardBrief DashboardBrief?
 }
 
 enum AppStatus {
@@ -350,6 +353,7 @@ model RecurringPlan {
   hasShippingDiscounts Boolean                @default(false)
   hasBundles           Boolean                @default(false)
   hasRecommendations   Boolean                @default(false)
+  hasAssistant         Boolean                @default(false)
   //
   //
   read_generalApis     Boolean /// Whether the merchant can read general APIs
@@ -366,6 +370,7 @@ model RecurringPlan {
 enum RecurringPlanLevel {
   FREE
   BASIC
+  ADVANCE
 }
 
 // TODO - Rolebased constraint Entries of this table should only be editable by high-level admin in Supabase, not the app itself.
@@ -603,4 +608,44 @@ model OccasionProduct {
   occasion   Occasion @relation(fields: [occasionId], references: [id], onDelete: Cascade)
 
   @@index([occasionId])
+}
+
+
+/// The merchant's business profile powering the AI assistant dashboard.
+/// Collected in a single confirmation step (niche inferred from products,
+/// country prefilled from ShopifyShopData).
+model StoreProfile {
+  id            Int      @id @default(autoincrement())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
+  //
+  niche         String /// Taxonomy slug (see app/services/assistant/taxonomy.ts)
+  nicheLabel    String /// Display label; the merchant's own words for "other"
+  country       String?
+  note          String? /// Optional "anything else we should know?"
+  checklistDone String[] @default([]) /// Brief checklist item ids marked done
+  //
+  shop          String       @unique
+  shopifyStore  ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
+}
+
+/// The latest AI-generated (or curated-fallback) assistant brief for a shop.
+/// Regenerated when stale (>7 days), on profile change, or on demand — the
+/// dashboard always reads this cache, never Gemini directly.
+model DashboardBrief {
+  id           Int         @id @default(autoincrement())
+  generatedAt  DateTime    @default(now())
+  //
+  niche        String
+  country      String?
+  source       BriefSource @default(AI)
+  payload      Json /// Validated AssistantBrief (see app/services/assistant/brief.server.ts)
+  //
+  shop         String       @unique
+  shopifyStore ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
+}
+
+enum BriefSource {
+  AI
+  FALLBACK
 }

@@ -41,6 +41,10 @@ const envSchema = z.object({
   // Plans
   SHOPIFY_FREE_PLAN_ID: z.string().min(2),
   SHOPIFY_BASIC_PLAN_ID: z.string().min(2),
+  SHOPIFY_ADVANCE_PLAN_ID: z.string().min(2).optional(),
+
+  // AI assistant (optional — the dashboard falls back to curated briefs)
+  GEMINI_API_KEY: z.string().min(2).optional(),
 
   // Vite (client)
   VITE_SHOPIFY_API_KEY: z.string().min(2),

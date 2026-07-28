@@ -63,6 +63,7 @@ export function codeMap(code?: GateKeepCode | null): GatekeepContent {
     case "AP013":
     case "AP014":
     case "AP015":
+    case "AP016":
       return {
         page: {
           title: defaultPage.title,

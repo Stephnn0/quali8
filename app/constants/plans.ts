@@ -16,6 +16,7 @@ export const APP_PLANS = {
     hasShippingDiscounts: false,
     hasBundles: false,
     hasRecommendations: false,
+    hasAssistant: false,
   },
 
   // The paid plan. Historically named "Basic" (the constant key and the
@@ -37,6 +38,26 @@ export const APP_PLANS = {
     hasShippingDiscounts: true,
     hasBundles: true,
     hasRecommendations: true,
+    hasAssistant: false,
+  },
+
+  // The top tier: everything in Pro plus the AI assistant dashboard.
+  ADVANCE: {
+    name: "Advance",
+    level: "ADVANCE",
+    // Managed-pricing handle in the Partner Dashboard
+    shopifyPlanHandle: "advance",
+    trialDays: 5,
+
+    // Check for when importing in the client
+    shopifyPlanID:
+      typeof process !== "undefined" ? process.env.SHOPIFY_ADVANCE_PLAN_ID : "",
+
+    hasQualifiers: true,
+    hasShippingDiscounts: true,
+    hasBundles: true,
+    hasRecommendations: true,
+    hasAssistant: true,
   },
 } as const;
 

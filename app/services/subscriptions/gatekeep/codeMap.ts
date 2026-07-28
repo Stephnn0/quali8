@@ -84,6 +84,11 @@ export const GATEKEEP_ERROR_CODE_MAP = {
     code: "AP015",
     message: "Your subscription does not include smart recommendations.",
   },
+  // Error: Missing the AI assistant
+  AP016: {
+    code: "AP016",
+    message: "Your subscription does not include the AI assistant.",
+  },
   // Developer Preview store error
   DP001: {
     code: "DP001",
