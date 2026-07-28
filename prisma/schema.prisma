@@ -35,6 +35,9 @@ model ShopifyStore {
   status               AppStatus
   appVersion           String                   @default("0.0.0")
   functionId           String?
+  /// GID of the shop's single automatic app discount backing all active
+  /// bundles (extensions/bundle-discounts). Null until a bundle is activated.
+  bundleDiscountId     String?
   //
   qualifiers           Qualifiers[]
   customers            Customers[]
@@ -45,6 +48,7 @@ model ShopifyStore {
 
   // NEW
   campaigns Campaign[]
+  bundles   Bundle[]
 }
 
 enum AppStatus {
@@ -480,4 +484,65 @@ enum PromotionType {
 enum PromotionStatus {
   ACTIVE
   INACTIVE
+}
+
+// --------------------------------------------------------
+// Product Bundles ("Frequently Bought Together")
+// --------------------------------------------------------
+
+/// A percentage-discount bundle over a small set of products (2–4). The
+/// storefront theme block shows the bundle on the product page of every
+/// product it contains: the app proxy looks up ACTIVE bundles whose items
+/// include the page's product (newest-updated wins when several match).
+model Bundle {
+  id              Int          @id @default(autoincrement())
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @default(now()) @updatedAt
+  //
+  type            BundleType   @default(CLASSIC)
+  title           String /// Storefront heading override + admin display name
+  description     String? /// Optional storefront subtitle under the heading
+  status          BundleStatus @default(INACTIVE)
+  //
+  discountPercent Float /// Percent off the summed item prices (0–100)
+  //
+  items           BundleItem[]
+  //
+  shop            String
+  shopifyStore    ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([shop, status])
+}
+
+/// One product line of a bundle (stored as the product's default variant so
+/// the storefront can add it to the cart). Title/price/image are snapshots
+/// taken from the admin resource picker when the merchant saves — re-saving
+/// the bundle refreshes them.
+model BundleItem {
+  id           Int     @id @default(autoincrement())
+  //
+  variantId    String /// Shopify GID (`gid://shopify/ProductVariant/456`)
+  productId    String? /// Shopify GID of the variant's product — storefront lookup key
+  quantity     Int     @default(1)
+  position     Int     @default(0)
+  //
+  productTitle String
+  variantTitle String?
+  price        Float /// Snapshot unit price, major currency unit
+  imageUrl     String?
+  //
+  bundleId     Int
+  bundle       Bundle  @relation(fields: [bundleId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([bundleId])
+  @@index([productId])
+}
+
+enum BundleStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum BundleType {
+  CLASSIC
 }

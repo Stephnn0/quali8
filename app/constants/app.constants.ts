@@ -14,6 +14,11 @@ export const APP = {
   FUNCTION_ID: "92f98185-5407-46c4-85d9-11594cc32d07",
   FUNCTION_METAFIELD_KEY: "quali8_shipping_discounts",
 
+  // Product bundles — must match extensions/bundle-discounts
+  BUNDLE_FUNCTION_HANDLE: "bundle-discounts",
+  BUNDLE_METAFIELD_KEY: "quali8_bundle_discounts",
+  BUNDLE_DISCOUNT_TITLE: "Quali8 bundle discounts",
+
   METAFIELDS_NAMESPACES: { ENV: "$app:env" },
 
   PLANS: Object.values(APP_PLANS).map((plan) => plan.name),
