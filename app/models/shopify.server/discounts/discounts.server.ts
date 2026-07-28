@@ -7,8 +7,6 @@ import {
   GRAPHQL_MUTATION_DELETE_CODE_DISCOUNT,
 } from "../graphql/discounts";
 import { APP } from "app/constants/app.constants";
-import db from "app/db.server";
-import { getShopifyStore } from "app/models/app.server/shopifyStore/shopifyStore.server";
 
 /**
  * The create mutations must run on the api_version of
@@ -60,7 +58,6 @@ type CreateAutomaticShippingDiscountParams = {
   shippingDiscountState: "ENABLED" | "DISABLED";
   combinedWithOrderDiscounts: boolean;
   combinedWithProductDiscounts: boolean;
-  shop: string;
 };
 
 export async function createShippingAutomaticDiscount({
@@ -72,22 +69,12 @@ export async function createShippingAutomaticDiscount({
   shippingDiscountState,
   combinedWithOrderDiscounts,
   combinedWithProductDiscounts,
-  shop,
 }: CreateAutomaticShippingDiscountParams) {
   try {
-    const shopifyStore = await getShopifyStore(
-      {
-        where: {
-          shop: shop,
-        },
-      },
-      db,
-    );
-
-    if (!shopifyStore?.functionId) throw new Error("Function ID not found");
-
     const VARIABLES = {
-      functionId: shopifyStore?.functionId,
+      // The stable extension handle — per-store function ids go stale when
+      // the function's API type migrates (the id is snapshotted at install).
+      functionHandle: APP.SHIPPING_FUNCTION_HANDLE,
       title: title,
       startsAt: startDate,
       endsAt: endDate,
@@ -155,7 +142,6 @@ type CreateShippingDiscountParams = {
   limitUsagePerOneCustomer: boolean;
   combinedWithOrderDiscounts: boolean;
   combinedWithProductDiscounts: boolean;
-  shop: string;
 };
 
 export async function createShippingDiscount({
@@ -168,22 +154,12 @@ export async function createShippingDiscount({
   limitUsagePerOneCustomer,
   combinedWithOrderDiscounts,
   combinedWithProductDiscounts,
-  shop,
 }: CreateShippingDiscountParams) {
   try {
-    const shopifyStore = await getShopifyStore(
-      {
-        where: {
-          shop: shop,
-        },
-      },
-      db,
-    );
-
-    if (!shopifyStore?.functionId) throw new Error("Function ID not found");
-
     const VARIABLES = {
-      functionId: shopifyStore?.functionId,
+      // The stable extension handle — per-store function ids go stale when
+      // the function's API type migrates (the id is snapshotted at install).
+      functionHandle: APP.SHIPPING_FUNCTION_HANDLE,
       title: code,
       startsAt: startDate,
       endsAt: endDate,

@@ -13,6 +13,10 @@ export const APP = {
   APP_HANDLE: "quali8", // "quali8" quali8-dev-gamma
   FUNCTION_ID: "92f98185-5407-46c4-85d9-11594cc32d07",
   FUNCTION_METAFIELD_KEY: "quali8_shipping_discounts",
+  // Handle of extensions/shipping-discounts — stable across deploys and
+  // environments, unlike function ids, which change when a function's API
+  // type migrates (and are snapshotted per-store at install time).
+  SHIPPING_FUNCTION_HANDLE: "shipping-discounts",
 
   // Product bundles — must match extensions/bundle-discounts
   BUNDLE_FUNCTION_HANDLE: "bundle-discounts",

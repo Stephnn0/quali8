@@ -73,7 +73,6 @@ export default async function createShippingDiscountServer(
       limitUsagePerOneCustomer: body.limitUsagePerOneCustomer!,
       combinedWithOrderDiscounts: body.combinedWithOrderDiscounts!,
       combinedWithProductDiscounts: body.combinedWithProductDiscounts!,
-      shop: session.shop,
     });
 
     shopifyDiscountId =
@@ -103,7 +102,6 @@ export default async function createShippingDiscountServer(
       shippingDiscountState: body.shippingDiscountState!,
       combinedWithOrderDiscounts: body.combinedWithOrderDiscounts!,
       combinedWithProductDiscounts: body.combinedWithProductDiscounts!,
-      shop: session.shop,
     });
 
     shopifyDiscountId =

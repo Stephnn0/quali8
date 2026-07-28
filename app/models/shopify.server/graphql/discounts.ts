@@ -1,6 +1,6 @@
 export const GRAPHQL_MUTATION_CREATE_DISCOUNT = `#graphql
   mutation discountCodeAppCreate(
-   $functionId: String!
+   $functionHandle: String
    $title: String!
    $startsAt: DateTime!
    $endsAt: DateTime
@@ -13,7 +13,7 @@ export const GRAPHQL_MUTATION_CREATE_DISCOUNT = `#graphql
   ) {
     discountCodeAppCreate(
       codeAppDiscount: {
-        functionId: $functionId
+        functionHandle: $functionHandle
         title: $title
         startsAt: $startsAt
         endsAt: $endsAt
@@ -41,7 +41,7 @@ export const GRAPHQL_MUTATION_CREATE_DISCOUNT = `#graphql
 
 export const GRAPHQL_MUTATION_CREATE_AUTOMATIC_DISCOUNT = `#graphql
   mutation discountAutomaticAppCreate(
-   $functionId: String!
+   $functionHandle: String
    $title: String!
    $startsAt: DateTime!
    $endsAt: DateTime
@@ -52,7 +52,7 @@ export const GRAPHQL_MUTATION_CREATE_AUTOMATIC_DISCOUNT = `#graphql
   ) {
     discountAutomaticAppCreate(
       automaticAppDiscount: {
-        functionId: $functionId
+        functionHandle: $functionHandle
         title: $title
         startsAt: $startsAt
         endsAt: $endsAt
