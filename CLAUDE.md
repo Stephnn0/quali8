@@ -112,6 +112,8 @@ Bundles ("Frequently Bought Together") get their checkout discount from a **seco
 
 ## Conventions & gotchas
 
+- **Never touch `shopify.app.toml`, `shopify.app.toml.md`, or any local variant of them (`shopify.app.toml.dev`, `shopify.app.toml.dd`, …).** These are the developer's app-config files, swapped by hand between the dev and production Shopify apps; the variants are local backups and must never be committed, modified, or deleted by tooling or agents. Stage files explicitly instead of `git add -A` so working-tree changes to them are never swept into a commit.
+
 - **Imports use the `app/...` alias** (baseUrl `.`, resolved by `vite-tsconfig-paths`), e.g. `import db from "app/db.server"`. There is no `~` alias.
 - **`*.server.ts` / `app.server` / `shopify.server`** suffixes mark server-only code — never import them into client components.
 - TypeScript `strict` is on. There is a meaningful amount of `as any` at form/fetcher boundaries; prefer proper typing for new code rather than copying those casts.

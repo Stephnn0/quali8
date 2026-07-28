@@ -27,3 +27,7 @@ shopify.app.toml
 # Ignore shopify files created during app dev
 .shopify/*
 .shopify.lock
+# Local Shopify app config variants (never commit — see CLAUDE.md)
+shopify.app.toml.dev
+shopify.app.toml.dd
+.claude/settings.local.json
