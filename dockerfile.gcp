@@ -8,10 +8,8 @@ EXPOSE 3000
 
 COPY package.json package-lock.json* ./
 
+# Install production dependencies
 RUN npm ci --omit=dev && npm cache clean --force
-
-# Remove Shopify CLI from the production image
-RUN npm remove @shopify/cli
 
 COPY . .
 
@@ -29,26 +27,17 @@ ARG VITE_SHOPIFY_API_KEY
 
 # Runtime environment
 ENV NODE_ENV=production
+ENV HOST=0.0.0.0
+ENV PORT=3000
 
 # Vite variable needed during build
 ENV VITE_SHOPIFY_API_KEY=${VITE_SHOPIFY_API_KEY}
 
-# Debug build-time environment
-RUN echo "===== BUILD ENVIRONMENT =====" && \
-    echo "DATABASE_URL=${DATABASE_URL:+SET}" && \
-    echo "SHOPIFY_API_KEY=${SHOPIFY_API_KEY:+SET}" && \
-    echo "SHOPIFY_API_SECRET=${SHOPIFY_API_SECRET:+SET}" && \
-    echo "SHOPIFY_APP_HANDLE='${SHOPIFY_APP_HANDLE}'" && \
-    echo "SHOPIFY_BASIC_PLAN_ID='${SHOPIFY_BASIC_PLAN_ID}'" && \
-    echo "SHOPIFY_FREE_PLAN_ID='${SHOPIFY_FREE_PLAN_ID}'" && \
-    echo "SHOPIFY_SHIPPING_DISCOUNTS_ID='${SHOPIFY_SHIPPING_DISCOUNTS_ID}'" && \
-    echo "SCOPES='${SCOPES}'" && \
-    echo "SHOPIFY_APP_URL='${SHOPIFY_APP_URL}'" && \
-    echo "VITE_SHOPIFY_API_KEY=${VITE_SHOPIFY_API_KEY:+SET}"
+# Generate Prisma client
+RUN npx prisma generate
 
-RUN npm run prisma generate --no-hints
-
-# Skip server env validation only during the build
+# Build the app
 RUN SKIP_ENV_VALIDATION=true npm run build
 
+# Start the app
 CMD ["npm", "run", "docker-start"]
