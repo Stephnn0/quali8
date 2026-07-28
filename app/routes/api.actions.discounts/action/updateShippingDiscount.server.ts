@@ -17,6 +17,14 @@ export default async function updateShippingDiscountServer(
 ) {
   const { admin, session } = authAdminContext;
 
+  if (!session.accessToken) {
+    throw new Error("No admin access token available to update the discount");
+  }
+  const credentials = {
+    shop: session.shop,
+    accessToken: session.accessToken,
+  };
+
   let customers: Customer[] = [];
   if (!body.appliesToAllCustomers) {
     const customerShopifyIds =
@@ -58,7 +66,7 @@ export default async function updateShippingDiscountServer(
     });
 
     const newshippingDiscount = await createShippingDiscount({
-      graphql: admin.graphql,
+      credentials,
       code: body.codeOrName!,
       body: JSON.stringify(metafieldDataUpdate),
       startDate: formattedStartDate,
@@ -91,7 +99,7 @@ export default async function updateShippingDiscountServer(
     });
 
     const newshippingDiscount = await createShippingAutomaticDiscount({
-      graphql: admin.graphql,
+      credentials,
       title: body.codeOrName!,
       body: JSON.stringify(metafieldDataUpdate),
       startDate: formattedStartDate,

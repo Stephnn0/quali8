@@ -1,4 +1,5 @@
 import type { AdminGraphqlClient } from "@shopify/shopify-app-react-router/server";
+import { createAdminApiClient } from "@shopify/admin-api-client";
 import {
   GRAPHQL_MUTATION_CREATE_AUTOMATIC_DISCOUNT,
   GRAPHQL_MUTATION_CREATE_DISCOUNT,
@@ -9,8 +10,30 @@ import { APP } from "app/constants/app.constants";
 import db from "app/db.server";
 import { getShopifyStore } from "app/models/app.server/shopifyStore/shopifyStore.server";
 
+/**
+ * The create mutations must run on the api_version of
+ * extensions/shipping-discounts (2026-04): the function uses the modern
+ * discounts API type, which requires `discountClasses` — a field the app's
+ * default admin client (pinned January25) predates. Same pattern as
+ * `bundleDiscounts.server.ts`.
+ */
+const SHIPPING_DISCOUNT_API_VERSION = "2026-04";
+
+export type AdminCredentials = {
+  shop: string;
+  accessToken: string;
+};
+
+function shippingDiscountClient({ shop, accessToken }: AdminCredentials) {
+  return createAdminApiClient({
+    apiVersion: SHIPPING_DISCOUNT_API_VERSION,
+    storeDomain: shop,
+    accessToken,
+  });
+}
+
 type CreateAutomaticShippingDiscountParams = {
-  graphql: AdminGraphqlClient;
+  credentials: AdminCredentials;
   title: string;
   body: string;
   startDate: string;
@@ -22,7 +45,7 @@ type CreateAutomaticShippingDiscountParams = {
 };
 
 export async function createShippingAutomaticDiscount({
-  graphql,
+  credentials,
   title,
   body,
   startDate,
@@ -62,17 +85,29 @@ export async function createShippingAutomaticDiscount({
       },
     };
 
-    const response = await graphql(GRAPHQL_MUTATION_CREATE_AUTOMATIC_DISCOUNT, {
-      variables: VARIABLES,
-    });
+    const client = shippingDiscountClient(credentials);
+    const response = await client.request(
+      GRAPHQL_MUTATION_CREATE_AUTOMATIC_DISCOUNT,
+      { variables: VARIABLES },
+    );
 
-    const { data: adminData } = await response.json();
+    if (response.errors) {
+      const details =
+        response.errors.graphQLErrors
+          ?.map((graphQLError: { message: string }) => graphQLError.message)
+          .join("; ") ?? response.errors.message;
+      throw new Error(
+        `Could not create the automatic shipping discount: ${details}`,
+      );
+    }
+
+    const adminData = response.data;
 
     const payload = adminData?.discountAutomaticAppCreate;
     if (payload?.userErrors?.length) {
       throw new Error(
         `Could not create the automatic shipping discount: ${payload.userErrors
-          .map((userError) => userError.message)
+          .map((userError: { message: string }) => userError.message)
           .join("; ")}`,
       );
     }
@@ -90,7 +125,7 @@ export async function createShippingAutomaticDiscount({
 }
 
 type CreateShippingDiscountParams = {
-  graphql: AdminGraphqlClient;
+  credentials: AdminCredentials;
   code: string;
   body: string;
   startDate: string;
@@ -103,7 +138,7 @@ type CreateShippingDiscountParams = {
 };
 
 export async function createShippingDiscount({
-  graphql,
+  credentials,
   code,
   body,
   startDate, // 2019-09-07T15:50:00Z 2025-05-02T17:09:21Z
@@ -146,17 +181,28 @@ export async function createShippingDiscount({
       },
     };
 
-    const response = await graphql(GRAPHQL_MUTATION_CREATE_DISCOUNT, {
+    const client = shippingDiscountClient(credentials);
+    const response = await client.request(GRAPHQL_MUTATION_CREATE_DISCOUNT, {
       variables: VARIABLES,
     });
 
-    const { data: adminData } = await response.json();
+    if (response.errors) {
+      const details =
+        response.errors.graphQLErrors
+          ?.map((graphQLError: { message: string }) => graphQLError.message)
+          .join("; ") ?? response.errors.message;
+      throw new Error(
+        `Could not create the shipping discount code: ${details}`,
+      );
+    }
+
+    const adminData = response.data;
 
     const payload = adminData?.discountCodeAppCreate;
     if (payload?.userErrors?.length) {
       throw new Error(
         `Could not create the shipping discount code: ${payload.userErrors
-          .map((userError) => userError.message)
+          .map((userError: { message: string }) => userError.message)
           .join("; ")}`,
       );
     }

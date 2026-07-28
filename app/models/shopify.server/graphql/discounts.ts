@@ -19,6 +19,8 @@ export const GRAPHQL_MUTATION_CREATE_DISCOUNT = `#graphql
         endsAt: $endsAt
         code: $code
         metafields: $metafields
+        # Required for functions on the modern discounts API type
+        discountClasses: [SHIPPING]
         combinesWith:  {
            orderDiscounts: $orderDiscounts
            productDiscounts: $productDiscounts
@@ -55,11 +57,13 @@ export const GRAPHQL_MUTATION_CREATE_AUTOMATIC_DISCOUNT = `#graphql
         startsAt: $startsAt
         endsAt: $endsAt
         metafields: $metafields
+        # Required for functions on the modern discounts API type
+        discountClasses: [SHIPPING]
         combinesWith:  {
            orderDiscounts: $orderDiscounts
            productDiscounts: $productDiscounts
            shippingDiscounts: $shippingDiscounts
-        }    
+        }
       }
     ) {
       automaticAppDiscount {
