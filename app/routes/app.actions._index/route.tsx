@@ -1,7 +1,5 @@
 import { Page, Layout, InlineGrid } from "@shopify/polaris";
 import CheckoutBlock from "./components/Block";
-import ComingSoonBlock from "./sections/ComingSoon";
-import smart from "app/assets/sss.png";
 
 export default function Actions() {
   return (
@@ -10,6 +8,7 @@ export default function Actions() {
         <Layout.Section>
           <InlineGrid gap="600" columns={3}>
             <CheckoutBlock type="date_time_picker" />
+            <CheckoutBlock type="bundles" />
             {/* <CheckoutBlock type="product_editor" /> */}
 
             {/* <ComingSoonBlock
