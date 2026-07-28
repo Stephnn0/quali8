@@ -1,0 +1,171 @@
+/* --- Shared gradient banner (assistant identity) --- */
+
+.banner {
+  border-radius: 12px;
+  padding: 1.75rem 2rem;
+  background:
+    radial-gradient(
+      36rem 18rem at 90% -30%,
+      rgba(92, 61, 153, 0.85),
+      transparent 65%
+    ),
+    linear-gradient(135deg, #2c1f58 0%, #241a47 55%, #1d1539 100%);
+  color: #ffffff;
+}
+
+.bannerEyebrow {
+  margin: 0 0 0.375rem;
+  color: #f0c46c;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.bannerTitle {
+  margin: 0;
+  font-size: 1.5rem;
+  line-height: 1.25;
+  font-weight: 650;
+}
+
+.bannerText {
+  margin: 0.625rem 0 0;
+  color: #cfc4ec;
+  font-size: 0.9375rem;
+  line-height: 1.55;
+  max-width: 44rem;
+}
+
+.bannerMeta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  color: #e8e2f7;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* --- Occasion rail --- */
+
+.rail {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  padding-bottom: 0.25rem;
+}
+
+.rail::-webkit-scrollbar {
+  display: none;
+}
+
+.occasionCard {
+  flex: 0 0 15.5rem;
+  scroll-snap-align: start;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  background: #ffffff;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.occasionArt {
+  position: relative;
+  height: 4.5rem;
+  display: flex;
+  align-items: flex-end;
+  padding: 0.75rem 1rem;
+}
+
+.occasionDate {
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 8px;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #2c1f58;
+  text-transform: uppercase;
+}
+
+.occasionBody {
+  padding: 0.875rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  flex: 1;
+}
+
+.occasionName {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 650;
+}
+
+.occasionDays {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #5c3d99;
+}
+
+.occasionWhy {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: #55565b;
+  flex: 1;
+}
+
+.occasionAction {
+  margin-top: 0.375rem;
+  font-size: 0.75rem;
+  line-height: 1.4;
+  color: #2c1f58;
+  background: #f3effc;
+  border-radius: 8px;
+  padding: 0.5rem 0.625rem;
+}
+
+/* --- Upsell / onboarding --- */
+
+.upsellGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0.75rem;
+  margin-top: 1.25rem;
+}
+
+.upsellItem {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 10px;
+  padding: 0.875rem 1rem;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.upsellItemTitle {
+  margin: 0 0 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 650;
+  color: #ffffff;
+}
+
+.upsellItemText {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: #cfc4ec;
+}
