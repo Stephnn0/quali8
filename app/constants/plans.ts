@@ -15,6 +15,7 @@ export const APP_PLANS = {
     hasQualifiers: true,
     hasShippingDiscounts: false,
     hasBundles: false,
+    hasRecommendations: false,
   },
 
   // The paid plan. Historically named "Basic" (the constant key and the
@@ -35,6 +36,7 @@ export const APP_PLANS = {
     hasQualifiers: true,
     hasShippingDiscounts: true,
     hasBundles: true,
+    hasRecommendations: true,
   },
 } as const;
 

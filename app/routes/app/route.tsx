@@ -61,6 +61,7 @@ export default function App() {
         </Link>
         {/* <Link to="/app/campaings">Campaigns</Link> */}
         <Link to="/app/qualifiers">Audiences</Link>
+        <Link to="/app/occasions">Occasions</Link>
         {/* Bundles is reached from the Promotions hub, not the sidebar */}
         <Link to="/app/actions">Promotions</Link>
         {/* <Link to="/app/templates">Templates</Link> */}

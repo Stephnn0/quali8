@@ -79,6 +79,11 @@ export const GATEKEEP_ERROR_CODE_MAP = {
     code: "AP014",
     message: "Your subscription does not include product bundles.",
   },
+  // Error: Missing smart recommendations
+  AP015: {
+    code: "AP015",
+    message: "Your subscription does not include smart recommendations.",
+  },
   // Developer Preview store error
   DP001: {
     code: "DP001",

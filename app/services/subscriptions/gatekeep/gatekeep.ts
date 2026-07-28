@@ -64,6 +64,10 @@ export function gatekeep({
     if (!recurringPlan?.hasBundles) return "AP014";
   }
 
+  if (criteria.hasRecommendations) {
+    if (!recurringPlan?.hasRecommendations) return "AP015";
+  }
+
   // ⚙️ 4 - Before checking the Shopify Plan, we check if the store is a DevStore
   // if it is, we don't gatekeep, as they can only reach this step if a Devstore is allowed (see 1)
   if (current.isDevStore) return null;
