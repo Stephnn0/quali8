@@ -39,8 +39,8 @@ export async function refreshAudienceMembers(
       firstName?: string | null;
       lastName?: string | null;
       amountSpent?: { amount?: string | null } | null;
-      addresses?: Array<{ country?: string | null }> | null;
-      orders?: { edges?: Array<unknown> | null } | null;
+      defaultAddress?: { country?: string | null } | null;
+      numberOfOrders?: string | number | null;
     };
   };
 
@@ -49,8 +49,8 @@ export async function refreshAudienceMembers(
     firstName: node.firstName ?? undefined,
     lastName: node.lastName ?? undefined,
     amountSpent: Number(node.amountSpent?.amount ?? 0),
-    orderCount: node.orders?.edges?.length ?? 0,
-    country: node.addresses?.[0]?.country ?? undefined,
+    orderCount: Number(node.numberOfOrders ?? 0),
+    country: node.defaultAddress?.country ?? undefined,
     shop: session.shop,
     qualifierId: qualifier.id,
   }));

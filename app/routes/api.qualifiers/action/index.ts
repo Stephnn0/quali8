@@ -49,6 +49,8 @@ export default async function action({ request }: ActionFunctionArgs) {
         name,
         description,
         conditionLogicType,
+        // The editor saves the freshly previewed member list
+        lastSyncedAt: new Date(),
         shopifyStore: { connect: { shop: session.shop } },
       };
 
@@ -95,13 +97,19 @@ export default async function action({ request }: ActionFunctionArgs) {
             name: parsedBody.name,
             description: parsedBody.description,
             conditionLogicType: parsedBody.conditionLogicType,
+            // Replace the member snapshot: detach everyone, reconnect below.
+            // Previously stale members stayed attached forever.
+            customers: { set: [] },
+            lastSyncedAt: new Date(),
           },
         },
         db,
       );
 
       if (updatedQualifier) {
-        deleteManyConditions(
+        // Must complete before re-creating conditions below, or the delete can
+        // race the inserts and wipe the freshly created rows.
+        await deleteManyConditions(
           {
             where: {
               qualifierId: updatedQualifier?.id,
@@ -145,27 +153,28 @@ export default async function action({ request }: ActionFunctionArgs) {
     }
 
     if (request.method === "DELETE") {
-      await Promise.all([
-        deleteQualifier(
-          {
-            where: {
-              id: parsedBody.qualifierId,
-            },
-          },
-          db,
-        ),
+      const qualifierId = Number(parsedBody.qualifierId);
 
-        deleteManyConditions(
-          {
-            where: {
-              id: {
-                in: parsedBody.conditionIds,
-              },
-            },
+      // Ownership check — without it any authenticated shop could delete
+      // another shop's audience by guessing ids.
+      const owned = await db.qualifiers.findFirst({
+        where: { id: qualifierId, shop: session.shop },
+        select: { id: true },
+      });
+      if (!owned) {
+        return handleApiError({ errors: "Audience not found", code: "error" });
+      }
+
+      await deleteManyConditions(
+        {
+          where: {
+            qualifierId: owned.id,
+            shopifyStore: { shop: session.shop },
           },
-          db,
-        ),
-      ]);
+        },
+        db,
+      );
+      await deleteQualifier({ where: { id: owned.id } }, db);
 
       return { payload: "deleted success" };
     }

@@ -7,24 +7,40 @@ export const GRAPHQL_QUERY_CUSTOMERS = `#graphql
           firstName
           lastName
           createdAt
-          addresses {
-           country
-          }
+          numberOfOrders
           amountSpent {
            amount
           }
-          lastOrder {
-            createdAt
+          defaultAddress {
+            country
+          }
+        }
+      }
+    }
+  }
+`;
+
+/**
+ * Store-wide sample for the Audiences analytics section: the most recent
+ * customers plus the total count so the UI can say how representative the
+ * sample is.
+ */
+export const GRAPHQL_QUERY_CUSTOMER_INSIGHTS = `#graphql
+  query customerInsights($first: Int!) {
+    customersCount {
+      count
+    }
+    customers(first: $first, sortKey: CREATED_AT, reverse: true) {
+      edges {
+        node {
+          id
+          createdAt
+          numberOfOrders
+          amountSpent {
+            amount
           }
           defaultAddress {
-            address1
-          }
-          orders(first: 40) {
-            edges {
-              node {
-                id
-              }
-            }
+            country
           }
         }
       }

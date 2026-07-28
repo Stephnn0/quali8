@@ -1,96 +1,50 @@
-import { Layout, Page, Text, PageActions } from "@shopify/polaris";
+import { BlockStack, Layout, Page, PageActions } from "@shopify/polaris";
+import { useNavigate } from "react-router";
 import { loader } from "./loader";
-import { useQualifierForm } from "./hooks";
-import NameDescriptionQualifier from "./components/NameDescription";
-import { OperatorQualifier } from "./components/OperatorQualifier";
-import CustomersQueryQualifier from "./components/CustomersQueryQualifier";
-import NewCondtions from "./components/NewConditions";
+import { useAudienceForm } from "./hooks/useAudienceForm";
+import DetailsCard from "./components/DetailsCard";
+import ConditionsBuilder from "./components/ConditionsBuilder";
+import PreviewCard from "./components/PreviewCard";
 import { AudienceInsights } from "./components/AudienceInsights";
-import { useFilterCustomersForm } from "./hooks/filterCustomers";
-import { useLoaderData, useNavigate } from "react-router";
 
 export { loader };
 
-export default function QualifiersForm() {
-  const loaderData = useLoaderData<typeof loader>();
-
-  const qualifier = loaderData?.payload?.qualifier;
-
-  const form = useQualifierForm();
-
-  const { errorName } = form;
-
-  const formFilterCustomers = useFilterCustomersForm();
-
-  const { error } = formFilterCustomers;
-
-  const conditions = qualifier ? qualifier.conditions : [];
-
+export default function AudienceEditor() {
+  const form = useAudienceForm();
   const navigate = useNavigate();
+  const { qualifier } = form;
 
   return (
     <Page
-      title={!qualifier ? "Create Customer Group" : (qualifier?.name ?? "Customer Group")}
-      backAction={{
-        onAction: () => navigate("/app/qualifiers"),
-      }}
+      title={qualifier ? (qualifier.name ?? "Audience") : "Create audience"}
+      backAction={{ onAction: () => navigate("/app/qualifiers") }}
     >
       <Layout>
-        {qualifier ? (
-          <Layout.Section>
-            <AudienceInsights
-              customers={qualifier.customers}
-              conditions={qualifier.conditions}
-              conditionLogicType={qualifier.conditionLogicType}
-              lastSyncedAt={qualifier.lastSyncedAt}
+        <Layout.Section>
+          <BlockStack gap="400">
+            {qualifier ? (
+              <AudienceInsights
+                customers={qualifier.customers ?? []}
+                conditions={qualifier.conditions ?? []}
+                conditionLogicType={qualifier.conditionLogicType}
+                lastSyncedAt={qualifier.lastSyncedAt}
+              />
+            ) : null}
+            <DetailsCard form={form} />
+            <ConditionsBuilder form={form} />
+            <PageActions
+              primaryAction={{
+                content: qualifier ? "Save changes" : "Create audience",
+                onAction: form.submit,
+                disabled: !form.dirty,
+                loading: form.saving,
+              }}
             />
-          </Layout.Section>
-        ) : null}
-        <Layout.Section>
-          <NameDescriptionQualifier form={form} />
-        </Layout.Section>
-        <Layout.Section>
-          {errorName && (
-            <Text variant="bodyMd" as="p" tone="critical">
-              {errorName}
-            </Text>
-          )}
-        </Layout.Section>
-        <Layout.Section>
-          <OperatorQualifier
-            form={form}
-            formFilterCustomers={formFilterCustomers}
-          />
+          </BlockStack>
         </Layout.Section>
 
-        <Layout.Section>
-          <NewCondtions
-            form={form}
-            formFilterCustomers={formFilterCustomers}
-            fetchedConditions={conditions!}
-          />
-        </Layout.Section>
-        <Layout.Section>
-          <CustomersQueryQualifier
-            form={form}
-            formFilterCustomers={formFilterCustomers}
-          />
-        </Layout.Section>
-        <Layout.Section>
-          {error && (
-            <Text variant="bodyMd" as="p" tone="critical">
-              {error}
-            </Text>
-          )}
-        </Layout.Section>
-        <Layout.Section>
-          <PageActions
-            primaryAction={{
-              content: !qualifier ? "Create" : "Update",
-              onAction: form.submit,
-              disabled: !form.dirty,
-            }}
-          />
+        <Layout.Section variant="oneThird">
+          <PreviewCard form={form} />
         </Layout.Section>
       </Layout>
     </Page>
