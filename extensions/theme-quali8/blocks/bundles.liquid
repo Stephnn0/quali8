@@ -1,0 +1,96 @@
+{%- comment -%}
+  Quali8 — Product bundle (product-page app block).
+  Fetches the active bundle containing the current product from the app proxy
+  (/apps/quali8/bundle?product_id=...) and renders a bundle card with a
+  percentage discount. Stays hidden (zero layout shift) until a bundle is
+  found.
+{%- endcomment -%}
+
+{%- if product -%}
+  <div
+    class="q8-fbt"
+    data-quali8-bundle
+    data-product-id="{{ product.id }}"
+    data-currency="{{ cart.currency.iso_code | default: shop.currency }}"
+    data-heading="{{ block.settings.heading | escape }}"
+    data-button-label="{{ block.settings.button_label | escape }}"
+    data-added-label="{{ block.settings.added_label | escape }}"
+    data-error-message="{{ block.settings.error_message | escape }}"
+    data-after-add="{{ block.settings.after_add }}"
+    data-show-savings="{{ block.settings.show_savings }}"
+    style="--q8-fbt-bg: {{ block.settings.background_color }}; --q8-fbt-text: {{ block.settings.text_color }}; --q8-fbt-accent: {{ block.settings.accent_color }};"
+    hidden
+  ></div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Bought Together Bundle",
+  "target": "section",
+  "javascript": "bundles.js",
+  "stylesheet": "bundles.css",
+  "enabled_on": {
+    "templates": ["product"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "info": "Leave empty to use the bundle's title from the app."
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Add bundle to cart"
+    },
+    {
+      "type": "text",
+      "id": "added_label",
+      "label": "Button label after adding",
+      "default": "Added to cart ✓"
+    },
+    {
+      "type": "text",
+      "id": "error_message",
+      "label": "Error message",
+      "default": "Couldn't add the bundle. Please try again."
+    },
+    {
+      "type": "select",
+      "id": "after_add",
+      "label": "After adding to cart",
+      "options": [
+        { "value": "stay", "label": "Stay on page" },
+        { "value": "cart", "label": "Go to cart" }
+      ],
+      "default": "stay"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_savings",
+      "label": "Show savings badge",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text color",
+      "default": "#1a1a1a"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent color",
+      "default": "#1a1a1a"
+    }
+  ]
+}
+{% endschema %}

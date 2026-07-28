@@ -1,0 +1,90 @@
+<svg width="800" height="520" viewBox="0 0 800 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Product bundles illustration: three products bundled together with a
+       percent-off tag. Text-free so it needs no localization. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="800" y2="520" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F0F7F4"/>
+      <stop offset="1" stop-color="#DFEDE6"/>
+    </linearGradient>
+    <linearGradient id="boxA" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#FFFFFF"/>
+      <stop offset="1" stop-color="#F2F5F4"/>
+    </linearGradient>
+    <linearGradient id="tag" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#2F9E6E"/>
+      <stop offset="1" stop-color="#1F7A54"/>
+    </linearGradient>
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#0D1C2B" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <rect width="800" height="520" fill="url(#bg)"/>
+
+  <!-- backdrop circles -->
+  <circle cx="140" cy="110" r="64" fill="#FFFFFF" opacity="0.5"/>
+  <circle cx="690" cy="420" r="90" fill="#FFFFFF" opacity="0.4"/>
+  <circle cx="660" cy="96" r="10" fill="#2F9E6E" opacity="0.35"/>
+  <circle cx="98" cy="400" r="7" fill="#2F9E6E" opacity="0.35"/>
+  <circle cx="726" cy="180" r="6" fill="#0D1C2B" opacity="0.15"/>
+
+  <!-- dashed bundle outline -->
+  <rect x="120" y="130" width="560" height="270" rx="28" fill="#FFFFFF" opacity="0.55"/>
+  <rect x="120" y="130" width="560" height="270" rx="28" stroke="#2F9E6E" stroke-width="3" stroke-dasharray="14 12" fill="none"/>
+
+  <!-- product 1 -->
+  <g filter="url(#soft)">
+    <rect x="168" y="200" width="130" height="130" rx="16" fill="url(#boxA)"/>
+    <rect x="168" y="200" width="130" height="130" rx="16" stroke="#E1E7E4" stroke-width="2" fill="none"/>
+    <circle cx="233" cy="252" r="26" fill="#DFEDE6"/>
+    <circle cx="233" cy="252" r="26" stroke="#2F9E6E" stroke-width="3" fill="none"/>
+    <path d="M221 252l8 8 16-16" stroke="#2F9E6E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <rect x="196" y="296" width="74" height="8" rx="4" fill="#D5DDD9"/>
+    <rect x="208" y="310" width="50" height="6" rx="3" fill="#E4EAE7"/>
+  </g>
+
+  <!-- plus -->
+  <g>
+    <circle cx="352" cy="265" r="20" fill="#FFFFFF" filter="url(#soft)"/>
+    <path d="M344 265h16M352 257v16" stroke="#1F7A54" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <!-- product 2 -->
+  <g filter="url(#soft)">
+    <rect x="400" y="186" width="150" height="150" rx="16" fill="url(#boxA)"/>
+    <rect x="400" y="186" width="150" height="150" rx="16" stroke="#E1E7E4" stroke-width="2" fill="none"/>
+    <rect x="428" y="212" width="94" height="64" rx="10" fill="#DFEDE6"/>
+    <path d="M436 262l22-24 16 16 12-12 20 20" stroke="#2F9E6E" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <circle cx="446" cy="228" r="6" fill="#2F9E6E"/>
+    <rect x="430" y="292" width="90" height="8" rx="4" fill="#D5DDD9"/>
+    <rect x="444" y="306" width="62" height="6" rx="3" fill="#E4EAE7"/>
+  </g>
+
+  <!-- plus -->
+  <g>
+    <circle cx="590" cy="265" r="16" fill="#FFFFFF" filter="url(#soft)"/>
+    <path d="M584 265h12M590 259v12" stroke="#1F7A54" stroke-width="3.5" stroke-linecap="round"/>
+  </g>
+
+  <!-- product 3 (peeking from the right edge of the bundle) -->
+  <g filter="url(#soft)">
+    <rect x="618" y="212" width="106" height="106" rx="14" fill="url(#boxA)"/>
+    <rect x="618" y="212" width="106" height="106" rx="14" stroke="#E1E7E4" stroke-width="2" fill="none"/>
+    <rect x="640" y="234" width="62" height="44" rx="8" fill="#DFEDE6"/>
+    <circle cx="671" cy="256" r="12" stroke="#2F9E6E" stroke-width="3.5" fill="none"/>
+    <rect x="646" y="290" width="50" height="7" rx="3.5" fill="#D5DDD9"/>
+  </g>
+
+  <!-- percent-off tag -->
+  <g filter="url(#soft)" transform="rotate(-12 260 128)">
+    <path d="M198 96h96a16 16 0 0 1 16 16v48a16 16 0 0 1-16 16h-96l-34-40 34-40z" fill="url(#tag)"/>
+    <circle cx="188" cy="136" r="7" fill="#FFFFFF"/>
+    <circle cx="238" cy="122" r="9" stroke="#FFFFFF" stroke-width="4" fill="none"/>
+    <circle cx="278" cy="152" r="9" stroke="#FFFFFF" stroke-width="4" fill="none"/>
+    <path d="M236 158l44-42" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <!-- sparkles -->
+  <path d="M700 140l4 10 10 4-10 4-4 10-4-10-10-4 10-4 4-10z" fill="#2F9E6E" opacity="0.6"/>
+  <path d="M112 210l3 8 8 3-8 3-3 8-3-8-8-3 8-3 3-8z" fill="#2F9E6E" opacity="0.45"/>
+</svg>

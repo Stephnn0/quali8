@@ -14,6 +14,29 @@ export async function getManyCustomers(
   }
 }
 
+export async function getCustomersWithQualifiers(
+  { shop, shopifyIds }: { shop: string; shopifyIds: string[] },
+  db: PrismaClient,
+) {
+  try {
+    const customers = await db.customers.findMany({
+      where: {
+        shop,
+        shopifyId: {
+          in: shopifyIds,
+        },
+      },
+      include: {
+        qualifiers: true,
+      },
+    });
+    return customers;
+  } catch (error) {
+    console.error("Error fetching customers with qualifiers:", error);
+    throw error;
+  }
+}
+
 export async function getCustomersByIds(
   shopifyIds: string[],
   db: PrismaClient,

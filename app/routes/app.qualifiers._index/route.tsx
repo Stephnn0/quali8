@@ -1,215 +1,280 @@
-import { Link, useFetcher, useLoaderData, useNavigate, useSearchParams } from "react-router";
 import {
+  Link,
+  useFetcher,
+  useLoaderData,
+  useNavigate,
+  useSearchParams,
+} from "react-router";
+import {
+  Badge,
+  BlockStack,
   Button,
-  IndexTable,
-  Text,
-  Page,
-  useIndexResourceState,
-  Card,
   ButtonGroup,
-  Layout,
-  MediaCard,
-  Modal,
+  Card,
   EmptyState,
+  IndexTable,
+  InlineGrid,
+  Layout,
+  Modal,
+  Page,
+  Text,
+  Tooltip,
 } from "@shopify/polaris";
-import { loader } from "./loader";
-import { DeleteIcon, EditIcon } from "@shopify/polaris-icons";
-import image from "app/assets/ccc.png";
+import { DeleteIcon, EditIcon, RefreshIcon } from "@shopify/polaris-icons";
 import { useCallback, useState } from "react";
 import { useAppBridge } from "@shopify/app-bridge-react";
-import quailifierlogo from "app/assets/customer-segment-icon.png";
+import emptyImage from "app/assets/customer-segment-icon.png";
+import { describeCondition } from "app/services/audiences/describeCondition";
+import { loader, type AudienceRow } from "./loader";
 
 export { loader };
 
-export default function Qualifiers() {
+const money = (amount: number) =>
+  new Intl.NumberFormat("en", { style: "currency", currency: "USD" }).format(
+    amount,
+  );
+
+function LastSynced({
+  lastSyncedAt,
+}: {
+  lastSyncedAt: AudienceRow["lastSyncedAt"];
+}) {
+  if (!lastSyncedAt) {
+    return <Badge tone="attention">Never</Badge>;
+  }
+  const date = new Date(lastSyncedAt);
+  return (
+    <Text as="span" tone="subdued" variant="bodySm">
+      {date.toLocaleDateString(undefined, { month: "short", day: "numeric" })}
+    </Text>
+  );
+}
+
+function StatCard({
+  label,
+  value,
+  detail,
+}: {
+  label: string;
+  value: string;
+  detail?: string;
+}) {
+  return (
+    <Card>
+      <BlockStack gap="100">
+        <Text as="p" tone="subdued" variant="bodySm">
+          {label}
+        </Text>
+        <Text as="p" variant="headingLg">
+          {value}
+        </Text>
+        {detail ? (
+          <Text as="p" tone="subdued" variant="bodySm">
+            {detail}
+          </Text>
+        ) : null}
+      </BlockStack>
+    </Card>
+  );
+}
+
+export default function Audiences() {
   const loaderData = useLoaderData<typeof loader>();
-  const [selectedQualifier, setSelectedQualifier] = useState<{
+  const audiences = loaderData?.payload?.audiences ?? [];
+  const summary = loaderData?.payload?.summary;
+
+  const [selectedAudience, setSelectedAudience] = useState<{
     id: number;
     conditionIds: number[];
   } | null>(null);
-
-  const qualifiers =
-    loaderData?.payload?.qualifiersAndConditions.qualifiers.map((data) => ({
-      id: data.id,
-      name: data.name,
-      description: data.description,
-      conditionLogicType: data.conditionLogicType,
-      customers: data.customers.length || 0,
-      conditionIds: data.conditions?.map((condition) => condition.id) || [],
-    })) || [];
-
-  const resourceName = {
-    singular: "Qualifier",
-    plural: "Qualifiers",
-  };
-
-  const { selectedResources, allResourcesSelected } =
-    useIndexResourceState(qualifiers);
-
-  const rowMarkup = qualifiers?.map(
-    (
-      { id, name, description, conditionLogicType, customers, conditionIds },
-      index,
-    ) => (
-      <IndexTable.Row
-        id={String(id)}
-        key={id}
-        selected={selectedResources.includes(String(id))}
-        position={index}
-      >
-        <IndexTable.Cell>
-          <Text variant="bodyMd" fontWeight="bold" as="span">
-            {" "}
-            {name}
-          </Text>
-        </IndexTable.Cell>
-        <IndexTable.Cell>
-          <Text variant="bodyMd" as="span">
-            {description}
-          </Text>
-        </IndexTable.Cell>
-        <IndexTable.Cell>
-          <Text variant="bodyMd" as="span">
-            {conditionLogicType}
-          </Text>
-        </IndexTable.Cell>
-        <IndexTable.Cell>
-          <Text variant="bodyMd" as="span">
-            {customers}
-          </Text>
-        </IndexTable.Cell>
-        <IndexTable.Cell>
-          <ButtonGroup>
-            <Link to={`/app/qualifiers/${id}`}>
-              <Button icon={EditIcon}></Button>
-            </Link>
-            <Button
-              icon={DeleteIcon}
-              onClick={() => handleDeleteClick(id, conditionIds)}
-            ></Button>
-          </ButtonGroup>
-        </IndexTable.Cell>
-      </IndexTable.Row>
-    ),
-  );
-
   const [modalActive, setModalActive] = useState(false);
-
   const handleModalChange = useCallback(
     () => setModalActive((prev) => !prev),
     [],
   );
 
+  const shopify = useAppBridge();
+  const fetcher = useFetcher();
+  const navigate = useNavigate();
+
   const handleDeleteClick = (id: number, conditionIds: number[]) => {
-    setSelectedQualifier({ id, conditionIds });
+    setSelectedAudience({ id, conditionIds });
     setModalActive(true);
   };
-  const shopify = useAppBridge();
-
-  const fetcher = useFetcher();
 
   const handleDeleteConfirm = () => {
     setModalActive(false);
-
-    if (!selectedQualifier) return;
-    try {
-      const body = {
-        qualifierId: selectedQualifier.id,
-        conditionIds: selectedQualifier.conditionIds,
-      };
-      fetcher.submit(
-        {
-          body: JSON.stringify(body),
-        },
-        {
-          method: "DELETE",
-          encType: "multipart/form-data",
-          action: `/api/qualifiers`,
-        },
-      );
-      shopify.toast.show("Qualifier deleted");
-    } catch (error) {
-      console.log("Error deleting qualifier", error);
-    }
+    if (!selectedAudience) return;
+    fetcher.submit(
+      {
+        body: JSON.stringify({
+          qualifierId: selectedAudience.id,
+          conditionIds: selectedAudience.conditionIds,
+        }),
+      },
+      {
+        method: "DELETE",
+        encType: "multipart/form-data",
+        action: "/api/qualifiers",
+      },
+    );
+    shopify.toast.show("Audience deleted");
   };
 
-  const navigate = useNavigate();
+  const refreshFetcher = useFetcher();
+  const refreshingId =
+    refreshFetcher.state !== "idle"
+      ? JSON.parse(String(refreshFetcher.formData?.get("body") ?? "{}"))
+          .qualifierId
+      : null;
 
-  // ==================================== pagination
+  const handleRefresh = (id: number) => {
+    refreshFetcher.submit(
+      { body: JSON.stringify({ qualifierId: id }) },
+      {
+        method: "PATCH",
+        encType: "multipart/form-data",
+        action: "/api/qualifiers",
+      },
+    );
+    shopify.toast.show("Refreshing audience…");
+  };
 
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  console.log("", searchParams);
-
+  // Pagination
+  const [, setSearchParams] = useSearchParams();
   const currentPage = loaderData?.payload?.page || 1;
-  const totalItems = loaderData?.payload?.total;
-  const itemsPerPage = loaderData?.payload?.itemsPerPage;
-  const hasNext = currentPage * itemsPerPage! < totalItems!;
+  const totalItems = loaderData?.payload?.total ?? 0;
+  const itemsPerPage = loaderData?.payload?.itemsPerPage ?? 15;
+  const hasNext = currentPage * itemsPerPage < totalItems;
   const hasPrevious = currentPage > 1;
-
-  const goToPage = (page: number) => {
+  const goToPage = (page: number) =>
     setSearchParams({ page: page.toString() });
-  };
+
+  const rowMarkup = audiences.map((audience, index) => (
+    <IndexTable.Row id={String(audience.id)} key={audience.id} position={index}>
+      <IndexTable.Cell>
+        <BlockStack gap="050">
+          <Text variant="bodyMd" fontWeight="bold" as="span">
+            {audience.name}
+          </Text>
+          <Text variant="bodySm" tone="subdued" as="span">
+            {audience.description}
+          </Text>
+        </BlockStack>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Tooltip
+          content={audience.conditions
+            .map(describeCondition)
+            .join(audience.conditionLogicType === "AND" ? " and " : " or ")}
+        >
+          <Badge>
+            {`${audience.conditions.length} ${
+              audience.conditions.length === 1 ? "condition" : "conditions"
+            }`}
+          </Badge>
+        </Tooltip>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" numeric>
+          {audience.stats.memberCount}
+        </Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" numeric>
+          {money(audience.stats.totalRevenue)}
+        </Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <Text as="span" numeric>
+          {audience.stats.averageOrders}
+        </Text>
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <LastSynced lastSyncedAt={audience.lastSyncedAt} />
+      </IndexTable.Cell>
+      <IndexTable.Cell>
+        <ButtonGroup>
+          <Button
+            icon={RefreshIcon}
+            accessibilityLabel="Refresh members from Shopify"
+            loading={refreshingId === audience.id}
+            onClick={() => handleRefresh(audience.id)}
+          />
+          <Link to={`/app/qualifiers/${audience.id}`}>
+            <Button icon={EditIcon} accessibilityLabel="Edit audience" />
+          </Link>
+          <Button
+            icon={DeleteIcon}
+            accessibilityLabel="Delete audience"
+            onClick={() =>
+              handleDeleteClick(
+                audience.id,
+                audience.conditions.map((condition) => condition.id),
+              )
+            }
+          />
+        </ButtonGroup>
+      </IndexTable.Cell>
+    </IndexTable.Row>
+  ));
 
   return (
     <Page
-      title="Customer Target Groups"
-      primaryAction={
-        <Link to="new">
-          <Button variant="primary">Create</Button>
-        </Link>
-      }
+      title="Audiences"
+      subtitle="Group customers by behavior and target them with promotions"
+      primaryAction={{
+        content: "Create audience",
+        // Client-side navigation only — a plain link would trigger a full
+        // document load and dump the merchant on the login screen.
+        onAction: () => navigate("/app/qualifiers/new"),
+      }}
     >
       <Layout>
-        {/* <Layout.Section>
-          <MediaCard
-            title="Getting Started with Qualifiers?"
-            primaryAction={{
-              content: "Learn about getting started",
-              onAction: () => {
-                window.open(
-                  "https://www.youtube.com/watch?v=JoejVhoby0s",
-                  "_blank",
-                );
-              },
-            }}
-            description="Watch this video to learn how to get started with Qualifiers."
-          >
-            <img
-              alt=""
-              width="100%"
-              height="100%"
-              style={{
-                objectFit: "cover",
-                objectPosition: "center",
-              }}
-              src={image}
-            />
-          </MediaCard>
-        </Layout.Section> */}
+        {summary && audiences.length > 0 ? (
+          <Layout.Section>
+            <InlineGrid columns={{ xs: 1, sm: 3 }} gap="400">
+              <StatCard label="Audiences" value={String(summary.audienceCount)} />
+              <StatCard
+                label="Customers reached"
+                value={String(summary.reachedCustomers)}
+                detail="Distinct customers across all audiences"
+              />
+              <StatCard
+                label="Revenue represented"
+                value={money(summary.totalRevenue)}
+                detail="Lifetime spend of reached customers"
+              />
+            </InlineGrid>
+          </Layout.Section>
+        ) : null}
+
         <Layout.Section>
-          {qualifiers.length > 0 ? (
-            <Card>
+          {audiences.length > 0 ? (
+            <Card padding="0">
               <IndexTable
-                resourceName={resourceName}
-                itemCount={qualifiers!.length}
-                selectedItemsCount={
-                  allResourcesSelected ? "All" : selectedResources.length
-                }
+                resourceName={{ singular: "audience", plural: "audiences" }}
+                itemCount={audiences.length}
                 selectable={false}
                 headings={[
-                  { title: "Name" },
-                  { title: "Description" },
-                  { title: "Condition Logic Type" },
-                  { title: "Customers" },
+                  { title: "Audience" },
+                  { title: "Conditions" },
+                  { title: "Members" },
+                  { title: "Revenue" },
+                  { title: "Avg orders" },
+                  { title: "Last synced" },
                   { title: "Actions" },
                 ]}
-                pagination={{
-                  hasNext,
-                  hasPrevious,
-                  onNext: () => goToPage(currentPage + 1),
-                  onPrevious: () => goToPage(currentPage - 1),
-                }}
+                pagination={
+                  hasNext || hasPrevious
+                    ? {
+                        hasNext,
+                        hasPrevious,
+                        onNext: () => goToPage(currentPage + 1),
+                        onPrevious: () => goToPage(currentPage - 1),
+                      }
+                    : undefined
+                }
               >
                 {rowMarkup}
               </IndexTable>
@@ -217,47 +282,39 @@ export default function Qualifiers() {
           ) : (
             <Card>
               <EmptyState
-                heading="You have no segments yet"
-                image={quailifierlogo}
+                heading="Create your first audience"
                 action={{
-                  content: "Create customer group",
-                  onAction: () => {
-                    navigate("/app/qualifiers/new");
-                  },
+                  content: "Create audience",
+                  onAction: () => navigate("/app/qualifiers/new"),
                 }}
-                fullWidth
+                image={emptyImage}
               >
                 <p>
-                  Customer Segments are a way to group customers based on their
-                  behavior. You can use segments to create a group of
-                  customers that you can target with specific campaigns.
+                  Group customers by tags, order count, spending, or country —
+                  then target them with shipping promotions.
                 </p>
               </EmptyState>
             </Card>
           )}
         </Layout.Section>
       </Layout>
+
       <Modal
         open={modalActive}
         onClose={handleModalChange}
-        title="Are you sure you want to delete this qualifier?"
+        title="Delete this audience?"
         primaryAction={{
           content: "Delete",
           destructive: true,
           onAction: handleDeleteConfirm,
         }}
-        secondaryActions={[
-          {
-            content: "Cancel",
-            onAction: handleModalChange,
-          },
-        ]}
+        secondaryActions={[{ content: "Cancel", onAction: handleModalChange }]}
       >
         <Modal.Section>
-          <p>
-            This action cannot be undone. Are you sure you want to delete this
-            qualifier?
-          </p>
+          <Text as="p">
+            The audience and its conditions will be removed. Promotions that
+            target it will stop matching these customers.
+          </Text>
         </Modal.Section>
       </Modal>
     </Page>

@@ -11,12 +11,14 @@ import {
   deleteManyConditions,
 } from "app/models/app.server/conditions/conditions.server";
 import { upsertCustomer } from "app/models/app.server/customers/customer.server";
+import { refreshAudienceMembers } from "app/services/audiences/refreshAudienceMembers.server";
 import { handleApiError } from "app/utils/server/handleApiResponse/handleApiError.server";
 
 
 export default async function action({ request }: ActionFunctionArgs) {
   try {
-    const { session } = await authenticate.admin(request);
+    const authAdminContext = await authenticate.admin(request);
+    const { session } = authAdminContext;
 
     const formData = await request.formData();
 
@@ -26,6 +28,20 @@ export default async function action({ request }: ActionFunctionArgs) {
 
     const { name, description, customers, conditions, conditionLogicType } =
       parsedBody;
+
+    // Re-sync an audience's members from Shopify (see refreshAudienceMembers)
+    if (request.method === "PATCH") {
+      const { qualifierId } = parsedBody as { qualifierId: number };
+      const memberCount = await refreshAudienceMembers(
+        authAdminContext,
+        Number(qualifierId),
+        db,
+      );
+      if (memberCount === null) {
+        return handleApiError({ errors: "Audience not found", code: "error" });
+      }
+      return { payload: { memberCount }, code: "refreshed" };
+    }
 
     if (request.method === "POST") {
       // ! we first create the qualifier and then create and connect conditions and customers

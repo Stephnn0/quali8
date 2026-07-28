@@ -1,5 +1,5 @@
 import type { HeadersFunction, LoaderFunctionArgs } from "react-router";
-import {  Link, Outlet, redirect, useLoaderData, useRouteError } from "react-router";
+import { Link, Outlet, useLoaderData, useRouteError } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
 import { AppProvider } from "@shopify/shopify-app-react-router/react";
 import { NavMenu } from "@shopify/app-bridge-react";
@@ -61,6 +61,7 @@ export default function App() {
         </Link>
         {/* <Link to="/app/campaings">Campaigns</Link> */}
         <Link to="/app/qualifiers">Audiences</Link>
+        {/* Bundles is reached from the Promotions hub, not the sidebar */}
         <Link to="/app/actions">Promotions</Link>
         {/* <Link to="/app/templates">Templates</Link> */}
         <Link to="/app/settings">Subscriptions</Link>

@@ -1,0 +1,23 @@
+query CartLinesInput {
+  cart {
+    lines {
+      id
+      quantity
+      bundleAttribute: attribute(key: "_quali8_bundle") {
+        value
+      }
+      merchandise {
+        __typename
+        ... on ProductVariant {
+          id
+        }
+      }
+    }
+  }
+  discount {
+    discountClasses
+    metafield(key: "quali8_bundle_discounts") {
+      jsonValue
+    }
+  }
+}

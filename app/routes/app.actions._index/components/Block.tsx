@@ -1,10 +1,11 @@
-import { Button, MediaCard } from "@shopify/polaris";
+import { MediaCard } from "@shopify/polaris";
 import dateTimeBlockImg from "app/assets/sds.png";
+import bundlesCardImg from "app/assets/bundles-card.svg";
 import { useAppSubscription } from "app/services/subscriptions/hooks/useAppSubscription";
 import { useNavigate } from "react-router";
 
 export default function CheckoutBlock({ type }: { type: any }) {
-  const { subHasShippingDiscounts } = useAppSubscription();
+  const { subHasShippingDiscounts, subHasBundles } = useAppSubscription();
 
   const navigate = useNavigate();
   const primaryAction = {
@@ -26,6 +27,25 @@ export default function CheckoutBlock({ type }: { type: any }) {
           }}
         >
           <img width="100%" alt="Date and time block" src={dateTimeBlockImg} />
+        </MediaCard>
+      );
+    case "bundles":
+      return (
+        <MediaCard
+          portrait
+          title="Product Bundles"
+          description="Bundle products together and reward buyers with an automatic discount at checkout"
+          primaryAction={{
+            content: "Create Bundle",
+            onClick: () => navigate("/app/bundles"),
+            disabled: !subHasBundles,
+          }}
+        >
+          <img
+            width="100%"
+            alt="Products grouped into a discounted bundle"
+            src={bundlesCardImg}
+          />
         </MediaCard>
       );
     case "product_editor":

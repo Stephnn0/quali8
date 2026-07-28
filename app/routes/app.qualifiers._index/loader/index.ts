@@ -2,10 +2,16 @@ import type { LoaderFunctionArgs } from "react-router";
 import { getQualifiersByShopWithCustomersAndConditions } from "app/models/app.server/qualifiers/qualifier.server";
 import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
+import {
+  computeAudienceStats,
+  summarizeAudiences,
+  type AudienceStats,
+  type AudienceSummary,
+} from "app/services/audiences/audienceStats";
 import { handleApiError } from "app/utils/server/handleApiResponse/handleApiError.server";
 import { handleApiSuccess } from "app/utils/handleApiSuccess";
 
-export async function loader({ request, params }: LoaderFunctionArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const { session } = await authenticate.admin(request);
 
   const url = new URL(request.url);
@@ -17,21 +23,35 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   try {
     const qualifiers = await getQualifiersByShopWithCustomersAndConditions(
       {
-        where: {
-          shop: session.shop,
-        },
-        orderBy: {
-          updatedAt: "desc",
-        },
+        where: { shop: session.shop },
+        orderBy: { updatedAt: "desc" },
         take: itemsPerPage,
         skip,
       },
       db,
     );
 
-    return handleApiSuccess<ManyQualifiersByShopWithCustomersAndConditions>({
+    const audiences = (qualifiers?.qualifiers ?? []).map((qualifier) => ({
+      id: qualifier.id,
+      name: qualifier.name,
+      description: qualifier.description,
+      conditionLogicType: qualifier.conditionLogicType,
+      lastSyncedAt: qualifier.lastSyncedAt,
+      conditions: qualifier.conditions.map((condition) => ({
+        id: condition.id,
+        type: condition.type,
+        comparisonType: condition.comparisonType,
+        value: condition.value,
+      })),
+      stats: computeAudienceStats(qualifier.customers),
+    }));
+
+    const summary = summarizeAudiences(qualifiers?.qualifiers ?? []);
+
+    return handleApiSuccess<AudiencesIndexData>({
       payload: {
-        qualifiersAndConditions: qualifiers,
+        audiences,
+        summary,
         itemsPerPage,
         page,
         total: qualifiers?.qualifiersCount ?? 0,
@@ -39,15 +59,29 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       code: "success",
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
     return handleApiError({ errors: error, code: "error" });
   }
 }
 
-export type ManyQualifiersByShopWithCustomersAndConditions = {
-  qualifiersAndConditions: Awaited<
-    ReturnType<typeof getQualifiersByShopWithCustomersAndConditions>
-  >;
+export type AudienceRow = {
+  id: number;
+  name: string;
+  description: string;
+  conditionLogicType: string;
+  lastSyncedAt: Date | null;
+  conditions: Array<{
+    id: number;
+    type: string;
+    comparisonType: string;
+    value: string;
+  }>;
+  stats: AudienceStats;
+};
+
+export type AudiencesIndexData = {
+  audiences: AudienceRow[];
+  summary: AudienceSummary;
   itemsPerPage: number;
   page: number;
   total: number;

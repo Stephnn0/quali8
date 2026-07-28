@@ -1,0 +1,218 @@
+/* Quali8 — Frequently Bought Together */
+
+.q8-fbt {
+  margin: 1.5rem 0;
+}
+
+.q8-fbt__card {
+  background: var(--q8-fbt-bg, #ffffff);
+  color: var(--q8-fbt-text, #1a1a1a);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.q8-fbt__heading {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.q8-fbt__description {
+  margin: -0.5rem 0 0;
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+
+/* --- Thumbnails row --- */
+
+.q8-fbt__thumbs {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.q8-fbt__thumb {
+  margin: 0;
+  position: relative;
+  width: 72px;
+  height: 72px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.03);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.q8-fbt__thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.q8-fbt__thumb-placeholder {
+  font-size: 1.5rem;
+  opacity: 0.5;
+}
+
+.q8-fbt__qty {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  background: var(--q8-fbt-accent, #1a1a1a);
+  color: #fff;
+  font-size: 0.7rem;
+  line-height: 1;
+  padding: 0.15rem 0.3rem;
+  border-radius: 999px;
+}
+
+.q8-fbt__plus {
+  font-size: 1.1rem;
+  opacity: 0.55;
+  flex: 0 0 auto;
+}
+
+/* --- Item lines --- */
+
+.q8-fbt__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.q8-fbt__line {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  font-size: 0.9rem;
+}
+
+.q8-fbt__line-title {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.q8-fbt__line-price {
+  white-space: nowrap;
+  opacity: 0.8;
+}
+
+.q8-fbt__line-original {
+  opacity: 0.55;
+}
+
+/* --- Summary --- */
+
+.q8-fbt__summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  padding-top: 0.75rem;
+}
+
+.q8-fbt__prices {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.q8-fbt__original {
+  opacity: 0.55;
+  font-size: 0.95rem;
+}
+
+.q8-fbt__final {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.q8-fbt__badge {
+  background: color-mix(in srgb, var(--q8-fbt-accent, #1a1a1a) 12%, transparent);
+  color: var(--q8-fbt-accent, #1a1a1a);
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+}
+
+/* --- Button + states --- */
+
+.q8-fbt__button {
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  background: var(--q8-fbt-accent, #1a1a1a);
+  color: #fff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  padding: 0.8rem 1.25rem;
+  border-radius: 8px;
+  transition: opacity 0.15s ease;
+  width: 100%;
+}
+
+.q8-fbt__button:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.q8-fbt__button:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.q8-fbt__button--loading {
+  position: relative;
+  color: transparent;
+}
+
+.q8-fbt__button--loading::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: q8-fbt-spin 0.7s linear infinite;
+}
+
+@keyframes q8-fbt-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.q8-fbt__error {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #b42318;
+}
+
+/* --- Responsive --- */
+
+@media (min-width: 600px) {
+  .q8-fbt__button {
+    width: auto;
+    align-self: flex-start;
+  }
+}
