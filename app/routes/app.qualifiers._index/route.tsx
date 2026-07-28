@@ -14,7 +14,7 @@ import {
   Text,
   Tooltip,
 } from "@shopify/polaris";
-import { DeleteIcon, EditIcon } from "@shopify/polaris-icons";
+import { DeleteIcon, EditIcon, RefreshIcon } from "@shopify/polaris-icons";
 import { useCallback, useState } from "react";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import emptyImage from "app/assets/customer-segment-icon.png";
@@ -114,6 +114,25 @@ export default function Audiences() {
     shopify.toast.show("Audience deleted");
   };
 
+  const refreshFetcher = useFetcher();
+  const refreshingId =
+    refreshFetcher.state !== "idle"
+      ? JSON.parse(String(refreshFetcher.formData?.get("body") ?? "{}"))
+          .qualifierId
+      : null;
+
+  const handleRefresh = (id: number) => {
+    refreshFetcher.submit(
+      { body: JSON.stringify({ qualifierId: id }) },
+      {
+        method: "PATCH",
+        encType: "multipart/form-data",
+        action: "/api/qualifiers",
+      },
+    );
+    shopify.toast.show("Refreshing audience…");
+  };
+
   // Pagination
   const [, setSearchParams] = useSearchParams();
   const currentPage = loaderData?.payload?.page || 1;
@@ -169,6 +188,12 @@ export default function Audiences() {
       </IndexTable.Cell>
       <IndexTable.Cell>
         <ButtonGroup>
+          <Button
+            icon={RefreshIcon}
+            accessibilityLabel="Refresh members from Shopify"
+            loading={refreshingId === audience.id}
+            onClick={() => handleRefresh(audience.id)}
+          />
           <Link to={`/app/qualifiers/${audience.id}`}>
             <Button icon={EditIcon} accessibilityLabel="Edit audience" />
           </Link>
