@@ -1,4 +1,4 @@
-.stepIcon {
+.featureIcon {
   flex: 0 0 auto;
   width: 3rem;
   height: 3rem;
@@ -7,7 +7,7 @@
   background: #f3effc;
 }
 
-.stepIcon svg {
+.featureIcon svg {
   display: block;
   width: 100%;
   height: 100%;

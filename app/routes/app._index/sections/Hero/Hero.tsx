@@ -7,12 +7,12 @@ export default function Hero() {
       <div className={styles.copy}>
         <p className={styles.eyebrow}>Quali8</p>
         <h1 className={styles.title}>
-          Shipping discounts for the customers you choose
+          Sell more to the customers you know best
         </h1>
         <p className={styles.subtitle}>
-          Group customers into audiences by tags, order history, and spending —
-          then reward them with automatic or code-based shipping discounts at
-          checkout.
+          Build audiences from customer behavior, then put them to work:
+          shipping discounts at checkout, product bundles, and smart gift
+          recommendations right on your storefront.
         </p>
       </div>
       <div className={styles.art}>

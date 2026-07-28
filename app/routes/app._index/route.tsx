@@ -3,7 +3,8 @@ import { BlockStack, FooterHelp, Layout, Link, Page } from "@shopify/polaris";
 import { authenticate } from "app/shopify.server";
 import Hero from "./sections/Hero/Hero";
 import CurrentPlan from "./sections/CurrentPlan/CurrentPlan";
-import HowItWorks from "./sections/HowItWorks/HowItWorks";
+import Features from "./sections/Features/Features";
+import StorefrontPreview from "./sections/StorefrontPreview/StorefrontPreview";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   await authenticate.admin(request);
@@ -22,9 +23,11 @@ export default function Index() {
             <CurrentPlan />
           </Layout.Section>
           <Layout.Section variant="oneHalf">
-            <HowItWorks />
+            <Features />
           </Layout.Section>
         </Layout>
+
+        <StorefrontPreview />
 
         <FooterHelp>
           Learn more about Quali8 on the{" "}

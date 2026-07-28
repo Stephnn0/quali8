@@ -59,6 +59,11 @@ export default function CurrentPlan() {
       detail: "Frequently bought together, discounted automatically",
       included: plan?.hasBundles ?? false,
     },
+    {
+      label: "Smart recommendations",
+      detail: "Occasion, recipient, and budget-aware product picks",
+      included: plan?.hasRecommendations ?? false,
+    },
   ];
 
   return (
