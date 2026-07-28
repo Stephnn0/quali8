@@ -136,16 +136,20 @@ export default async function createShippingDiscountServer(
     minimumCartValue: body.minimumCartValue,
   };
 
-  if (shippingDiscount) {
-    await createActionShippingDiscount(
-      {
-        data: {
-          ...data,
-        },
-      },
-      db,
+  if (!shopifyDiscountId) {
+    throw new Error(
+      "The shipping discount was not created in Shopify, so it was not saved",
     );
   }
+
+  await createActionShippingDiscount(
+    {
+      data: {
+        ...data,
+      },
+    },
+    db,
+  );
 
   return { data: shippingDiscount };
 }
