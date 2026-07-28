@@ -2,6 +2,7 @@ import type { PrismaClient } from "@prisma/client";
 import type { AdminGraphqlClient } from "@shopify/shopify-app-react-router/server";
 import {
   getCustomerPurchases,
+  getProductsByIds,
   getProductsByQuery,
 } from "app/models/shopify.server/recommendations";
 import {
@@ -63,22 +64,51 @@ export async function recommendProducts(
     null;
 
   // ---- Candidates ---------------------------------------------------------
+  // Every candidate must be sellable on the Online Store (active, published,
+  // with an in-stock variant) or the storefront cart rejects it with
+  // "Cannot find variant or is already sold out".
 
   const candidates: Candidate[] = [];
 
-  if (selected) {
-    for (const product of selected.products) {
-      candidates.push({
-        productId: product.productId,
-        variantId: product.variantId,
-        title: product.title,
-        price: product.price,
-        imageUrl: product.imageUrl,
-        handle: null,
-        tags: [],
-        productType: null,
-        curatedForOccasion: true,
-      });
+  if (selected && selected.products.length > 0) {
+    try {
+      // Verify curated snapshots against live product state: prices drift,
+      // variants get replaced, products get unpublished or sell out.
+      const live = await getProductsByIds(
+        graphql,
+        selected.products.map((product) => product.productId),
+      );
+      for (const snapshot of selected.products) {
+        const product = live.get(snapshot.productId);
+        if (!product) continue; // no longer sellable — never recommend it
+        candidates.push({
+          productId: product.id,
+          variantId: product.variantId,
+          title: product.title,
+          price: product.price,
+          imageUrl: product.imageUrl ?? snapshot.imageUrl,
+          handle: product.handle,
+          tags: product.tags,
+          productType: product.productType,
+          curatedForOccasion: true,
+        });
+      }
+    } catch (error) {
+      console.error("Curated product verification failed:", error);
+      // Degrade to the stored snapshots rather than recommending nothing
+      for (const product of selected.products) {
+        candidates.push({
+          productId: product.productId,
+          variantId: product.variantId,
+          title: product.title,
+          price: product.price,
+          imageUrl: product.imageUrl,
+          handle: null,
+          tags: [],
+          productType: null,
+          curatedForOccasion: true,
+        });
+      }
     }
   }
 
@@ -94,7 +124,7 @@ export async function recommendProducts(
   try {
     const tagProducts = await getProductsByQuery(
       graphql,
-      tagTerms.join(" OR "),
+      `(${tagTerms.join(" OR ")}) status:active`,
     );
     for (const product of tagProducts) {
       candidates.push({
