@@ -1,35 +1,12 @@
-<!-- ! ----------------------------------------------------------------- -->
-<!-- ! ----------------------------------------------------------------- -->
-<!-- ! ----------------------------------------------------------------- -->
-<!-- ! ----------------------------------------------------------------- -->
-<!-- ! ----------------------------------------------------------------- -->
-<!-- ! ----------------------------------------------------------------- -->
-<!-- ! ----------------------------------------------------------------- -->
-<!-- ! ----------------------------------------------------------------- -->
-<!-- ! ----------------------------------------------------------------- -->
-<!-- ! ----------------------------------------------------------------- -->
-<!-- ! ----------------------------------------------------------------- -->
-<!-- ! -------------------PRODUCTION CONFIGURATION---------------------- -->
-<!-- ! ----------------------------------------------------------------- -->
-<!-- ! ----------------------------------------------------------------- -->
-<!-- ! ----------------------------------------------------------------- -->
-<!-- ! ----------------------------------------------------------------- -->
-
-## Production Configuration
-
-```toml
-# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
-```
 
 client_id = "34da8696cbfc709d9fdc83cb99b19030"
 name = "Quali8"
 handle = "quali8"
-application_url = "https://quali8.fly.dev"
+application_url = "https://quali8-production-1000301086677.us-central1.run.app"
 embedded = true
 
 [build]
 automatically_update_urls_on_dev = false # ! important
-include_config_on_deploy = true
 
 [webhooks]
 api_version = "2025-04"
@@ -52,10 +29,15 @@ scopes = "write_products, read_customers, read_shipping, write_discounts, read_o
 
 [auth]
 redirect_urls = [
-"https://quali8.fly.dev/auth/callback",
-"https://quali8.fly.dev/auth/shopify/callback",
-"https://quali8.fly.dev/api/auth/callback"
+"https://quali8-production-1000301086677.us-central1.run.app/auth/callback",
+"https://quali8-production-1000301086677.us-central1.run.app/auth/shopify/callback",
+"https://quali8-production-1000301086677.us-central1.run.app/api/auth/callback"
 ]
 
 [pos]
 embedded = false
+
+[app_proxy]
+url = "https://quali8-production-1000301086677.us-central1.run.app/proxy"
+prefix = "apps"
+subpath = "quali8"
