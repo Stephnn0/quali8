@@ -3,6 +3,7 @@ api_version = "2026-04"
 [[extensions]]
 name = "t:name"
 handle = "bundle-discounts"
+uid = "18e8f03c-9c93-0853-247c-91849d58ad3cad971901"
 type = "function"
 
 description = "t:description"

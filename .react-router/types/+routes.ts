@@ -20,6 +20,9 @@ type Pages = {
   "/api/shopifyCustomers": {
     params: {};
   };
+  "/proxy/free-shipping": {
+    params: {};
+  };
   "/api/deleteDiscount": {
     params: {};
   };
@@ -27,6 +30,9 @@ type Pages = {
     params: {};
   };
   "/api/campaing": {
+    params: {};
+  };
+  "/proxy/bundle": {
     params: {};
   };
   "/auth/login": {
@@ -66,7 +72,15 @@ type Pages = {
   "/app/actions": {
     params: {};
   };
+  "/app/bundles": {
+    params: {};
+  };
   "/app/campaings/:id": {
+    params: {
+      "id": string;
+    };
+  };
+  "/app/bundles/:id": {
     params: {
       "id": string;
     };
@@ -87,7 +101,7 @@ type Pages = {
 type RouteFiles = {
   "root.tsx": {
     id: "root";
-    page: "/" | "/api/actions/discounts" | "/api/shopifyCustomers" | "/api/deleteDiscount" | "/api/qualifiers" | "/api/campaing" | "/auth/login" | "/webhooks" | "/auth/*" | "/setup" | "/app" | "/app/tools/products" | "/app/actions/discounts" | "/app/actions/discounts/:id" | "/app/campaings" | "/app/settings" | "/app/actions" | "/app/campaings/:id" | "/app/qualifiers" | "/app/qualifiers/:id" | "/app/gatekeep";
+    page: "/" | "/api/actions/discounts" | "/api/shopifyCustomers" | "/proxy/free-shipping" | "/api/deleteDiscount" | "/api/qualifiers" | "/api/campaing" | "/proxy/bundle" | "/auth/login" | "/webhooks" | "/auth/*" | "/setup" | "/app" | "/app/tools/products" | "/app/actions/discounts" | "/app/actions/discounts/:id" | "/app/campaings" | "/app/settings" | "/app/actions" | "/app/bundles" | "/app/campaings/:id" | "/app/bundles/:id" | "/app/qualifiers" | "/app/qualifiers/:id" | "/app/gatekeep";
   };
   "routes/api.actions.discounts/route.tsx": {
     id: "routes/api.actions.discounts";
@@ -96,6 +110,10 @@ type RouteFiles = {
   "routes/api.shopifyCustomers/route.tsx": {
     id: "routes/api.shopifyCustomers";
     page: "/api/shopifyCustomers";
+  };
+  "routes/proxy.free-shipping/route.tsx": {
+    id: "routes/proxy.free-shipping";
+    page: "/proxy/free-shipping";
   };
   "routes/api.deleteDiscount/route.tsx": {
     id: "routes/api.deleteDiscount";
@@ -108,6 +126,10 @@ type RouteFiles = {
   "routes/api.campaing/route.ts": {
     id: "routes/api.campaing";
     page: "/api/campaing";
+  };
+  "routes/proxy.bundle/route.tsx": {
+    id: "routes/proxy.bundle";
+    page: "/proxy/bundle";
   };
   "routes/auth.login/route.tsx": {
     id: "routes/auth.login";
@@ -131,7 +153,7 @@ type RouteFiles = {
   };
   "routes/app/route.tsx": {
     id: "routes/app";
-    page: "/app" | "/app/tools/products" | "/app/actions/discounts" | "/app/actions/discounts/:id" | "/app/campaings" | "/app/settings" | "/app/actions" | "/app/campaings/:id" | "/app/qualifiers" | "/app/qualifiers/:id" | "/app/gatekeep";
+    page: "/app" | "/app/tools/products" | "/app/actions/discounts" | "/app/actions/discounts/:id" | "/app/campaings" | "/app/settings" | "/app/actions" | "/app/bundles" | "/app/campaings/:id" | "/app/bundles/:id" | "/app/qualifiers" | "/app/qualifiers/:id" | "/app/gatekeep";
   };
   "routes/app.tools.products._index/route.tsx": {
     id: "routes/app.tools.products._index";
@@ -161,9 +183,17 @@ type RouteFiles = {
     id: "routes/app.actions._index";
     page: "/app/actions";
   };
+  "routes/app.bundles._index/route.tsx": {
+    id: "routes/app.bundles._index";
+    page: "/app/bundles";
+  };
   "routes/app.campaings.$id/route.tsx": {
     id: "routes/app.campaings.$id";
     page: "/app/campaings/:id";
+  };
+  "routes/app.bundles.$id/route.tsx": {
+    id: "routes/app.bundles.$id";
+    page: "/app/bundles/:id";
   };
   "routes/app.qualifiers/route.tsx": {
     id: "routes/app.qualifiers";
@@ -191,9 +221,11 @@ type RouteModules = {
   "root": typeof import("./app/root.tsx");
   "routes/api.actions.discounts": typeof import("./app/routes/api.actions.discounts/route.tsx");
   "routes/api.shopifyCustomers": typeof import("./app/routes/api.shopifyCustomers/route.tsx");
+  "routes/proxy.free-shipping": typeof import("./app/routes/proxy.free-shipping/route.tsx");
   "routes/api.deleteDiscount": typeof import("./app/routes/api.deleteDiscount/route.tsx");
   "routes/api.qualifiers": typeof import("./app/routes/api.qualifiers/route.tsx");
   "routes/api.campaing": typeof import("./app/routes/api.campaing/route.ts");
+  "routes/proxy.bundle": typeof import("./app/routes/proxy.bundle/route.tsx");
   "routes/auth.login": typeof import("./app/routes/auth.login/route.tsx");
   "routes/webhooks": typeof import("./app/routes/webhooks/route.tsx");
   "routes/_index": typeof import("./app/routes/_index/route.tsx");
@@ -207,7 +239,9 @@ type RouteModules = {
   "routes/app.campaings._index": typeof import("./app/routes/app.campaings._index/route.tsx");
   "routes/app.settings._index": typeof import("./app/routes/app.settings._index/route.tsx");
   "routes/app.actions._index": typeof import("./app/routes/app.actions._index/route.tsx");
+  "routes/app.bundles._index": typeof import("./app/routes/app.bundles._index/route.tsx");
   "routes/app.campaings.$id": typeof import("./app/routes/app.campaings.$id/route.tsx");
+  "routes/app.bundles.$id": typeof import("./app/routes/app.bundles.$id/route.tsx");
   "routes/app.qualifiers": typeof import("./app/routes/app.qualifiers/route.tsx");
   "routes/app.qualifiers._index": typeof import("./app/routes/app.qualifiers._index/route.tsx");
   "routes/app.qualifiers.$id": typeof import("./app/routes/app.qualifiers.$id/route.tsx");

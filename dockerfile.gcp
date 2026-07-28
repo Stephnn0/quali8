@@ -1,0 +1,63 @@
+FROM node:20-alpine
+
+RUN apk add --no-cache openssl
+
+WORKDIR /app
+
+EXPOSE 3000
+
+COPY package.json package-lock.json* ./
+
+RUN npm ci --omit=dev && npm cache clean --force
+
+# Remove Shopify CLI from the production image
+RUN npm remove @shopify/cli
+
+COPY . .
+
+# Build arguments
+ARG DATABASE_URL
+ARG SHOPIFY_API_KEY
+ARG SHOPIFY_API_SECRET
+ARG SHOPIFY_APP_HANDLE
+ARG SHOPIFY_BASIC_PLAN_ID
+ARG SHOPIFY_FREE_PLAN_ID
+ARG SHOPIFY_SHIPPING_DISCOUNTS_ID
+ARG SCOPES
+ARG SHOPIFY_APP_URL 
+ARG VITE_SHOPIFY_API_KEY
+
+# Runtime environment
+ENV NODE_ENV=production
+
+ENV DATABASE_URL=${DATABASE_URL}
+ENV SHOPIFY_API_KEY=${SHOPIFY_API_KEY}
+ENV SHOPIFY_API_SECRET=${SHOPIFY_API_SECRET}
+ENV SHOPIFY_APP_HANDLE=${SHOPIFY_APP_HANDLE}
+ENV SHOPIFY_BASIC_PLAN_ID=${SHOPIFY_BASIC_PLAN_ID}
+ENV SHOPIFY_FREE_PLAN_ID=${SHOPIFY_FREE_PLAN_ID}
+ENV SHOPIFY_SHIPPING_DISCOUNTS_ID=${SHOPIFY_SHIPPING_DISCOUNTS_ID}
+ENV SCOPES=${SCOPES}
+ENV SHOPIFY_APP_URL =${ SHOPIFY_APP_URL }
+
+# Vite variables (available at build time)
+ENV VITE_SHOPIFY_API_KEY=${VITE_SHOPIFY_API_KEY}
+
+# Debug build-time environment
+RUN echo "===== BUILD ENVIRONMENT =====" && \
+    echo "DATABASE_URL=${DATABASE_URL:+SET}" && \
+    echo "SHOPIFY_API_KEY=${SHOPIFY_API_KEY:+SET}" && \
+    echo "SHOPIFY_API_SECRET=${SHOPIFY_API_SECRET:+SET}" && \
+    echo "SHOPIFY_APP_HANDLE='${SHOPIFY_APP_HANDLE}'" && \
+    echo "SHOPIFY_BASIC_PLAN_ID='${SHOPIFY_BASIC_PLAN_ID}'" && \
+    echo "SHOPIFY_FREE_PLAN_ID='${SHOPIFY_FREE_PLAN_ID}'" && \
+    echo "SHOPIFY_SHIPPING_DISCOUNTS_ID='${SHOPIFY_SHIPPING_DISCOUNTS_ID}'" && \
+    echo "SCOPES='${SCOPES}'" && \
+    echo "VITE_SHOPIFY_API_KEY=${VITE_SHOPIFY_API_KEY:+SET}"
+
+RUN npm run prisma generate --no-hints
+
+# Skip server env validation only during the build
+RUN SKIP_ENV_VALIDATION=true npm run build
+
+CMD ["npm", "run", "docker-start"]

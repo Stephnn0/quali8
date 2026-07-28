@@ -34,3 +34,11 @@ redirect_urls = [
 
 [pos]
 embedded = false
+
+# Storefront → app bridge for theme blocks. `/apps/quali8/<path>` on the shop
+# is signed by Shopify and forwarded to `<url>/<path>` (routes under
+# app/routes/proxy.*). The dev tunnel URL is rewritten by `shopify app dev`.
+[app_proxy]
+url = "https://shakira-estimates-catherine-club.trycloudflare.com/proxy"
+prefix = "apps"
+subpath = "quali8"
