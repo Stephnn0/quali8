@@ -27,7 +27,6 @@ ARG VITE_SHOPIFY_API_KEY
 
 # Runtime environment
 ENV NODE_ENV=production
-ENV HOST=0.0.0.0
 ENV PORT=3000
 
 # Vite variable needed during build
