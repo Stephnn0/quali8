@@ -1,0 +1,27 @@
+query CartDeliveryOptionsInput {
+  cart {
+    cost {
+      subtotalAmount {
+        amount
+      }
+    }
+    buyerIdentity {
+      customer {
+        id
+      }
+    }
+    deliveryGroups {
+      id
+      deliveryOptions {
+        handle
+        title
+      }
+    }
+  }
+  discount {
+    discountClasses
+    metafield(key: "quali8_shipping_discounts") {
+      jsonValue
+    }
+  }
+}
