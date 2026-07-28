@@ -1,8 +1,10 @@
 {%- comment -%}
   Quali8 — Smart Recommendations (product + cart app block).
   Fetches occasion/recipient/budget-aware product picks from the app proxy
-  (/apps/quali8/recommendations) and renders a picker plus product cards.
-  Stays hidden (zero layout shift) until recommendations are found.
+  (/apps/quali8/recommendations) and renders a subtle filter row above a
+  scroll-snap product carousel. Renders compact on product pages (the block
+  sits inside product information). Stays hidden (zero layout shift) until
+  recommendations are found.
 {%- endcomment -%}
 
 <div
@@ -16,6 +18,7 @@
   data-show-picker="{{ block.settings.show_picker }}"
   data-button-label="{{ block.settings.button_label | escape }}"
   data-added-label="{{ block.settings.added_label | escape }}"
+  data-after-add="{{ block.settings.after_add }}"
   style="--q8-recs-bg: {{ block.settings.background_color }}; --q8-recs-text: {{ block.settings.text_color }}; --q8-recs-accent: {{ block.settings.accent_color }};"
   hidden
 ></div>
@@ -39,7 +42,7 @@
     {
       "type": "checkbox",
       "id": "show_picker",
-      "label": "Show occasion, recipient, and budget picker",
+      "label": "Show occasion, recipient, and budget filters",
       "default": true
     },
     {
@@ -53,6 +56,16 @@
       "id": "added_label",
       "label": "Added confirmation label",
       "default": "Added ✓"
+    },
+    {
+      "type": "select",
+      "id": "after_add",
+      "label": "After adding to cart",
+      "options": [
+        { "value": "stay", "label": "Stay on page" },
+        { "value": "cart", "label": "Go to cart" }
+      ],
+      "default": "stay"
     },
     {
       "type": "color",
