@@ -5,6 +5,7 @@ import NameDescriptionQualifier from "./components/NameDescription";
 import { OperatorQualifier } from "./components/OperatorQualifier";
 import CustomersQueryQualifier from "./components/CustomersQueryQualifier";
 import NewCondtions from "./components/NewConditions";
+import { AudienceInsights } from "./components/AudienceInsights";
 import { useFilterCustomersForm } from "./hooks/filterCustomers";
 import { useLoaderData, useNavigate } from "react-router";
 
@@ -35,6 +36,16 @@ export default function QualifiersForm() {
       }}
     >
       <Layout>
+        {qualifier ? (
+          <Layout.Section>
+            <AudienceInsights
+              customers={qualifier.customers}
+              conditions={qualifier.conditions}
+              conditionLogicType={qualifier.conditionLogicType}
+              lastSyncedAt={qualifier.lastSyncedAt}
+            />
+          </Layout.Section>
+        ) : null}
         <Layout.Section>
           <NameDescriptionQualifier form={form} />
         </Layout.Section>
