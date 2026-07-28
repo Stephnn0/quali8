@@ -15,7 +15,15 @@ export default async function createShippingDiscountServer(
 ) {
   console.log("------------------createShippingDiscountServer ---------------");
   console.log("body", JSON.stringify(body, null, 2));
-  const { admin, session } = authAdminContext;
+  const { session } = authAdminContext;
+
+  if (!session.accessToken) {
+    throw new Error("No admin access token available to create the discount");
+  }
+  const credentials = {
+    shop: session.shop,
+    accessToken: session.accessToken,
+  };
 
   let customers: Customer[] = [];
   if (!body.appliesToAllCustomers) {
@@ -56,7 +64,7 @@ export default async function createShippingDiscountServer(
     });
 
     shippingDiscount = await createShippingDiscount({
-      graphql: admin.graphql,
+      credentials,
       code: body.codeOrName,
       body: JSON.stringify(metafieldData),
       startDate: formattedStartDate,
@@ -87,7 +95,7 @@ export default async function createShippingDiscountServer(
     });
 
     shippingDiscount = await createShippingAutomaticDiscount({
-      graphql: admin.graphql,
+      credentials,
       title: body.codeOrName,
       body: JSON.stringify(metafieldData),
       startDate: formattedStartDate,
