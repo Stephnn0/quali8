@@ -1,4 +1,10 @@
-import { Link, useFetcher, useLoaderData, useSearchParams } from "react-router";
+import {
+  Link,
+  useFetcher,
+  useLoaderData,
+  useNavigate,
+  useSearchParams,
+} from "react-router";
 import {
   Badge,
   BlockStack,
@@ -89,6 +95,7 @@ export default function Audiences() {
 
   const shopify = useAppBridge();
   const fetcher = useFetcher();
+  const navigate = useNavigate();
 
   const handleDeleteClick = (id: number, conditionIds: number[]) => {
     setSelectedAudience({ id, conditionIds });
@@ -216,11 +223,12 @@ export default function Audiences() {
     <Page
       title="Audiences"
       subtitle="Group customers by behavior and target them with promotions"
-      primaryAction={
-        <Link to="new">
-          <Button variant="primary">Create audience</Button>
-        </Link>
-      }
+      primaryAction={{
+        content: "Create audience",
+        // Client-side navigation only — a plain link would trigger a full
+        // document load and dump the merchant on the login screen.
+        onAction: () => navigate("/app/qualifiers/new"),
+      }}
     >
       <Layout>
         {summary && audiences.length > 0 ? (
@@ -275,7 +283,10 @@ export default function Audiences() {
             <Card>
               <EmptyState
                 heading="Create your first audience"
-                action={{ content: "Create audience", url: "/app/qualifiers/new" }}
+                action={{
+                  content: "Create audience",
+                  onAction: () => navigate("/app/qualifiers/new"),
+                }}
                 image={emptyImage}
               >
                 <p>
