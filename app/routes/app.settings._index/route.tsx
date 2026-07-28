@@ -1,112 +1,185 @@
-import React from "react";
-import { Billing } from "app/components/BIlling";
+import {
+  Badge,
+  BlockStack,
+  Box,
+  Button,
+  Card,
+  Divider,
+  Icon,
+  InlineGrid,
+  InlineStack,
+  Page,
+  Text,
+} from "@shopify/polaris";
+import { CheckIcon } from "@shopify/polaris-icons";
+import { APP } from "app/constants/app.constants";
+import { APP_PLANS } from "app/constants/plans";
+import { useAppSubscription } from "app/services/subscriptions/hooks/useAppSubscription";
 
-const PLANS = [
+const PRICING_PAGE_URL = `shopify://admin/charges/${APP.APP_HANDLE}/pricing_plans`;
+
+/**
+ * The public plan cards. Feature lists cover everything the app currently
+ * offers; entitlements must match the seeded `RecurringPlan` flags
+ * (`hasQualifiers` / `hasShippingDiscounts` / `hasBundles`).
+ */
+const PLAN_CARDS = [
   {
-    name: "Free Plan",
+    name: APP_PLANS.FREE.name,
     price: "Free",
+    priceDetail: "No credit card required",
+    description: "Get to know your customers and dress up your storefront.",
     features: [
-      "Create customer groups based on their behavior",
+      "Audiences — group customers by tags, order count, spending, and more",
+      "Free shipping progress bar theme block",
+      "Product star ratings theme block",
     ],
-    // badge: "Current plan",
-    action: null,
-    highlight: false,
   },
   {
-    name: "Basic",
+    name: APP_PLANS.BASIC.name, // "Pro" — the paid plan
     price: "$10/month",
+    priceDetail: `or $108/year (save 10%) · ${APP_PLANS.BASIC.trialDays}-day free trial`,
+    description: "Everything in Free, plus the discounts that convert.",
     features: [
-      "Unlimited shipping discounts at checkout",
-      "Create customer groups based on their behavior",
+      "Everything in the Free plan",
+      "Shipping discounts at checkout — automatic or code-based, targeted at your Audiences",
+      "Promotion controls: minimum cart value, selected shipping rates, start and end dates",
+      "Product bundles (frequently bought together) with automatic checkout discounts",
     ],
-    badge: null,
-    highlight: true,
   },
-];
+] as const;
 
-export default function Settings() {
-  return (
-    <div>
-      <h1 style={{ fontSize: "2rem", fontWeight: "600", margin: "2rem 0", textAlign: "center" }}>
-        Plans &amp; Billing
-      </h1>
-      <div
-        style={{
-          display: "flex",
-          gap: "2rem",
-          justifyContent: "center",
-          flexWrap: "wrap",
-          marginTop: "2rem",
-        }}
-      >
-        {PLANS.map((plan) => (
-          <div
-            key={plan.name}
-            style={{
-              boxShadow: "0 1px 5px rgba(13,28,43,0.12)",
-              borderRadius: "12px",
-              padding: "2rem 2.5rem",
-              background: plan.highlight ? "#F3FBF7" : "#fff",
-              minWidth: "320px",
-              maxWidth: "340px",
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "flex-start",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
-              <h3 style={{ fontSize: "1.15rem", fontWeight: 600, margin: 0 }}>{plan.name}</h3>
-              {plan.badge && (
-                <span
-                  style={{
-                    display: "inline-block",
-                    background: "#E0F0EC",
-                    color: "#008060",
-                    borderRadius: "10px",
-                    padding: "2px 10px",
-                    fontSize: "0.79rem",
-                    fontWeight: 500,
-                  }}
-                >
-                  {/* {plan.badge} */}
-                </span>
-              )}
-            </div>
-            <div style={{ fontSize: "2.1rem", fontWeight: 700, margin: "5px 0 18px" }}>
-              {plan.price}
-            </div>
-            <ul style={{ paddingLeft: 19, margin: 0, marginBottom: "1.3rem" }}>
-              {plan.features.map((feature) => (
-                <li key={feature} style={{ marginBottom: "3px" }}>
-                  <span style={{ fontSize: "1rem", color: "#232323" }}>{feature}</span>
-                </li>
-              ))}
-            </ul>
-           
-          </div>
-        ))}
-      </div>
-      <br />
-      <div   
-        style={{
-          display: "flex",
-          gap: "2rem",
-          justifyContent: "center",
-          flexWrap: "wrap",
-          marginTop: "2rem",
-        }}>
-      <Billing />
-
-      </div>
-    </div>
-  );
+function formatInterval(interval?: string | null) {
+  if (interval === "ANNUAL") return "year";
+  if (interval === "EVERY_30_DAYS") return "30 days";
+  return null;
 }
 
+export default function Settings() {
+  const { subscription, isSubscribed } = useAppSubscription();
 
-// export default function Settings() {
-//   return (
-//     <Page title="Settings">
-//       <Billing />
-//     </Page>
-//   );
-// }
+  const currentPlan = subscription.recurringPlan;
+  const currentPlanName = currentPlan?.name ?? APP_PLANS.FREE.name;
+  const interval = formatInterval(currentPlan?.interval);
+
+  const paidPrice =
+    subscription.shopifyRecurringPricing?.discountPriceAfter ??
+    subscription.shopifyRecurringPricing?.price ??
+    currentPlan?.price ??
+    0;
+
+  const renewsOn = subscription.currentPeriodEnd
+    ? new Date(subscription.currentPeriodEnd).toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : null;
+
+  return (
+    <Page
+      title="Plans & billing"
+      subtitle="Manage your Quali8 subscription"
+      primaryAction={{
+        content: isSubscribed ? "Manage plan" : "Choose a plan",
+        url: PRICING_PAGE_URL,
+      }}
+    >
+      <BlockStack gap="500">
+        {/* Current subscription */}
+        <Card>
+          <BlockStack gap="200">
+            <InlineStack align="space-between" blockAlign="center">
+              <InlineStack gap="200" blockAlign="center">
+                <Text as="h2" variant="headingMd">
+                  {currentPlanName} plan
+                </Text>
+                <Badge tone={isSubscribed ? "success" : "info"}>
+                  {isSubscribed ? "Active" : "Free"}
+                </Badge>
+                {subscription.test ? <Badge tone="warning">Test</Badge> : null}
+              </InlineStack>
+              <Text as="p" variant="headingMd">
+                {paidPrice > 0 && interval ? `$${paidPrice} / ${interval}` : "$0"}
+              </Text>
+            </InlineStack>
+            {isSubscribed && renewsOn ? (
+              <Text as="p" tone="subdued">
+                Renews on {renewsOn}
+              </Text>
+            ) : (
+              <Text as="p" tone="subdued">
+                You’re on the Free plan. Upgrade to {APP_PLANS.BASIC.name} to
+                unlock shipping discounts and product bundles.
+              </Text>
+            )}
+          </BlockStack>
+        </Card>
+
+        {/* Plan comparison */}
+        <InlineGrid columns={{ xs: 1, sm: 2 }} gap="400">
+          {PLAN_CARDS.map((plan) => {
+            const isCurrent = plan.name === currentPlanName;
+            const isPaidCard = plan.name === APP_PLANS.BASIC.name;
+
+            return (
+              <Card key={plan.name}>
+                <BlockStack gap="400">
+                  <BlockStack gap="100">
+                    <InlineStack gap="200" blockAlign="center">
+                      <Text as="h3" variant="headingMd">
+                        {plan.name}
+                      </Text>
+                      {isCurrent ? <Badge tone="success">Current plan</Badge> : null}
+                    </InlineStack>
+                    <Text as="p" variant="heading2xl">
+                      {plan.price}
+                    </Text>
+                    <Text as="p" tone="subdued" variant="bodySm">
+                      {plan.priceDetail}
+                    </Text>
+                  </BlockStack>
+
+                  <Text as="p" tone="subdued">
+                    {plan.description}
+                  </Text>
+
+                  <Divider />
+
+                  <BlockStack gap="200">
+                    {plan.features.map((feature) => (
+                      <InlineStack key={feature} gap="150" wrap={false} blockAlign="start">
+                        <Box>
+                          <Icon source={CheckIcon} tone="success" />
+                        </Box>
+                        <Text as="p">{feature}</Text>
+                      </InlineStack>
+                    ))}
+                  </BlockStack>
+
+                  {isPaidCard ? (
+                    <Button
+                      variant={isCurrent ? "secondary" : "primary"}
+                      url={PRICING_PAGE_URL}
+                      fullWidth
+                    >
+                      {isCurrent ? "Manage plan" : `Upgrade to ${plan.name}`}
+                    </Button>
+                  ) : (
+                    <Button
+                      disabled={isCurrent}
+                      url={PRICING_PAGE_URL}
+                      fullWidth
+                    >
+                      {isCurrent ? "Your current plan" : "Switch plan"}
+                    </Button>
+                  )}
+                </BlockStack>
+              </Card>
+            );
+          })}
+        </InlineGrid>
+      </BlockStack>
+    </Page>
+  );
+}

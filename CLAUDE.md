@@ -17,6 +17,7 @@ The nav labels do **not** match the model/route names — keep this straight:
 |----------|--------------|--------------|
 | Audiences | `app.qualifiers.*` | `Qualifiers` |
 | Promotions | `app.actions.discounts.*` | `ShippingDiscountAction` |
+| Bundles | `app.bundles.*` | `Bundle` |
 | Subscriptions | `app.settings._index` | `ShopifySubscription` |
 | Campaigns (WIP, nav link hidden) | `app.campaings.*` | `Campaign` |
 
@@ -99,7 +100,9 @@ Every server `loader`/`action` starts with `await authenticate.admin(request)` (
 `getAppStatus` (`app/services/setup/getAppStatus.ts`) checks the `ShopifyStore` row on every `/app` load. If the row is missing or `status !== "SETUP"`, it **redirects to `/setup`**, which runs `setupApp`: creates the store, resolves the Shopify `functionId` via `getFunctionId`, sets up the subscription metafield, then marks the store `SETUP`. **Every `ShopifyStore` must have a `functionId`** — it's required by the discount-create mutations (`discounts.server.ts` throws `"Function ID not found"` without it). `functionId` is only written on store *creation*; `app/routes/app/route.tsx` self-heals a missing one by re-fetching and persisting it.
 
 ### Subscriptions & gatekeeping
-Billing uses Shopify's `AppSubscription`, mirrored into our `ShopifySubscription` (+ `RecurringPlan`/`ShopifyRecurringPricing`). `gatekeep()` (`app/services/subscriptions/gatekeep/gatekeep.ts`) returns a gate `code` (or `null` to allow) based on criteria like plan level, dev-store whitelist, and feature flags (`hasQualifiers`, `hasShippingDiscounts`). `gatekeepRoute()` runs it in a loader and, when blocked, redirects to `/app/gatekeep?code=<CODE>`. Client-side gating uses `useGatekeepFeature`.
+Billing uses Shopify's `AppSubscription`, mirrored into our `ShopifySubscription` (+ `RecurringPlan`/`ShopifyRecurringPricing`). `gatekeep()` (`app/services/subscriptions/gatekeep/gatekeep.ts`) returns a gate `code` (or `null` to allow) based on criteria like plan level, dev-store whitelist, and feature flags (`hasQualifiers`, `hasShippingDiscounts`, `hasBundles`). `gatekeepRoute()` runs it in a loader and, when blocked, redirects to `/app/gatekeep?code=<CODE>`. Client-side gating uses `useGatekeepFeature`.
+
+There are exactly two plans: **Free** and **Pro** ($10/mo, $108/yr, 5-day trial). The paid plan's constant key/level is still `BASIC` (renaming the enum isn't worth the churn) but its public `name` is `"Pro"` and its seed codes are `pro-monthly`/`pro-annual`. **Bundles are Pro-only** (`hasBundles`): the `app.bundles.*` loaders/actions gatekeep with `{ hasBundles: true }` (code `AP014`), the `proxy.bundle` route and `syncBundleDiscounts` check `shopHasBundles()` (works without an admin session), so a downgrade hides the storefront card and tears down the automatic discount on the next bundle mutation. After changing plan data, run `npx prisma db seed`.
 
 ### The Function contract (important)
 `extensions/shipping-discounts/src/run.ts` reads its config from `input.discountNode.metafield.value` and parses it into `ParsedBody` (`src/types.ts`). The shape the app writes when creating a discount (in `api.actions.discounts`) **must stay in sync** with `ParsedBody`, or the function will silently produce empty discounts. The function checks, in order: minimum cart value → customer eligibility (`appliesToAllCustomers` or customer ID in list) → shipping rate selection (`ALL_RATES` vs `SELECTED_RATES`) → discount value (`percentage` vs `fixed`).

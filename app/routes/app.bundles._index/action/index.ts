@@ -6,6 +6,7 @@ import {
 } from "app/models/app.server/bundles/bundles.server";
 import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
+import { gatekeepRoute } from "app/services/subscriptions/gatekeepRoute";
 import { trySyncBundleDiscounts } from "app/services/bundles/bundleDiscountSync.server";
 import { handleApiSuccess } from "app/utils/handleApiSuccess";
 import { handleApiError } from "app/utils/server/handleApiResponse/handleApiError.server";
@@ -24,9 +25,12 @@ const statusSchema = z.object({
  * PATCH  — activate/deactivate a bundle.
  */
 export async function action({ request }: ActionFunctionArgs) {
-  const { session } = await authenticate.admin(request);
+  const authAdminContext = await authenticate.admin(request);
+  const { session } = authAdminContext;
 
   try {
+    await gatekeepRoute({ authAdminContext }, { hasBundles: true }, "throw"); // * Throws the gate code
+
     const formData = await request.formData();
     const parsedBody = JSON.parse(String(formData.get("body") ?? "{}"));
 

@@ -74,6 +74,11 @@ export const GATEKEEP_ERROR_CODE_MAP = {
     message:
       "Your subscription does not include write permissions for general APIs.",
   },
+  // Error: Missing product bundles
+  AP014: {
+    code: "AP014",
+    message: "Your subscription does not include product bundles.",
+  },
   // Developer Preview store error
   DP001: {
     code: "DP001",

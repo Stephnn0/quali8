@@ -10,6 +10,7 @@ import {
 } from "app/models/shopify.server/products/products";
 import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
+import { gatekeepRoute } from "app/services/subscriptions/gatekeepRoute";
 import { trySyncBundleDiscounts } from "app/services/bundles/bundleDiscountSync.server";
 import { handleApiSuccess } from "app/utils/handleApiSuccess";
 import { handleApiError } from "app/utils/server/handleApiResponse/handleApiError.server";
@@ -21,10 +22,13 @@ import { bundleFormSchema } from "../zod";
  * Body is the codebase-standard `body` form field holding JSON.
  */
 export async function action({ request, params }: ActionFunctionArgs) {
-  const { session, admin } = await authenticate.admin(request);
+  const authAdminContext = await authenticate.admin(request);
+  const { session, admin } = authAdminContext;
   const id = String(params.id || "");
 
   try {
+    await gatekeepRoute({ authAdminContext }, { hasBundles: true }, "throw"); // * Throws the gate code
+
     const formData = await request.formData();
     const parsed = bundleFormSchema.parse(
       JSON.parse(String(formData.get("body") ?? "{}")),

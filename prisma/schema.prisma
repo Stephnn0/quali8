@@ -344,6 +344,7 @@ model RecurringPlan {
   // 
   hasQualifiers        Boolean                @default(false)
   hasShippingDiscounts Boolean                @default(false)
+  hasBundles           Boolean                @default(false)
   //
   //
   read_generalApis     Boolean /// Whether the merchant can read general APIs

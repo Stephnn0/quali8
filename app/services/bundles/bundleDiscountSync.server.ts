@@ -10,6 +10,7 @@ import {
 } from "app/models/shopify.server/discounts/bundleDiscounts.server";
 import { handleApiError } from "app/utils/server/handleApiResponse/handleApiError.server";
 import { buildBundleDiscountConfig } from "./bundleDiscountConfig";
+import { shopHasBundles } from "./bundleEntitlement.server";
 
 /**
  * Keeps the shop's single automatic app discount (backed by the
@@ -30,11 +31,16 @@ export async function syncBundleDiscounts(session: Session, db: PrismaClient) {
   }
   const credentials: AdminCredentials = { shop, accessToken };
 
-  const [bundles, store] = await Promise.all([
+  const [bundles, store, entitled] = await Promise.all([
     getActiveBundlesForShop(shop, db),
     getShopifyStore({ where: { shop } }, db),
+    shopHasBundles(shop, db),
   ]);
-  const activeBundles = bundles.filter((bundle) => bundle.items.length > 0);
+  // A shop that lost the Pro plan keeps its bundles in our DB, but the
+  // checkout discount is torn down like there were none.
+  const activeBundles = entitled
+    ? bundles.filter((bundle) => bundle.items.length > 0)
+    : [];
   const currentDiscountId = store?.bundleDiscountId ?? null;
 
   if (activeBundles.length === 0) {

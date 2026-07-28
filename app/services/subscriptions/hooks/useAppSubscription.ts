@@ -10,6 +10,7 @@ export function useAppSubscription() {
   const subHasShippingDiscounts = !useGatekeepFeature({
     hasShippingDiscounts: true,
   });
+  const subHasBundles = !useGatekeepFeature({ hasBundles: true });
 
   return {
     subscription,
@@ -18,5 +19,6 @@ export function useAppSubscription() {
 
     subHasQualifiers,
     subHasShippingDiscounts,
+    subHasBundles,
   };
 }

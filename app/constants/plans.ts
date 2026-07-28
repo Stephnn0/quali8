@@ -10,10 +10,15 @@ export const APP_PLANS = {
 
     hasQualifiers: true,
     hasShippingDiscounts: false,
+    hasBundles: false,
   },
 
+  // The paid plan. Historically named "Basic" (the constant key and the
+  // `BASIC` level are kept for stability); publicly it is the "Pro" plan —
+  // its seed codes were always `pro-monthly`/`pro-annual`. Subscription→plan
+  // matching also works via `shopifyPlanID`, so the rename is safe.
   BASIC: {
-    name: "Basic",
+    name: "Pro",
     level: "BASIC",
     trialDays: 5,
 
@@ -23,6 +28,7 @@ export const APP_PLANS = {
 
     hasQualifiers: true,
     hasShippingDiscounts: true,
+    hasBundles: true,
   },
 } as const;
 
