@@ -32,6 +32,25 @@ function shippingDiscountClient({ shop, accessToken }: AdminCredentials) {
   });
 }
 
+/**
+ * Shopify reports a function/discount mismatch with messages that don't say
+ * what to do about it. Both cases mean the *deployed* function version is out
+ * of step with this app code — extensions only update via `npm run deploy`,
+ * so deploying the web app alone (or deploying from a checkout that predates
+ * the function migration) leaves the old function live.
+ */
+function explainFunctionVersionError(message: string): string {
+  const staleFunction =
+    message.includes("does not support shipping discounts") ||
+    message.includes("require the discountClasses field");
+  if (!staleFunction) return message;
+  return (
+    `${message} — the shipping-discounts function deployed to Shopify is ` +
+    "an older version. Pull the latest main and run `npm run deploy` " +
+    "(Shopify CLI) with the production app config to update it."
+  );
+}
+
 type CreateAutomaticShippingDiscountParams = {
   credentials: AdminCredentials;
   title: string;
@@ -106,9 +125,11 @@ export async function createShippingAutomaticDiscount({
     const payload = adminData?.discountAutomaticAppCreate;
     if (payload?.userErrors?.length) {
       throw new Error(
-        `Could not create the automatic shipping discount: ${payload.userErrors
-          .map((userError: { message: string }) => userError.message)
-          .join("; ")}`,
+        `Could not create the automatic shipping discount: ${explainFunctionVersionError(
+          payload.userErrors
+            .map((userError: { message: string }) => userError.message)
+            .join("; "),
+        )}`,
       );
     }
     if (!payload?.automaticAppDiscount?.discountId) {
@@ -201,9 +222,11 @@ export async function createShippingDiscount({
     const payload = adminData?.discountCodeAppCreate;
     if (payload?.userErrors?.length) {
       throw new Error(
-        `Could not create the shipping discount code: ${payload.userErrors
-          .map((userError: { message: string }) => userError.message)
-          .join("; ")}`,
+        `Could not create the shipping discount code: ${explainFunctionVersionError(
+          payload.userErrors
+            .map((userError: { message: string }) => userError.message)
+            .join("; "),
+        )}`,
       );
     }
     if (!payload?.codeAppDiscount?.discountId) {
