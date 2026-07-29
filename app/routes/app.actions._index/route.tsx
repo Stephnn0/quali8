@@ -3,7 +3,10 @@ import CheckoutBlock from "./components/Block";
 
 export default function Actions() {
   return (
-    <Page title="Marketing Promotions">
+    <Page
+      title="Promotions"
+      subtitle="Shipping discounts and product bundles for your sales seasons"
+    >
       <Layout>
         <Layout.Section>
           <InlineGrid gap="600" columns={3}>

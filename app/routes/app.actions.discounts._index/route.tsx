@@ -178,7 +178,7 @@ export default function AllActions() {
       backAction={{
         onAction: () => navigate("/app/actions"),
       }}
-      title="My Promotions"
+      title="Shipping Discounts"
       primaryAction={
         <Link to="new">
           <Button variant="primary">Create Shipping Discount</Button>

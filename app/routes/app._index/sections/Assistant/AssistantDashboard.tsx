@@ -14,6 +14,9 @@ import type {
   AssistantBrief,
   BriefChecklistItem,
 } from "app/services/assistant/briefSchema";
+import type { SeasonStatus } from "../../route";
+import ReadinessCard from "./ReadinessCard";
+import StatusGrid from "./StatusGrid";
 import styles from "./styles.module.css";
 
 const ART_GRADIENTS = [
@@ -98,6 +101,7 @@ type Props = {
   source: "AI" | "FALLBACK";
   generatedAt: string;
   checklistDone: string[];
+  status: SeasonStatus;
 };
 
 export default function AssistantDashboard({
@@ -108,6 +112,7 @@ export default function AssistantDashboard({
   source,
   generatedAt,
   checklistDone,
+  status,
 }: Props) {
   const refreshFetcher = useFetcher();
   const taskFetcher = useFetcher();
@@ -128,14 +133,26 @@ export default function AssistantDashboard({
       { method: "POST", encType: "multipart/form-data", action: "/api/assistant" },
     );
 
+  // The hero leads with the next revenue moment, not the app
+  const next = rail[0];
+  const nextDays = next ? daysAway(next.date) : null;
+
   return (
     <BlockStack gap="500">
       <div className={styles.banner}>
         <InlineStack align="space-between" blockAlign="start" gap="300">
           <div>
-            <p className={styles.bannerEyebrow}>Quali8 Assistant</p>
+            <p className={styles.bannerEyebrow}>Season Command Center</p>
             <h1 className={styles.bannerTitle}>
-              Your {nicheLabel.toLowerCase()} assistant
+              {next
+                ? `${next.name} is ${
+                    nextDays === 0
+                      ? "today"
+                      : nextDays === 1
+                        ? "tomorrow"
+                        : `in ${nextDays} days`
+                  } — is your store ready?`
+                : `Your ${nicheLabel.toLowerCase()} season command center`}
             </h1>
             <p className={styles.bannerText}>{brief.insight}</p>
             <div className={styles.bannerMeta}>
@@ -161,6 +178,12 @@ export default function AssistantDashboard({
         </InlineStack>
       </div>
 
+      <ReadinessCard
+        status={status}
+        checklistTotal={brief.checklist.length}
+        checklistDone={doneCount}
+      />
+
       <BlockStack gap="300">
         <Text as="h2" variant="headingMd">
           Coming up for your shop
@@ -176,11 +199,13 @@ export default function AssistantDashboard({
         </div>
       </BlockStack>
 
+      <StatusGrid status={status} />
+
       <Card>
         <BlockStack gap="400">
           <InlineStack align="space-between" blockAlign="center">
             <Text as="h2" variant="headingMd">
-              Get your shop ready
+              Season prep checklist
             </Text>
             <Text as="span" tone="subdued" variant="bodySm">
               {doneCount} of {brief.checklist.length} done
