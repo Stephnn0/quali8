@@ -64,6 +64,24 @@ export const CARD_ART: Record<string, { gradient: string; glyph: ReactNode }> = 
       </svg>
     ),
   },
+  menu: {
+    gradient: "linear-gradient(135deg, #14532d, #16a34a)",
+    glyph: (
+      <svg viewBox="0 0 40 40" aria-hidden="true">
+        <g {...white} strokeLinecap="round">
+          <line x1="9" y1="13" x2="31" y2="13" />
+          <line x1="9" y1="20" x2="24" y2="20" />
+          <line x1="9" y1="27" x2="27" y2="27" />
+          <line x1="31" y1="17" x2="31" y2="25" strokeOpacity="0" />
+        </g>
+        <circle cx="31" cy="24" r="6" fill="#F0C46C" />
+        <g stroke="#14532d" strokeWidth="2" strokeLinecap="round">
+          <line x1="31" y1="21.5" x2="31" y2="26.5" />
+          <line x1="28.5" y1="24" x2="33.5" y2="24" />
+        </g>
+      </svg>
+    ),
+  },
   popup: {
     gradient: "linear-gradient(135deg, #4a3aa7, #9085e9)",
     glyph: (
