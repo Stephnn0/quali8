@@ -5,7 +5,8 @@ export type AiFeature =
   | "brief"
   | "niche-inference"
   | "date-todos"
-  | "seo-meta";
+  | "seo-meta"
+  | "collection-faqs";
 
 /**
  * Records one Gemini call's token usage for a shop. Fire-and-forget:

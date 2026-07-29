@@ -55,6 +55,7 @@ model ShopifyStore {
   dashboardBrief DashboardBrief?
   specialDates   SpecialDate[]
   aiUsage        AiUsage[]
+  collectionFaqs CollectionFaq[]
 }
 
 enum AppStatus {
@@ -777,4 +778,25 @@ model AnnouncementBar {
   shop            String
 
   @@index([shop, startDate, endDate])
+}
+
+
+/// An SEO-friendly FAQ entry attached to a Shopify collection, rendered
+/// below the products on the collection page (with FAQPage JSON-LD) by the
+/// "Collection FAQs" theme block.
+model CollectionFaq {
+  id              Int      @id @default(autoincrement())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+  //
+  collectionId    String /// Shopify GID (`gid://shopify/Collection/123`)
+  collectionTitle String /// Snapshot from the resource picker, for admin display
+  question        String
+  answer          String
+  position        Int      @default(0)
+  //
+  shop            String
+  shopifyStore    ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([shop, collectionId])
 }
