@@ -4,7 +4,6 @@ import {
   Badge,
   BlockStack,
   Button,
-  Card,
   Checkbox,
   InlineStack,
   Select,
@@ -79,10 +78,17 @@ function TodoRow({ todo }: { todo: Todo }) {
 }
 
 /** Per-date to-do board grouped by kind, with inline add. */
-export default function TodoBoard({ todos }: { todos: Todo[] }) {
+export default function TodoBoard({
+  todos,
+  kinds,
+}: {
+  todos: Todo[];
+  kinds: Todo["kind"][];
+}) {
   const addFetcher = useFetcher();
   const [title, setTitle] = useState("");
-  const [kind, setKind] = useState<Todo["kind"]>("GENERAL");
+  const [kind, setKind] = useState<Todo["kind"]>(kinds[0] ?? "GENERAL");
+  const visible = todos.filter((todo) => kinds.includes(todo.kind));
 
   const add = () => {
     addFetcher.submit(
@@ -92,23 +98,19 @@ export default function TodoBoard({ todos }: { todos: Todo[] }) {
     setTitle("");
   };
 
-  const groups: Todo["kind"][] = ["SEO", "MARKETING", "GENERAL"];
-  const doneCount = todos.filter((todo) => todo.done).length;
+  const groups = kinds;
+  const doneCount = visible.filter((todo) => todo.done).length;
 
   return (
-    <Card>
-      <BlockStack gap="400">
-        <InlineStack align="space-between" blockAlign="center">
-          <Text as="h2" variant="headingMd">
-            Get ready for this date
-          </Text>
+    <BlockStack gap="400">
+        <InlineStack align="end">
           <Text as="span" tone="subdued" variant="bodySm">
-            {doneCount} of {todos.length} done
+            {doneCount} of {visible.length} done
           </Text>
         </InlineStack>
 
         {groups.map((group) => {
-          const items = todos.filter((todo) => todo.kind === group);
+          const items = visible.filter((todo) => todo.kind === group);
           if (!items.length) return null;
           return (
             <BlockStack key={group} gap="300">
@@ -133,17 +135,18 @@ export default function TodoBoard({ todos }: { todos: Todo[] }) {
               placeholder="Add your own to-do"
             />
           </div>
-          <Select
-            label="Kind"
-            labelHidden
-            options={[
-              { label: "General", value: "GENERAL" },
-              { label: "SEO", value: "SEO" },
-              { label: "Marketing", value: "MARKETING" },
-            ]}
-            value={kind}
-            onChange={(value) => setKind(value as Todo["kind"])}
-          />
+          {kinds.length > 1 ? (
+            <Select
+              label="Kind"
+              labelHidden
+              options={kinds.map((value) => ({
+                label: KIND_LABEL[value],
+                value,
+              }))}
+              value={kind}
+              onChange={(value) => setKind(value as Todo["kind"])}
+            />
+          ) : null}
           <Button
             icon={PlusIcon}
             onClick={add}
@@ -153,7 +156,6 @@ export default function TodoBoard({ todos }: { todos: Todo[] }) {
             Add
           </Button>
         </InlineStack>
-      </BlockStack>
-    </Card>
+    </BlockStack>
   );
 }

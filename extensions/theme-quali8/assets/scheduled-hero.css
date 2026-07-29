@@ -1,0 +1,60 @@
+.q8-hero {
+  background-size: cover;
+  background-position: center;
+  min-height: 22rem;
+  display: flex;
+  align-items: center;
+  color: #ffffff;
+}
+
+.q8-hero[hidden] {
+  display: none !important;
+}
+
+.q8-hero__inner {
+  max-width: 36rem;
+  padding: 3rem 2.5rem;
+}
+
+.q8-hero__heading {
+  margin: 0;
+  font-size: 2.25rem;
+  line-height: 1.15;
+  font-weight: 700;
+}
+
+.q8-hero__description {
+  margin: 0.75rem 0 0;
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  opacity: 0.92;
+}
+
+.q8-hero__button {
+  display: inline-block;
+  margin-top: 1.25rem;
+  background: #ffffff;
+  color: #1a1a1a;
+  text-decoration: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 650;
+  font-size: 0.9375rem;
+  transition: opacity 120ms ease;
+}
+
+.q8-hero__button:hover {
+  opacity: 0.85;
+}
+
+@media (max-width: 600px) {
+  .q8-hero {
+    min-height: 16rem;
+  }
+  .q8-hero__heading {
+    font-size: 1.5rem;
+  }
+  .q8-hero__inner {
+    padding: 2rem 1.25rem;
+  }
+}

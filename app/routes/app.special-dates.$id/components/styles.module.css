@@ -1,0 +1,83 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr));
+  gap: 1rem;
+}
+
+.actionCard {
+  appearance: none;
+  text-align: left;
+  border: 1px solid #e5e5e5;
+  border-radius: 12px;
+  background: #ffffff;
+  overflow: hidden;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  transition: transform 140ms ease, box-shadow 140ms ease;
+  font: inherit;
+  color: inherit;
+}
+
+.actionCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.3);
+}
+
+.actionCard:focus-visible {
+  outline: 2px solid #5c3d99;
+  outline-offset: 2px;
+}
+
+.art {
+  height: 5.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.art svg {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.body {
+  padding: 0.875rem 1rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.title {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 650;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.description {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  color: #55565b;
+}
+
+.status {
+  margin-top: 0.5rem;
+  align-self: flex-start;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 0.125rem 0.5rem;
+  background: #f1f1f1;
+  color: #444;
+}
+
+.statusActive {
+  background: #e5f5ec;
+  color: #0f5132;
+}

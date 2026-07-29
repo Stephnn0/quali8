@@ -674,6 +674,8 @@ model SpecialDate {
   todos            SpecialDateTodo[]
   seoActions       SeoMetaAction[]
   announcementBar  AnnouncementBar?
+  scheduledHero    ScheduledHero?
+  subscribePopup   SubscribePopup?
   //
   shop             String
   shopifyStore     ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
@@ -799,4 +801,51 @@ model CollectionFaq {
   shopifyStore    ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
 
   @@index([shop, collectionId])
+}
+
+
+/// A scheduled homepage hero section tied to a special date. Served via the
+/// app proxy while today is inside the window.
+model ScheduledHero {
+  id            Int      @id @default(autoincrement())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
+  //
+  enabled       Boolean  @default(true)
+  imageUrl      String
+  heading       String
+  description   String?
+  buttonLabel   String?
+  buttonUrl     String?
+  startDate     String /// ISO yyyy-mm-dd, inclusive
+  endDate       String /// ISO yyyy-mm-dd, inclusive
+  //
+  specialDateId Int         @unique
+  specialDate   SpecialDate @relation(fields: [specialDateId], references: [id], onDelete: Cascade)
+  shop          String
+
+  @@index([shop, startDate, endDate])
+}
+
+/// A scheduled first-time-subscriber popup tied to a special date. Shown on
+/// the home page while inside the window, suppressed for shoppers who are
+/// already subscribed (signed-in check) or already saw it (localStorage).
+model SubscribePopup {
+  id            Int      @id @default(autoincrement())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
+  //
+  enabled       Boolean  @default(true)
+  imageUrl      String
+  heading       String
+  description   String
+  discountCode  String
+  startDate     String /// ISO yyyy-mm-dd, inclusive
+  endDate       String /// ISO yyyy-mm-dd, inclusive
+  //
+  specialDateId Int         @unique
+  specialDate   SpecialDate @relation(fields: [specialDateId], references: [id], onDelete: Cascade)
+  shop          String
+
+  @@index([shop, startDate, endDate])
 }

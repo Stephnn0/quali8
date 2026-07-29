@@ -1,0 +1,33 @@
+{%- comment -%}
+  Quali8 — Subscribe popup (home page app block).
+  Fetches the active popup from the app proxy (/apps/quali8/popup); the app
+  decides visibility by date window and suppresses signed-in shoppers who
+  already subscribed. Anonymous repeat views are suppressed via
+  localStorage. Subscribing posts to the storefront's native /contact
+  newsletter endpoint and reveals the discount code.
+{%- endcomment -%}
+
+<div class="q8-popup" data-quali8-popup data-delay="{{ block.settings.delay_seconds }}" hidden></div>
+
+{% schema %}
+{
+  "name": "Subscribe popup",
+  "target": "section",
+  "javascript": "subscribe-popup.js",
+  "stylesheet": "subscribe-popup.css",
+  "enabled_on": {
+    "templates": ["index"]
+  },
+  "settings": [
+    {
+      "type": "range",
+      "id": "delay_seconds",
+      "label": "Show after (seconds)",
+      "min": 0,
+      "max": 30,
+      "step": 1,
+      "default": 4
+    }
+  ]
+}
+{% endschema %}
