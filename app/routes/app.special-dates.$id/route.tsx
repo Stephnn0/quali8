@@ -7,6 +7,7 @@ import db from "app/db.server";
 import { gatekeepRoute } from "app/services/subscriptions/gatekeepRoute";
 import { generateDateTodos } from "app/services/assistant/dateTodos.server";
 import TodoBoard from "./components/TodoBoard";
+import AnnouncementScheduler from "./components/AnnouncementScheduler";
 import SeoOptimizer from "./components/SeoOptimizer";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -43,7 +44,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     );
   }
 
-  const [todos, seoActions] = await Promise.all([
+  const [todos, seoActions, announcementBar] = await Promise.all([
     db.specialDateTodo.findMany({
       where: { specialDateId: specialDate.id },
       orderBy: [{ kind: "asc" }, { position: "asc" }, { id: "asc" }],
@@ -52,6 +53,9 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       where: { specialDateId: specialDate.id },
       orderBy: { createdAt: "desc" },
       take: 20,
+    }),
+    db.announcementBar.findUnique({
+      where: { specialDateId: specialDate.id },
     }),
   ]);
 
@@ -78,6 +82,16 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       newSeoTitle: entry.newSeoTitle,
       createdAt: entry.createdAt.toISOString(),
     })),
+    announcementBar: announcementBar
+      ? {
+          enabled: announcementBar.enabled,
+          message: announcementBar.message,
+          backgroundColor: announcementBar.backgroundColor,
+          textColor: announcementBar.textColor,
+          startDate: announcementBar.startDate,
+          endDate: announcementBar.endDate,
+        }
+      : null,
   };
 }
 
@@ -95,10 +109,28 @@ const deleteTodoSchema = z.object({
   action: z.literal("delete-todo"),
   id: z.number().int().positive(),
 });
+const isoDay = z.string().regex(/^\d{4}-\d{2}-\d{2}$/);
+const hexColor = z.string().regex(/^#[0-9a-fA-F]{6}$/);
+
+const saveAnnouncementSchema = z.object({
+  action: z.literal("save-announcement"),
+  enabled: z.boolean(),
+  message: z.string().trim().min(1).max(160),
+  backgroundColor: hexColor,
+  textColor: hexColor,
+  startDate: isoDay,
+  endDate: isoDay,
+});
+const removeAnnouncementSchema = z.object({
+  action: z.literal("remove-announcement"),
+});
+
 const bodySchema = z.discriminatedUnion("action", [
   addTodoSchema,
   toggleTodoSchema,
   deleteTodoSchema,
+  saveAnnouncementSchema,
+  removeAnnouncementSchema,
 ]);
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -129,6 +161,44 @@ export async function action({ request, params }: ActionFunctionArgs) {
         },
       });
       return { code: "todo-added", errors: null };
+    }
+
+    if (body.action === "save-announcement") {
+      if (body.startDate > body.endDate) {
+        return {
+          code: "error",
+          errors: [{ message: "The start date must be before the end date" }],
+        };
+      }
+      await db.announcementBar.upsert({
+        where: { specialDateId: specialDate.id },
+        create: {
+          shop: session.shop,
+          specialDateId: specialDate.id,
+          enabled: body.enabled,
+          message: body.message,
+          backgroundColor: body.backgroundColor,
+          textColor: body.textColor,
+          startDate: body.startDate,
+          endDate: body.endDate,
+        },
+        update: {
+          enabled: body.enabled,
+          message: body.message,
+          backgroundColor: body.backgroundColor,
+          textColor: body.textColor,
+          startDate: body.startDate,
+          endDate: body.endDate,
+        },
+      });
+      return { code: "announcement-saved", errors: null };
+    }
+
+    if (body.action === "remove-announcement") {
+      await db.announcementBar.deleteMany({
+        where: { specialDateId: specialDate.id },
+      });
+      return { code: "announcement-removed", errors: null };
     }
 
     if (body.action === "toggle-todo") {
@@ -199,6 +269,11 @@ export default function SpecialDateManage() {
         <Layout.Section>
           <BlockStack gap="500">
             <TodoBoard todos={data.todos} />
+            <AnnouncementScheduler
+              specialDateName={specialDate.name}
+              specialDateDate={specialDate.date}
+              announcementBar={data.announcementBar}
+            />
             <SeoOptimizer
               specialDateId={specialDate.id}
               specialDateName={specialDate.name}
