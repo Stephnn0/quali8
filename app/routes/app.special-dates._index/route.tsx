@@ -222,8 +222,8 @@ export default function SpecialDatesIndex() {
 
   return (
     <Page
-      title="Special dates"
-      subtitle="The dates that matter for your shop — each with its own prep list and SEO actions"
+      title="Sales Calendar"
+      subtitle="Every date that can drive revenue for your shop — each with its own campaigns, SEO, and prep plan"
       primaryAction={{
         content: "Add special date",
         onAction: () => setCreateOpen(true),

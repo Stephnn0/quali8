@@ -52,12 +52,14 @@ export default function OnboardingCard({
   return (
     <BlockStack gap="400">
       <div className={styles.banner}>
-        <p className={styles.bannerEyebrow}>Quali8 Assistant</p>
-        <h1 className={styles.bannerTitle}>Meet your shop assistant</h1>
+        <p className={styles.bannerEyebrow}>Season Command Center</p>
+        <h1 className={styles.bannerTitle}>
+          Let&rsquo;s get your store ready for its next sales season
+        </h1>
         <p className={styles.bannerText}>
-          It keeps watch on the occasions that matter for your business and
-          tells you exactly how to get your store ready for each one. One
-          quick confirmation and it starts working.
+          Quali8 builds your sales calendar around the occasions that matter
+          for your business and tells you exactly how to prepare for each
+          one. One quick confirmation and it starts working.
         </p>
       </div>
 

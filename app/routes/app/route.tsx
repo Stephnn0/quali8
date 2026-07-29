@@ -55,19 +55,24 @@ export default function App() {
   return (
     <AppProvider embedded={true} apiKey={apiKey} >
       <PolarisProvider i18n={enTranslations}>
+      {/*
+        Seasonal-workflow order: the planning loop (calendar → campaigns →
+        recommendations → promotions) comes before supporting tools.
+        App Bridge NavMenu renders flat text links — grouping/icons live in
+        the in-page hubs, not here.
+      */}
       <NavMenu>
         <Link to="/app" rel="home">
           Home
         </Link>
-        {/* <Link to="/app/campaings">Campaigns</Link> */}
-        <Link to="/app/qualifiers">Audiences</Link>
-        <Link to="/app/occasions">Occasions</Link>
-        <Link to="/app/special-dates">Special dates</Link>
-        <Link to="/app/faqs">FAQs</Link>
-        {/* Bundles is reached from the Promotions hub, not the sidebar */}
+        <Link to="/app/special-dates">Sales Calendar</Link>
+        <Link to="/app/occasions">Recommendations</Link>
+        {/* Promotions hub: shipping discounts + product bundles */}
         <Link to="/app/actions">Promotions</Link>
-        {/* <Link to="/app/templates">Templates</Link> */}
-        <Link to="/app/settings">Subscriptions</Link>
+        <Link to="/app/qualifiers">Audiences</Link>
+        <Link to="/app/faqs">Content & SEO</Link>
+        {/* <Link to="/app/campaings">Campaigns</Link> */}
+        <Link to="/app/settings">Plans & billing</Link>
       </NavMenu>
       <Outlet />
       </PolarisProvider>

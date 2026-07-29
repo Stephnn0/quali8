@@ -12,12 +12,39 @@ import {
 } from "app/services/assistant/brief.server";
 import { getUpcomingSpecialDates } from "app/services/assistant/specialDates.server";
 import type { AssistantBrief } from "app/services/assistant/briefSchema";
-import AssistantUpsell from "./sections/Assistant/AssistantUpsell";
+import { upcomingCoreDates, type CoreDate } from "app/services/assistant/coreDates";
+import SeasonOverview from "./sections/Assistant/SeasonOverview";
 import OnboardingCard from "./sections/Assistant/OnboardingCard";
 import AssistantDashboard from "./sections/Assistant/AssistantDashboard";
 
+/** Store facts that drive the readiness score and the status grid. */
+export type SeasonStatus = {
+  audiences: number;
+  promotions: number;
+  bundles: number;
+  occasions: number;
+  faqs: number;
+  seoApplied: number;
+  campaignsScheduled: number;
+  specialDates: number;
+};
+
+export type OverviewEntitlements = {
+  hasShippingDiscounts: boolean;
+  hasBundles: boolean;
+  hasRecommendations: boolean;
+};
+
 type LoaderData =
-  | { state: "upsell" }
+  | {
+      state: "overview";
+      upcoming: CoreDate[];
+      counts: Pick<
+        SeasonStatus,
+        "audiences" | "promotions" | "bundles" | "occasions"
+      >;
+      entitlements: OverviewEntitlements;
+    }
   | { state: "onboarding"; suggestedNiche: string; suggestedCountry: string | null }
   | {
       state: "ready";
@@ -34,6 +61,7 @@ type LoaderData =
       source: "AI" | "FALLBACK";
       generatedAt: string;
       checklistDone: string[];
+      status: SeasonStatus;
     };
 
 export const loader = async ({
@@ -42,13 +70,43 @@ export const loader = async ({
   const authAdminContext = await authenticate.admin(request);
   const { session, admin } = authAdminContext;
 
-  // The assistant is the dashboard — Advance-only. Others see the pitch.
+  // The AI dashboard is Advance-only. Free/Pro still get a season overview:
+  // the upcoming commerce calendar plus quick actions for what their plan
+  // includes — the home page is never a bare pitch.
   const subscription = await shopifySubscriptionModel.findActiveSubscription(
     db,
     authAdminContext,
   );
   if (!subscription?.recurringPlan?.hasAssistant) {
-    return { state: "upsell" };
+    const [shopData, audiences, promotions, bundles, occasions] =
+      await Promise.all([
+        db.shopifyShopData.findFirst({
+          where: { shopifyStore: { shop: session.shop } },
+          select: { country: true },
+        }),
+        db.qualifiers.count({ where: { shop: session.shop } }),
+        db.shippingDiscountAction.count({ where: { shop: session.shop } }),
+        db.bundle.count({ where: { shop: session.shop } }),
+        db.occasion.count({ where: { shop: session.shop } }),
+      ]);
+    return {
+      state: "overview",
+      upcoming: upcomingCoreDates(
+        new Date(),
+        shopData?.country ?? "US",
+        120,
+      ).slice(0, 6),
+      counts: { audiences, promotions, bundles, occasions },
+      entitlements: {
+        hasShippingDiscounts: Boolean(
+          subscription?.recurringPlan?.hasShippingDiscounts,
+        ),
+        hasBundles: Boolean(subscription?.recurringPlan?.hasBundles),
+        hasRecommendations: Boolean(
+          subscription?.recurringPlan?.hasRecommendations,
+        ),
+      },
+    };
   }
 
   const profile = await db.storeProfile.findUnique({
@@ -75,18 +133,38 @@ export const loader = async ({
     };
   }
 
-  // Store facts ground the AI checklist in what's actually configured
-  const [qualifiers, promotions, bundles, occasions, sample] =
-    await Promise.all([
-      db.qualifiers.count({ where: { shop: session.shop } }),
-      db.shippingDiscountAction.count({ where: { shop: session.shop } }),
-      db.bundle.count({ where: { shop: session.shop } }),
-      db.occasion.count({ where: { shop: session.shop } }),
-      getProductSample(admin.graphql, 1).catch(() => ({
-        productCount: 0,
-        text: "",
-      })),
-    ]);
+  // Store facts ground the AI checklist, the readiness score, and the
+  // status grid in what's actually configured
+  const [
+    qualifiers,
+    promotions,
+    bundles,
+    occasions,
+    sample,
+    faqs,
+    seoApplied,
+    announcementBars,
+    heroes,
+    popups,
+    menuItems,
+  ] = await Promise.all([
+    db.qualifiers.count({ where: { shop: session.shop } }),
+    db.shippingDiscountAction.count({ where: { shop: session.shop } }),
+    db.bundle.count({ where: { shop: session.shop } }),
+    db.occasion.count({ where: { shop: session.shop } }),
+    getProductSample(admin.graphql, 1).catch(() => ({
+      productCount: 0,
+      text: "",
+    })),
+    db.collectionFaq.count({ where: { shop: session.shop } }),
+    db.seoMetaAction.count({ where: { shop: session.shop } }),
+    db.announcementBar.count({ where: { shop: session.shop, enabled: true } }),
+    db.scheduledHero.count({ where: { shop: session.shop, enabled: true } }),
+    db.subscribePopup.count({ where: { shop: session.shop, enabled: true } }),
+    db.scheduledMenuItem.count({
+      where: { shop: session.shop, enabled: true },
+    }),
+  ]);
 
   let record: BriefRecord;
   try {
@@ -142,6 +220,16 @@ export const loader = async ({
     source: record.source,
     generatedAt: record.generatedAt.toISOString(),
     checklistDone: profile.checklistDone,
+    status: {
+      audiences: qualifiers,
+      promotions,
+      bundles,
+      occasions,
+      faqs,
+      seoApplied,
+      campaignsScheduled: announcementBars + heroes + popups + menuItems,
+      specialDates: specialDates.length,
+    },
   };
 };
 
@@ -151,7 +239,13 @@ export default function Index() {
   return (
     <Page>
       <BlockStack gap="500">
-        {data.state === "upsell" ? <AssistantUpsell /> : null}
+        {data.state === "overview" ? (
+          <SeasonOverview
+            upcoming={data.upcoming}
+            counts={data.counts}
+            entitlements={data.entitlements}
+          />
+        ) : null}
 
         {data.state === "onboarding" ? (
           <OnboardingCard
@@ -169,6 +263,7 @@ export default function Index() {
             source={data.source}
             generatedAt={data.generatedAt}
             checklistDone={data.checklistDone}
+            status={data.status}
           />
         ) : null}
 

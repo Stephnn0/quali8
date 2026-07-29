@@ -109,8 +109,8 @@ export default function OccasionsIndex() {
 
   return (
     <Page
-      title="Occasions"
-      subtitle="Curate products for the moments your customers shop for — they power the Smart Recommendations blocks in your theme"
+      title="Occasion Recommendations"
+      subtitle="Curate the products shoppers see for each occasion — shown by the Smart Recommendations block on product and cart pages"
       primaryAction={{
         content: "Create occasion",
         onAction: () => navigate("/app/occasions/new"),

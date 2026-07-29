@@ -599,9 +599,9 @@ export default function SpecialDateManage() {
   const MODAL_TITLES: Record<Exclude<ModalKey, null>, string> = {
     announcement: "Homepage announcement bar",
     menu: "Navigation menu item",
-    "seo-todos": "SEO to-dos",
-    "marketing-todos": "Marketing to-dos",
-    "seo-meta": "SEO for products & collections",
+    "seo-todos": "SEO Prep List",
+    "marketing-todos": "Marketing Playbook",
+    "seo-meta": "AI SEO Optimizer",
     hero: "Homepage hero section",
     popup: "Subscribe popup",
   };
@@ -667,7 +667,7 @@ export default function SpecialDateManage() {
             />
             <ActionCard
               artKey="seo-meta"
-              title="SEO for products & collections"
+              title="AI SEO Optimizer"
               description="Rewrite meta titles and descriptions with AI, optimized for this date."
               status={
                 data.seoActions.length
@@ -679,7 +679,7 @@ export default function SpecialDateManage() {
             />
             <ActionCard
               artKey="seo-todos"
-              title="SEO to-dos"
+              title="SEO Prep List"
               description="Search-visibility prep for this date — suggested by your assistant."
               status={doneOf(seoTodos)}
               statusActive={
@@ -689,7 +689,7 @@ export default function SpecialDateManage() {
             />
             <ActionCard
               artKey="marketing-todos"
-              title="Marketing to-dos"
+              title="Marketing Playbook"
               description="Promotion prep: email, social, offers, and deadlines."
               status={doneOf(marketingTodos)}
               statusActive={
