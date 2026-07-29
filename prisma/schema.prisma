@@ -672,6 +672,7 @@ model SpecialDate {
   //
   todos            SpecialDateTodo[]
   seoActions       SeoMetaAction[]
+  announcementBar  AnnouncementBar?
   //
   shop             String
   shopifyStore     ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
@@ -753,4 +754,27 @@ model AiUsage {
   shopifyStore ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
 
   @@index([shop, createdAt])
+}
+
+
+/// A scheduled homepage announcement bar tied to a special date. Served to
+/// the storefront via the app proxy only while today falls inside the
+/// window; text and colors are merchant-configured in the app.
+model AnnouncementBar {
+  id              Int      @id @default(autoincrement())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+  //
+  enabled         Boolean  @default(true)
+  message         String
+  backgroundColor String   @default("#2c1f58")
+  textColor       String   @default("#ffffff")
+  startDate       String /// ISO yyyy-mm-dd, inclusive
+  endDate         String /// ISO yyyy-mm-dd, inclusive
+  //
+  specialDateId   Int         @unique
+  specialDate     SpecialDate @relation(fields: [specialDateId], references: [id], onDelete: Cascade)
+  shop            String
+
+  @@index([shop, startDate, endDate])
 }

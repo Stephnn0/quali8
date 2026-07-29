@@ -1,0 +1,13 @@
+.q8-announcement {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.625rem 1rem;
+  text-align: center;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.q8-announcement[hidden] {
+  display: none !important;
+}

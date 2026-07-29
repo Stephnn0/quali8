@@ -1,0 +1,22 @@
+{%- comment -%}
+  Quali8 — Scheduled announcement bar (home page app block).
+  Fetches the active bar from the app proxy (/apps/quali8/announcement);
+  the app decides visibility by date window, message, and colors — the
+  merchant schedules everything from a special date's manage page. Renders
+  nothing (zero layout shift) when no bar is scheduled for today.
+{%- endcomment -%}
+
+<div class="q8-announcement" data-quali8-announcement hidden></div>
+
+{% schema %}
+{
+  "name": "Announcement bar",
+  "target": "section",
+  "javascript": "announcement-bar.js",
+  "stylesheet": "announcement-bar.css",
+  "enabled_on": {
+    "templates": ["index"]
+  },
+  "settings": []
+}
+{% endschema %}
