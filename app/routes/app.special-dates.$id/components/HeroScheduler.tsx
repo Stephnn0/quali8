@@ -7,6 +7,7 @@ import {
   Checkbox,
   InlineGrid,
   InlineStack,
+  RangeSlider,
   Text,
   TextField,
 } from "@shopify/polaris";
@@ -17,10 +18,17 @@ import FilesPickerModal from "./FilesPickerModal";
 export type HeroConfig = {
   enabled: boolean;
   imageUrl: string;
+  imageUrl2: string | null;
+  imageUrl3: string | null;
   heading: string;
   description: string | null;
   buttonLabel: string | null;
   buttonUrl: string | null;
+  heightPx: number;
+  textColor: string;
+  buttonBackground: string;
+  buttonTextColor: string;
+  overlayOpacity: number;
   startDate: string;
   endDate: string;
 };
@@ -43,7 +51,53 @@ type PickedProduct = {
   images?: Array<{ originalSrc?: string; src?: string }>;
 };
 
-/** Schedules a homepage hero section for this special date. */
+function ColorField({
+  label,
+  value,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+}) {
+  return (
+    <BlockStack gap="100">
+      <Text as="span" variant="bodyMd">
+        {label}
+      </Text>
+      <InlineStack gap="200" blockAlign="center" wrap={false}>
+        <input
+          type="color"
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          aria-label={label}
+          style={{
+            width: "2.25rem",
+            height: "2.25rem",
+            padding: 0,
+            border: "1px solid #d0d0d0",
+            borderRadius: "8px",
+            background: "transparent",
+            cursor: "pointer",
+          }}
+        />
+        <div style={{ width: "6.5rem" }}>
+          <TextField
+            label={label}
+            labelHidden
+            autoComplete="off"
+            value={value}
+            onChange={(next) => {
+              if (/^#[0-9a-fA-F]{0,6}$/.test(next)) onChange(next);
+            }}
+          />
+        </div>
+      </InlineStack>
+    </BlockStack>
+  );
+}
+
+/** Schedules the homepage hero slider (up to 3 images) for this date. */
 export default function HeroScheduler({
   specialDateName,
   specialDateDate,
@@ -52,38 +106,58 @@ export default function HeroScheduler({
   const shopify = useAppBridge();
   const fetcher = useFetcher();
   const saving = fetcher.state !== "idle";
-  const [filesOpen, setFilesOpen] = useState(false);
 
   const [enabled, setEnabled] = useState(hero?.enabled ?? true);
-  const [imageUrl, setImageUrl] = useState(hero?.imageUrl ?? "");
+  const [images, setImages] = useState<string[]>([
+    hero?.imageUrl ?? "",
+    hero?.imageUrl2 ?? "",
+    hero?.imageUrl3 ?? "",
+  ]);
+  const [filesOpenFor, setFilesOpenFor] = useState<number | null>(null);
   const [heading, setHeading] = useState(
     hero?.heading ?? `${specialDateName} is coming`,
   );
   const [description, setDescription] = useState(hero?.description ?? "");
   const [buttonLabel, setButtonLabel] = useState(hero?.buttonLabel ?? "");
   const [buttonUrl, setButtonUrl] = useState(hero?.buttonUrl ?? "");
+  const [heightPx, setHeightPx] = useState(hero?.heightPx ?? 480);
+  const [textColor, setTextColor] = useState(hero?.textColor ?? "#ffffff");
+  const [buttonBackground, setButtonBackground] = useState(
+    hero?.buttonBackground ?? "#ffffff",
+  );
+  const [buttonTextColor, setButtonTextColor] = useState(
+    hero?.buttonTextColor ?? "#1a1a1a",
+  );
+  const [overlayOpacity, setOverlayOpacity] = useState(
+    hero?.overlayOpacity ?? 35,
+  );
   const [startDate, setStartDate] = useState(
     hero?.startDate ?? defaultStart(specialDateDate),
   );
   const [endDate, setEndDate] = useState(hero?.endDate ?? specialDateDate);
 
+  const setImage = (index: number, url: string) =>
+    setImages((current) =>
+      current.map((entry, i) => (i === index ? url : entry)),
+    );
+
   const validDates =
     /^\d{4}-\d{2}-\d{2}$/.test(startDate) &&
     /^\d{4}-\d{2}-\d{2}$/.test(endDate) &&
     startDate <= endDate;
-  const validImage = /^https:\/\//.test(imageUrl);
+  const validImage = /^https:\/\//.test(images[0]);
   const buttonComplete =
     (!buttonLabel.trim() && !buttonUrl.trim()) ||
     (buttonLabel.trim().length > 0 && buttonUrl.trim().length > 0);
 
-  const pickImage = async () => {
+  const pickProductImage = async (index: number) => {
     const selected = (await shopify.resourcePicker({
       type: "product",
       multiple: false,
     })) as PickedProduct[] | undefined;
     const image = selected?.[0]?.images?.[0];
     const url = image?.originalSrc || image?.src;
-    if (url) setImageUrl(url);
+    if (url) setImage(index, url);
   };
 
   const save = () => {
@@ -92,18 +166,25 @@ export default function HeroScheduler({
         body: JSON.stringify({
           action: "save-hero",
           enabled,
-          imageUrl,
+          imageUrl: images[0],
+          imageUrl2: /^https:\/\//.test(images[1]) ? images[1] : undefined,
+          imageUrl3: /^https:\/\//.test(images[2]) ? images[2] : undefined,
           heading,
           description: description || undefined,
           buttonLabel: buttonLabel.trim() || undefined,
           buttonUrl: buttonUrl.trim() || undefined,
+          heightPx,
+          textColor,
+          buttonBackground,
+          buttonTextColor,
+          overlayOpacity,
           startDate,
           endDate,
         }),
       },
       { method: "POST", encType: "multipart/form-data" },
     );
-    shopify.toast.show("Hero section saved");
+    shopify.toast.show("Hero saved");
   };
 
   const remove = () => {
@@ -111,7 +192,7 @@ export default function HeroScheduler({
       { body: JSON.stringify({ action: "remove-hero" }) },
       { method: "POST", encType: "multipart/form-data" },
     );
-    shopify.toast.show("Hero section removed");
+    shopify.toast.show("Hero removed");
   };
 
   return (
@@ -123,8 +204,9 @@ export default function HeroScheduler({
           </Badge>
         ) : null}
         <Text as="p" tone="subdued" variant="bodySm">
-          A full-width hero on your home page during the window below. Add
-          the &ldquo;Scheduled hero&rdquo; block once in your theme editor.
+          A full-width hero (or slider with up to 3 images) on your home page
+          during the window. Add the &ldquo;Scheduled hero&rdquo; block once
+          in your theme editor.
         </Text>
       </InlineStack>
 
@@ -134,22 +216,29 @@ export default function HeroScheduler({
           borderRadius: "10px",
           overflow: "hidden",
           position: "relative",
-          minHeight: "11rem",
+          height: `${Math.round(heightPx * 0.45)}px`,
+          minHeight: "9rem",
           display: "flex",
           alignItems: "center",
           background: validImage
-            ? `linear-gradient(rgba(20,14,40,.45), rgba(20,14,40,.45)), url(${imageUrl}) center/cover`
+            ? `linear-gradient(100deg, rgba(10,8,24,${(overlayOpacity + 15) / 100}), rgba(10,8,24,${Math.max(0, overlayOpacity - 20) / 100})), url("${images[0].replace(/"/g, "%22")}") center/cover`
             : "linear-gradient(135deg, #2c1f58, #1d1539)",
-          color: "#fff",
-          padding: "1.5rem 2rem",
+          color: textColor,
+          padding: "1.25rem 1.75rem",
         }}
       >
-        <div style={{ maxWidth: "26rem" }}>
-          <p style={{ margin: 0, fontSize: "1.375rem", fontWeight: 650 }}>
+        <div style={{ maxWidth: "24rem" }}>
+          <p style={{ margin: 0, fontSize: "1.25rem", fontWeight: 700 }}>
             {heading || "Your headline"}
           </p>
           {description ? (
-            <p style={{ margin: "0.375rem 0 0", fontSize: ".875rem", opacity: 0.9 }}>
+            <p
+              style={{
+                margin: "0.25rem 0 0",
+                fontSize: ".8125rem",
+                opacity: 0.92,
+              }}
+            >
               {description}
             </p>
           ) : null}
@@ -157,12 +246,12 @@ export default function HeroScheduler({
             <span
               style={{
                 display: "inline-block",
-                marginTop: "0.75rem",
-                background: "#fff",
-                color: "#1a1a1a",
-                borderRadius: "8px",
-                padding: "0.5rem 1rem",
-                fontSize: ".8125rem",
+                marginTop: "0.625rem",
+                background: buttonBackground,
+                color: buttonTextColor,
+                borderRadius: "999px",
+                padding: "0.4375rem 1rem",
+                fontSize: ".75rem",
                 fontWeight: 600,
               }}
             >
@@ -172,29 +261,42 @@ export default function HeroScheduler({
         </div>
       </div>
 
-      <InlineStack gap="200" blockAlign="end" wrap={false}>
-        <div style={{ flex: 1 }}>
-          <TextField
-            label="Image URL"
-            autoComplete="off"
-            value={imageUrl}
-            onChange={setImageUrl}
-            placeholder="https://cdn.shopify.com/…"
-            helpText="Paste an image URL, or pick a product to use its photo"
-          />
-        </div>
-        <Button icon={ImageIcon} onClick={pickImage}>
-          From a product
-        </Button>
-        <Button icon={ImageIcon} onClick={() => setFilesOpen(true)}>
-          From your files
-        </Button>
-      </InlineStack>
+      <BlockStack gap="300">
+        <Text as="h3" variant="headingSm">
+          Images ({images.filter((url) => url).length}/3 — more than one
+          becomes a slider)
+        </Text>
+        {images.map((url, index) => (
+          <InlineStack key={index} gap="200" blockAlign="end" wrap={false}>
+            <div style={{ flex: 1 }}>
+              <TextField
+                label={
+                  index === 0
+                    ? "Image 1 (required)"
+                    : `Image ${index + 1} (optional)`
+                }
+                autoComplete="off"
+                value={url}
+                onChange={(next) => setImage(index, next)}
+                placeholder="https://cdn.shopify.com/…"
+              />
+            </div>
+            <Button icon={ImageIcon} onClick={() => pickProductImage(index)}>
+              Product
+            </Button>
+            <Button icon={ImageIcon} onClick={() => setFilesOpenFor(index)}>
+              Files
+            </Button>
+          </InlineStack>
+        ))}
+      </BlockStack>
 
       <FilesPickerModal
-        open={filesOpen}
-        onClose={() => setFilesOpen(false)}
-        onSelect={setImageUrl}
+        open={filesOpenFor !== null}
+        onClose={() => setFilesOpenFor(null)}
+        onSelect={(url) => {
+          if (filesOpenFor !== null) setImage(filesOpenFor, url);
+        }}
       />
 
       <TextField
@@ -233,6 +335,50 @@ export default function HeroScheduler({
         />
       </InlineGrid>
 
+      <InlineGrid columns={{ xs: 2, sm: 3 }} gap="400">
+        <ColorField
+          label="Text color"
+          value={textColor}
+          onChange={setTextColor}
+        />
+        <ColorField
+          label="Button color"
+          value={buttonBackground}
+          onChange={setButtonBackground}
+        />
+        <ColorField
+          label="Button text"
+          value={buttonTextColor}
+          onChange={setButtonTextColor}
+        />
+      </InlineGrid>
+
+      <InlineGrid columns={{ xs: 1, sm: 2 }} gap="400">
+        <RangeSlider
+          label={`Height: ${heightPx}px`}
+          min={200}
+          max={900}
+          step={20}
+          value={heightPx}
+          onChange={(value) =>
+            setHeightPx(typeof value === "number" ? value : value[0])
+          }
+          output
+        />
+        <RangeSlider
+          label={`Image overlay: ${overlayOpacity}%`}
+          min={0}
+          max={80}
+          step={5}
+          value={overlayOpacity}
+          onChange={(value) =>
+            setOverlayOpacity(typeof value === "number" ? value : value[0])
+          }
+          helpText="Darkens the image so text stays readable — 0 shows it untouched"
+          output
+        />
+      </InlineGrid>
+
       <InlineGrid columns={{ xs: 2 }} gap="400">
         <TextField
           label="Show from"
@@ -257,7 +403,11 @@ export default function HeroScheduler({
           onClick={save}
           loading={saving}
           disabled={
-            !heading.trim() || !validImage || !validDates || !buttonComplete || saving
+            !heading.trim() ||
+            !validImage ||
+            !validDates ||
+            !buttonComplete ||
+            saving
           }
         >
           {hero ? "Save changes" : "Schedule hero"}

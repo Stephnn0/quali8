@@ -57,7 +57,7 @@
     modal.setAttribute("aria-label", popup.heading);
 
     var media = el("div", "q8-popup__media");
-    media.style.backgroundImage = "url(" + encodeURI(popup.imageUrl) + ")";
+    media.style.backgroundImage = 'url("' + String(popup.imageUrl).replace(/"/g, "%22") + '")';
     modal.appendChild(media);
 
     var content = el("div", "q8-popup__content");

@@ -30,10 +30,17 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       orderBy: { endDate: "asc" },
       select: {
         imageUrl: true,
+        imageUrl2: true,
+        imageUrl3: true,
         heading: true,
         description: true,
         buttonLabel: true,
         buttonUrl: true,
+        heightPx: true,
+        textColor: true,
+        buttonBackground: true,
+        buttonTextColor: true,
+        overlayOpacity: true,
       },
     });
 

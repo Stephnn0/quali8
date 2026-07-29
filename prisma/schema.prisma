@@ -811,14 +811,21 @@ model ScheduledHero {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @default(now()) @updatedAt
   //
-  enabled       Boolean  @default(true)
-  imageUrl      String
-  heading       String
-  description   String?
-  buttonLabel   String?
-  buttonUrl     String?
-  startDate     String /// ISO yyyy-mm-dd, inclusive
-  endDate       String /// ISO yyyy-mm-dd, inclusive
+  enabled          Boolean  @default(true)
+  imageUrl         String
+  imageUrl2        String? /// Optional second slide
+  imageUrl3        String? /// Optional third slide
+  heading          String
+  description      String?
+  buttonLabel      String?
+  buttonUrl        String?
+  heightPx         Int      @default(480) /// Desktop height in pixels
+  textColor        String   @default("#ffffff")
+  buttonBackground String   @default("#ffffff")
+  buttonTextColor  String   @default("#1a1a1a")
+  overlayOpacity   Int      @default(35) /// Scrim darkness 0-80 (%)
+  startDate        String /// ISO yyyy-mm-dd, inclusive
+  endDate          String /// ISO yyyy-mm-dd, inclusive
   //
   specialDateId Int         @unique
   specialDate   SpecialDate @relation(fields: [specialDateId], references: [id], onDelete: Cascade)
