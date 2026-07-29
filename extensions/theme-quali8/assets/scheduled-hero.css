@@ -5,12 +5,10 @@
   margin-left: calc(50% - 50vw);
   margin-right: calc(50% - 50vw);
   box-sizing: border-box;
-  background-size: cover;
-  background-position: center;
-  min-height: clamp(22rem, 55vh, 34rem);
+  min-height: var(--q8-hero-height, 480px);
   display: flex;
   align-items: center;
-  color: #ffffff;
+  color: var(--q8-hero-text, #ffffff);
   position: relative;
   overflow: hidden;
 }
@@ -19,52 +17,67 @@
   display: none !important;
 }
 
-/* Directional scrim: readable text on the left, image breathing on the right */
-.q8-hero::before {
+.q8-hero__slide {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 900ms ease;
+}
+
+.q8-hero__slide--active {
+  opacity: 1;
+}
+
+/* Directional scrim, merchant-controlled strength (0% = untouched image) */
+.q8-hero::after {
   content: "";
   position: absolute;
   inset: 0;
   background: linear-gradient(
     100deg,
-    rgba(10, 8, 24, 0.72) 0%,
-    rgba(10, 8, 24, 0.45) 42%,
-    rgba(10, 8, 24, 0.08) 75%
+    rgba(10, 8, 24, var(--q8-hero-ov-strong, 0.5)) 0%,
+    rgba(10, 8, 24, var(--q8-hero-ov-weak, 0.15)) 70%
   );
   pointer-events: none;
 }
 
 .q8-hero__inner {
   position: relative;
+  z-index: 1;
   max-width: 38rem;
-  padding: clamp(2.5rem, 7vw, 4.5rem) clamp(1.5rem, 6vw, 5rem);
+  padding: clamp(2rem, 6vw, 4rem) clamp(1.5rem, 6vw, 5rem);
   animation: q8-hero-in 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
   animation-delay: 120ms;
 }
 
 .q8-hero__heading {
   margin: 0;
+  color: inherit;
   font-size: clamp(1.75rem, 4.5vw, 3rem);
   line-height: 1.1;
   font-weight: 750;
   letter-spacing: -0.015em;
   text-wrap: balance;
-  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.35);
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.3);
 }
 
 .q8-hero__description {
   margin: 1rem 0 0;
+  color: inherit;
   font-size: clamp(0.9375rem, 1.6vw, 1.125rem);
   line-height: 1.6;
   max-width: 32rem;
   opacity: 0.94;
-  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.35);
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.3);
 }
 
 .q8-hero__button {
   display: inline-block;
   margin-top: 1.75rem;
-  background: #ffffff;
-  color: #14101f;
+  background: var(--q8-hero-btn-bg, #ffffff);
+  color: var(--q8-hero-btn-text, #14101f);
   text-decoration: none;
   border-radius: 999px;
   padding: 0.875rem 2rem;
@@ -78,6 +91,33 @@
 .q8-hero__button:hover {
   transform: translateY(-2px);
   box-shadow: 0 14px 32px -10px rgba(0, 0, 0, 0.55);
+}
+
+.q8-hero__dots {
+  position: absolute;
+  z-index: 1;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+}
+
+.q8-hero__dot {
+  appearance: none;
+  border: none;
+  width: 0.5625rem;
+  height: 0.5625rem;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.45);
+  cursor: pointer;
+  padding: 0;
+  transition: background 160ms ease, transform 160ms ease;
+}
+
+.q8-hero__dot--active {
+  background: #ffffff;
+  transform: scale(1.25);
 }
 
 @keyframes q8-hero-in {
@@ -95,6 +135,9 @@
   .q8-hero__inner {
     animation: none;
   }
+  .q8-hero__slide {
+    transition: none;
+  }
   .q8-hero__button {
     transition: none;
   }
@@ -102,6 +145,6 @@
 
 @media (max-width: 600px) {
   .q8-hero {
-    min-height: 18rem;
+    min-height: min(var(--q8-hero-height, 480px), 22rem);
   }
 }
