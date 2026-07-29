@@ -1,0 +1,45 @@
+{%- comment -%}
+  Quali8 — Collection FAQs (collection-page app block).
+  Fetches the collection's FAQ entries from the app proxy
+  (/apps/quali8/faqs?collection_id=...) and renders an accessible
+  accordion below the products, plus FAQPage JSON-LD structured data for
+  search engines. Stays hidden (zero layout shift) when the collection has
+  no questions.
+{%- endcomment -%}
+
+{%- if collection -%}
+  <div
+    class="q8-faqs"
+    data-quali8-faqs
+    data-collection-id="{{ collection.id }}"
+    data-heading="{{ block.settings.heading | escape }}"
+    style="--q8-faqs-accent: {{ block.settings.accent_color }};"
+    hidden
+  ></div>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Collection FAQs",
+  "target": "section",
+  "javascript": "collection-faqs.js",
+  "stylesheet": "collection-faqs.css",
+  "enabled_on": {
+    "templates": ["collection"]
+  },
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Frequently asked questions"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent",
+      "default": "#5c3d99"
+    }
+  ]
+}
+{% endschema %}
