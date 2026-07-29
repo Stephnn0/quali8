@@ -676,6 +676,7 @@ model SpecialDate {
   announcementBar  AnnouncementBar?
   scheduledHero    ScheduledHero?
   subscribePopup   SubscribePopup?
+  scheduledMenuItem ScheduledMenuItem?
   //
   shop             String
   shopifyStore     ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
@@ -855,4 +856,52 @@ model SubscribePopup {
   shop          String
 
   @@index([shop, startDate, endDate])
+}
+
+
+/// One row per registered background job: the claim lock and run history
+/// for the Cloud Scheduler heartbeat (see app/jobs/).
+model JobRun {
+  id            Int       @id @default(autoincrement())
+  name          String    @unique
+  lockedAt      DateTime?
+  lastSuccessAt DateTime?
+  lastError     String?
+  updatedAt     DateTime  @default(now()) @updatedAt
+}
+
+/// A navigation menu item scheduled around a special date. The menu-sync
+/// job inserts it into the chosen menu when the window opens (recording the
+/// created MenuItem id) and removes exactly that item when it closes.
+model ScheduledMenuItem {
+  id                Int          @id @default(autoincrement())
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @default(now()) @updatedAt
+  //
+  enabled           Boolean      @default(true)
+  menuId            String /// Menu GID
+  menuTitle         String /// Snapshot for admin display
+  itemTitle         String
+  linkType          MenuLinkType @default(COLLECTION)
+  resourceId        String? /// Collection GID when linkType is COLLECTION
+  resourceTitle     String? /// Snapshot for admin display
+  url               String? /// Path/URL when linkType is URL
+  startDate         String /// ISO yyyy-mm-dd, inclusive (shop timezone)
+  endDate           String /// ISO yyyy-mm-dd, inclusive (shop timezone)
+  //
+  appliedMenuItemId String? /// Set while our item is live in the menu
+  appliedAt         DateTime?
+  removedAt         DateTime?
+  lastError         String?
+  //
+  specialDateId     Int         @unique
+  specialDate       SpecialDate @relation(fields: [specialDateId], references: [id], onDelete: Cascade)
+  shop              String
+
+  @@index([shop, startDate, endDate])
+}
+
+enum MenuLinkType {
+  COLLECTION
+  URL
 }

@@ -46,6 +46,9 @@ const envSchema = z.object({
   // AI assistant (optional — the dashboard falls back to curated briefs)
   GEMINI_API_KEY: z.string().min(2).optional(),
 
+  // Background jobs heartbeat (optional — /jobs/tick returns 503 without it)
+  CRON_SECRET: z.string().min(16).optional(),
+
   // Vite (client)
   VITE_SHOPIFY_API_KEY: z.string().min(2),
 

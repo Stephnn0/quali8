@@ -10,6 +10,7 @@ import {
   Text,
 } from "@shopify/polaris";
 import { z } from "zod";
+import type { AdminGraphqlClient } from "@shopify/shopify-app-react-router/server";
 import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
 import { gatekeepRoute } from "app/services/subscriptions/gatekeepRoute";
@@ -18,6 +19,7 @@ import TodoBoard from "./components/TodoBoard";
 import AnnouncementScheduler from "./components/AnnouncementScheduler";
 import HeroScheduler from "./components/HeroScheduler";
 import PopupScheduler from "./components/PopupScheduler";
+import MenuScheduler from "./components/MenuScheduler";
 import SeoOptimizer from "./components/SeoOptimizer";
 import ActionCard from "./components/ActionCard";
 import styles from "./components/styles.module.css";
@@ -39,6 +41,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       announcementBar: null,
       hero: null,
       popup: null,
+      menuItem: null,
     };
   }
 
@@ -63,7 +66,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     );
   }
 
-  const [todos, seoActions, announcementBar, hero, popup] = await Promise.all([
+  const [todos, seoActions, announcementBar, hero, popup, menuItem] = await Promise.all([
     db.specialDateTodo.findMany({
       where: { specialDateId: specialDate.id },
       orderBy: [{ kind: "asc" }, { position: "asc" }, { id: "asc" }],
@@ -80,6 +83,9 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       where: { specialDateId: specialDate.id },
     }),
     db.subscribePopup.findUnique({
+      where: { specialDateId: specialDate.id },
+    }),
+    db.scheduledMenuItem.findUnique({
       where: { specialDateId: specialDate.id },
     }),
   ]);
@@ -145,6 +151,22 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
           discountCode: popup.discountCode,
           startDate: popup.startDate,
           endDate: popup.endDate,
+        }
+      : null,
+    menuItem: menuItem
+      ? {
+          enabled: menuItem.enabled,
+          menuId: menuItem.menuId,
+          menuTitle: menuItem.menuTitle,
+          itemTitle: menuItem.itemTitle,
+          linkType: menuItem.linkType,
+          resourceId: menuItem.resourceId,
+          resourceTitle: menuItem.resourceTitle,
+          url: menuItem.url,
+          startDate: menuItem.startDate,
+          endDate: menuItem.endDate,
+          live: Boolean(menuItem.appliedMenuItemId),
+          lastError: menuItem.lastError,
         }
       : null,
   };
@@ -214,6 +236,23 @@ const savePopupSchema = z.object({
 });
 const removePopupSchema = z.object({ action: z.literal("remove-popup") });
 
+const saveMenuItemSchema = z.object({
+  action: z.literal("save-menu-item"),
+  enabled: z.boolean(),
+  menuId: z.string().startsWith("gid://shopify/Menu/"),
+  menuTitle: z.string().trim().min(1).max(80),
+  itemTitle: z.string().trim().min(1).max(40),
+  linkType: z.enum(["COLLECTION", "URL"]),
+  resourceId: z.string().startsWith("gid://shopify/Collection/").optional(),
+  resourceTitle: z.string().trim().max(120).optional(),
+  url: z.string().trim().max(400).optional(),
+  startDate: isoDay,
+  endDate: isoDay,
+});
+const removeMenuItemSchema = z.object({
+  action: z.literal("remove-menu-item"),
+});
+
 const bodySchema = z.discriminatedUnion("action", [
   addTodoSchema,
   toggleTodoSchema,
@@ -224,6 +263,8 @@ const bodySchema = z.discriminatedUnion("action", [
   removeHeroSchema,
   savePopupSchema,
   removePopupSchema,
+  saveMenuItemSchema,
+  removeMenuItemSchema,
 ]);
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -358,6 +399,73 @@ export async function action({ request, params }: ActionFunctionArgs) {
           where: { specialDateId: specialDate.id },
         });
         return { code: "popup-removed", errors: null };
+
+      case "save-menu-item": {
+        if (body.linkType === "COLLECTION" && !body.resourceId) {
+          return {
+            code: "error",
+            errors: [{ message: "Choose a collection for the menu item" }],
+          };
+        }
+        if (body.linkType === "URL" && !body.url) {
+          return {
+            code: "error",
+            errors: [{ message: "Add a URL for the menu item" }],
+          };
+        }
+        const data = {
+          enabled: body.enabled,
+          menuId: body.menuId,
+          menuTitle: body.menuTitle,
+          itemTitle: body.itemTitle,
+          linkType: body.linkType,
+          resourceId: body.resourceId ?? null,
+          resourceTitle: body.resourceTitle ?? null,
+          url: body.url ?? null,
+          startDate: body.startDate,
+          endDate: body.endDate,
+        };
+        await db.scheduledMenuItem.upsert({
+          where: { specialDateId: specialDate.id },
+          create: { shop: session.shop, specialDateId: specialDate.id, ...data },
+          update: data,
+        });
+        return { code: "menu-item-saved", errors: null };
+      }
+
+      case "remove-menu-item": {
+        const item = await db.scheduledMenuItem.findUnique({
+          where: { specialDateId: specialDate.id },
+        });
+        if (!item) return { code: "menu-item-removed", errors: null };
+
+        if (item.appliedMenuItemId) {
+          // Best effort: pull our item out of the menu right now; on any
+          // failure fall back to pausing so the sync job cleans it up.
+          const cleaned = await removeLiveMenuItem(
+            authAdminContext.admin.graphql,
+            item.menuId,
+            item.appliedMenuItemId,
+          );
+          if (!cleaned) {
+            await db.scheduledMenuItem.update({
+              where: { id: item.id },
+              data: { enabled: false },
+            });
+            return {
+              code: "menu-item-queued",
+              errors: [
+                {
+                  message:
+                    "The link is still live — it will be removed from the menu by the next sync (within ~15 minutes)",
+                },
+              ],
+            };
+          }
+        }
+        await db.scheduledMenuItem.delete({ where: { id: item.id } });
+        return { code: "menu-item-removed", errors: null };
+      }
     }
   } catch (error) {
     console.error("Special date action error:", error);
@@ -365,6 +473,69 @@ export async function action({ request, params }: ActionFunctionArgs) {
       code: "error",
       errors: [{ message: "Something went wrong. Try again." }],
     };
+  }
+}
+
+/** Best-effort inline removal of our live menu item; false on any failure. */
+async function removeLiveMenuItem(
+  graphql: AdminGraphqlClient,
+  menuId: string,
+  menuItemId: string,
+): Promise<boolean> {
+  try {
+    const read = await graphql(
+      `#graphql
+      query manageMenu($id: ID!) {
+        menu(id: $id) {
+          id
+          title
+          items {
+            id title type url resourceId tags
+            items { id title type url resourceId tags
+              items { id title type url resourceId tags } }
+          }
+        }
+      }`,
+      { variables: { id: menuId } },
+    );
+    const { data } = await read.json();
+    const menu = data?.menu;
+    if (!menu) return true; // menu gone — nothing to clean
+
+    type Node = {
+      id: string; title: string; type: string;
+      url?: string | null; resourceId?: string | null;
+      tags?: string[] | null; items?: Node[] | null;
+    };
+    const toInput = (node: Node): Record<string, unknown> => ({
+      id: node.id,
+      title: node.title,
+      type: node.type,
+      url: node.url ?? undefined,
+      resourceId: node.resourceId ?? undefined,
+      tags: node.tags ?? [],
+      items: (node.items ?? []).map(toInput),
+    });
+    const items = (menu.items as Node[])
+      .filter((node) => node.id !== menuItemId)
+      .map(toInput);
+    if (items.length === (menu.items as Node[]).length) return true; // already gone
+
+    const write = await graphql(
+      `#graphql
+      mutation manageMenuUpdate($id: ID!, $title: String!, $items: [MenuItemUpdateInput!]!) {
+        menuUpdate(id: $id, title: $title, items: $items) {
+          menu { id }
+          userErrors { message }
+        }
+      }`,
+      { variables: { id: menu.id, title: menu.title, items } },
+    );
+    const result = await write.json();
+    return (result.data?.menuUpdate?.userErrors ?? []).length === 0;
+  } catch (error) {
+    console.error("Inline menu item removal failed:", error);
+    return false;
   }
 }
 
@@ -382,6 +553,7 @@ const windowLabel = (start: string, end: string) =>
 
 type ModalKey =
   | "announcement"
+  | "menu"
   | "seo-todos"
   | "marketing-todos"
   | "seo-meta"
@@ -426,6 +598,7 @@ export default function SpecialDateManage() {
 
   const MODAL_TITLES: Record<Exclude<ModalKey, null>, string> = {
     announcement: "Homepage announcement bar",
+    menu: "Navigation menu item",
     "seo-todos": "SEO to-dos",
     "marketing-todos": "Marketing to-dos",
     "seo-meta": "SEO for products & collections",
@@ -467,6 +640,22 @@ export default function SpecialDateManage() {
               status={scheduledStatus(data.hero)}
               statusActive={Boolean(data.hero?.enabled)}
               onOpen={() => setOpen("hero")}
+            />
+            <ActionCard
+              artKey="menu"
+              title="Menu item"
+              description="A link in your store navigation, added and removed on schedule."
+              status={
+                data.menuItem
+                  ? data.menuItem.live
+                    ? "Live in menu"
+                    : data.menuItem.enabled
+                      ? `Scheduled ${windowLabel(data.menuItem.startDate, data.menuItem.endDate)}`
+                      : "Paused"
+                  : "Not set up"
+              }
+              statusActive={Boolean(data.menuItem?.live)}
+              onOpen={() => setOpen("menu")}
             />
             <ActionCard
               artKey="popup"
@@ -532,6 +721,13 @@ export default function SpecialDateManage() {
               specialDateName={specialDate.name}
               specialDateDate={specialDate.date}
               hero={data.hero}
+            />
+          ) : null}
+          {open === "menu" ? (
+            <MenuScheduler
+              specialDateName={specialDate.name}
+              specialDateDate={specialDate.date}
+              menuItem={data.menuItem}
             />
           ) : null}
           {open === "popup" ? (
