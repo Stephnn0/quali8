@@ -12,6 +12,7 @@ import {
 } from "@shopify/polaris";
 import { ImageIcon } from "@shopify/polaris-icons";
 import { useAppBridge } from "@shopify/app-bridge-react";
+import FilesPickerModal from "./FilesPickerModal";
 
 export type HeroConfig = {
   enabled: boolean;
@@ -51,6 +52,7 @@ export default function HeroScheduler({
   const shopify = useAppBridge();
   const fetcher = useFetcher();
   const saving = fetcher.state !== "idle";
+  const [filesOpen, setFilesOpen] = useState(false);
 
   const [enabled, setEnabled] = useState(hero?.enabled ?? true);
   const [imageUrl, setImageUrl] = useState(hero?.imageUrl ?? "");
@@ -184,7 +186,16 @@ export default function HeroScheduler({
         <Button icon={ImageIcon} onClick={pickImage}>
           From a product
         </Button>
+        <Button icon={ImageIcon} onClick={() => setFilesOpen(true)}>
+          From your files
+        </Button>
       </InlineStack>
+
+      <FilesPickerModal
+        open={filesOpen}
+        onClose={() => setFilesOpen(false)}
+        onSelect={setImageUrl}
+      />
 
       <TextField
         label="Headline"
