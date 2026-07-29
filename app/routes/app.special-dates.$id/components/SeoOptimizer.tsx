@@ -6,7 +6,6 @@ import {
   BlockStack,
   Button,
   ButtonGroup,
-  Card,
   Checkbox,
   Divider,
   InlineStack,
@@ -213,18 +212,12 @@ export default function SeoOptimizer({
     .filter((id) => suggestions[id]);
 
   return (
-    <Card>
-      <BlockStack gap="400">
-        <BlockStack gap="100">
-          <Text as="h2" variant="headingMd">
-            SEO for {specialDateName}
-          </Text>
-          <Text as="p" tone="subdued" variant="bodySm">
-            Pick products or collections, generate metadata optimized for
-            this date, review, and apply — changes go live on your store
-            immediately.
-          </Text>
-        </BlockStack>
+    <BlockStack gap="400">
+        <Text as="p" tone="subdued" variant="bodySm">
+          Pick products or collections, generate metadata optimized for
+          {" "}{specialDateName}, review, and apply — changes go live on your
+          store immediately.
+        </Text>
 
         {error ? <Banner tone="warning" title={error} /> : null}
 
@@ -394,7 +387,6 @@ export default function SeoOptimizer({
             ))}
           </BlockStack>
         ) : null}
-      </BlockStack>
-    </Card>
+    </BlockStack>
   );
 }

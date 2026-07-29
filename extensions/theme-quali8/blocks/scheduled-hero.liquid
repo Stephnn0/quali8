@@ -1,0 +1,21 @@
+{%- comment -%}
+  Quali8 — Scheduled hero (home page app block).
+  Fetches the active hero from the app proxy (/apps/quali8/hero); the app
+  decides visibility by date window. Renders nothing when no hero is
+  scheduled for today.
+{%- endcomment -%}
+
+<div class="q8-hero" data-quali8-hero hidden></div>
+
+{% schema %}
+{
+  "name": "Scheduled hero",
+  "target": "section",
+  "javascript": "scheduled-hero.js",
+  "stylesheet": "scheduled-hero.css",
+  "enabled_on": {
+    "templates": ["index"]
+  },
+  "settings": []
+}
+{% endschema %}

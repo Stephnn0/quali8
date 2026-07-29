@@ -4,7 +4,6 @@ import {
   Badge,
   BlockStack,
   Button,
-  Card,
   Checkbox,
   InlineGrid,
   InlineStack,
@@ -147,26 +146,18 @@ export default function AnnouncementScheduler({
   };
 
   return (
-    <Card>
-      <BlockStack gap="400">
-        <InlineStack align="space-between" blockAlign="center">
-          <BlockStack gap="100">
-            <InlineStack gap="200" blockAlign="center">
-              <Text as="h2" variant="headingMd">
-                Homepage announcement bar
-              </Text>
-              {announcementBar ? (
-                <Badge tone={announcementBar.enabled ? "success" : undefined}>
-                  {announcementBar.enabled ? "Scheduled" : "Paused"}
-                </Badge>
-              ) : null}
-            </InlineStack>
-            <Text as="p" tone="subdued" variant="bodySm">
-              Shows on your home page only between the dates below. Add the
-              &ldquo;Announcement bar&rdquo; block once in your theme editor —
-              scheduling happens here.
-            </Text>
-          </BlockStack>
+    <BlockStack gap="400">
+        <InlineStack gap="200" blockAlign="center">
+          {announcementBar ? (
+            <Badge tone={announcementBar.enabled ? "success" : undefined}>
+              {announcementBar.enabled ? "Scheduled" : "Paused"}
+            </Badge>
+          ) : null}
+          <Text as="p" tone="subdued" variant="bodySm">
+            Shows on your home page only between the dates below. Add the
+            &ldquo;Announcement bar&rdquo; block once in your theme editor —
+            scheduling happens here.
+          </Text>
         </InlineStack>
 
         {/* Live preview */}
@@ -235,7 +226,6 @@ export default function AnnouncementScheduler({
             </Button>
           ) : null}
         </InlineStack>
-      </BlockStack>
-    </Card>
+    </BlockStack>
   );
 }
