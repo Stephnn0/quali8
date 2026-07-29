@@ -25,7 +25,7 @@ compliance_topics = [ "customers/data_request", "customers/redact", "shop/redact
 
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
 
-scopes = "write_products, read_customers, read_shipping, write_discounts, read_orders"
+scopes = "write_products, read_customers, read_shipping, write_discounts, read_orders, read_files"
 
 [auth]
 redirect_urls = [
