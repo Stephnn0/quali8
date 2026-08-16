@@ -3,12 +3,15 @@ import { useFetcher, useLoaderData, useNavigate } from "react-router";
 import {
   Badge,
   BlockStack,
+  Box,
   Button,
   ButtonGroup,
   Card,
   EmptyState,
   IndexTable,
+  InlineGrid,
   Layout,
+  List,
   Modal,
   Page,
   Text,
@@ -16,6 +19,8 @@ import {
 import { DeleteIcon, EditIcon } from "@shopify/polaris-icons";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import emptyImage from "app/assets/customer-segment-icon.png";
+import storefrontShowcaseImage from "app/assets/recs-storefront-showcase.png";
+import themeEditorSettingsImage from "app/assets/recs-theme-editor-settings.png";
 import { occasionWindowContains } from "app/services/recommendations/constants";
 import { FeatureHeader } from "app/components/OneApp";
 import { loader, type OccasionRow } from "./loader";
@@ -155,6 +160,87 @@ export default function OccasionsIndex() {
               </EmptyState>
             </Card>
           )}
+        </Layout.Section>
+
+        <Layout.Section>
+          <BlockStack gap="300">
+            <BlockStack gap="100">
+              <Text as="h2" variant="headingMd">
+                Show it on your storefront
+              </Text>
+              <Text as="p" tone="subdued">
+                Occasions power the Smart Recommendations app block. Here is
+                what shoppers see and how to enable it in your theme.
+              </Text>
+            </BlockStack>
+            <InlineGrid columns={{ xs: 1, md: 2 }} gap="400">
+              <Card padding="0">
+                <Box background="bg-surface-secondary" padding="400">
+                  <img
+                    src={storefrontShowcaseImage}
+                    alt="Smart Recommendations block on a product page, with occasion, recipient, and budget filters above four recommended products"
+                    style={{
+                      display: "block",
+                      width: "100%",
+                      height: "220px",
+                      objectFit: "contain",
+                      borderRadius: "8px",
+                    }}
+                  />
+                </Box>
+                <Box padding="400">
+                  <BlockStack gap="200">
+                    <Text as="h3" variant="headingSm">
+                      Recommendations on product and cart pages
+                    </Text>
+                    <Text as="p" tone="subdued">
+                      The Smart Recommendations block shows the products you
+                      curate for each occasion, with occasion, recipient, and
+                      budget filters and one-tap add to cart. You can place it
+                      on the product page, the cart page, or both.
+                    </Text>
+                  </BlockStack>
+                </Box>
+              </Card>
+              <Card padding="0">
+                <Box background="bg-surface-secondary" padding="400">
+                  <img
+                    src={themeEditorSettingsImage}
+                    alt="Theme editor settings panel for the Smart Recommendations block, showing heading, labels, after-add behavior, and color options"
+                    style={{
+                      display: "block",
+                      width: "100%",
+                      height: "220px",
+                      objectFit: "contain",
+                      borderRadius: "8px",
+                    }}
+                  />
+                </Box>
+                <Box padding="400">
+                  <BlockStack gap="200">
+                    <Text as="h3" variant="headingSm">
+                      Enable and customize in the theme editor
+                    </Text>
+                    <List type="number">
+                      <List.Item>
+                        In your Shopify admin, go to Online Store &rarr; Themes
+                        &rarr; Customize.
+                      </List.Item>
+                      <List.Item>
+                        Open the Product or Cart template, then choose Add
+                        block &rarr; Apps &rarr; Smart Recommendations.
+                      </List.Item>
+                      <List.Item>
+                        Use the block settings to edit the heading, button
+                        labels, after-add behavior, filters, and colors — all
+                        Liquid config, no code needed.
+                      </List.Item>
+                    </List>
+                  </BlockStack>
+                </Box>
+              </Card>
+            </InlineGrid>
+          </BlockStack>
         </Layout.Section>
       </Layout>
 
