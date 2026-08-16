@@ -22,6 +22,7 @@ import { z } from "zod";
 import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
 import { gatekeepRoute } from "app/services/subscriptions/gatekeepRoute";
+import { FeatureHeader } from "app/components/OneApp";
 import { getUpcomingSpecialDates } from "app/services/assistant/specialDates.server";
 import emptyImage from "app/assets/customer-segment-icon.png";
 
@@ -221,14 +222,16 @@ export default function SpecialDatesIndex() {
   ));
 
   return (
-    <Page
-      title="Sales Calendar"
-      subtitle="Every date that can drive revenue for your shop — each with its own campaigns, SEO, and prep plan"
-      primaryAction={{
-        content: "Add special date",
-        onAction: () => setCreateOpen(true),
-      }}
-    >
+    <Page>
+      <FeatureHeader
+        featureKey="sales-calendar"
+        tagline="Every date that can drive revenue for your shop — each with its own announcements, popups, SEO, and prep plan. Smart Announcements, SEO AI, and Subscribe Boost launch from here."
+        actions={
+          <Button variant="primary" onClick={() => setCreateOpen(true)}>
+            Add special date
+          </Button>
+        }
+      />
       <Layout>
         <Layout.Section>
           {dates.length > 0 ? (

@@ -17,6 +17,8 @@ import {
 import { DeleteIcon } from "@shopify/polaris-icons";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { applyPercentDiscount } from "app/utils/bundlePricing";
+import { FeatureEyebrow } from "app/components/OneApp";
+import emptyImage from "app/assets/bundles-card.svg";
 import { loader } from "./loader";
 import { action } from "./action";
 import { BundlePreview } from "./components/BundlePreview";
@@ -139,11 +141,14 @@ export default function BundleForm() {
 
   if (notFound) {
     return (
-      <Page title="Bundle not found">
+      <Page
+        title="Bundle not found"
+        titleMetadata={<FeatureEyebrow featureKey="bundle-builder" />}
+      >
         <Card>
           <EmptyState
             heading="This bundle doesn't exist"
-            image=""
+            image={emptyImage}
             action={{
               content: "Back to bundles",
               onAction: () => navigate("/app/bundles"),
@@ -158,7 +163,8 @@ export default function BundleForm() {
 
   return (
     <Page
-      title={isNew ? "Create classic bundle" : "Edit bundle"}
+      title={isNew ? "Create bundle" : "Edit bundle"}
+      titleMetadata={<FeatureEyebrow featureKey="bundle-builder" />}
       backAction={{ content: "Bundles", onAction: () => navigate("/app/bundles") }}
       primaryAction={{
         content: "Save",

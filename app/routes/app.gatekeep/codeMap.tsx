@@ -10,7 +10,7 @@ const PUBLIC_ENV = {
 };
 
 const APP_CONSTANTS = {
-  SHORT_NAME: "Quali8",
+  SHORT_NAME: "OneApp",
   URLS: {
     LANDING_PAGE: "https://8instruments.com",
   },

@@ -17,6 +17,7 @@ import { DeleteIcon, EditIcon } from "@shopify/polaris-icons";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import emptyImage from "app/assets/customer-segment-icon.png";
 import { occasionWindowContains } from "app/services/recommendations/constants";
+import { FeatureHeader } from "app/components/OneApp";
 import { loader, type OccasionRow } from "./loader";
 import { action } from "./action";
 
@@ -108,14 +109,16 @@ export default function OccasionsIndex() {
   ));
 
   return (
-    <Page
-      title="Occasion Recommendations"
-      subtitle="Curate the products shoppers see for each occasion — shown by the Smart Recommendations block on product and cart pages"
-      primaryAction={{
-        content: "Create occasion",
-        onAction: () => navigate("/app/occasions/new"),
-      }}
-    >
+    <Page>
+      <FeatureHeader
+        featureKey="occasion-match"
+        tagline="Curate the products shoppers see for each occasion — shown by the Smart Recommendations block on product and cart pages."
+        actions={
+          <Button variant="primary" onClick={() => navigate("/app/occasions/new")}>
+            Create occasion
+          </Button>
+        }
+      />
       <Layout>
         <Layout.Section>
           {occasions.length > 0 ? (

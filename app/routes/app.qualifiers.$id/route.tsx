@@ -6,6 +6,7 @@ import DetailsCard from "./components/DetailsCard";
 import ConditionsBuilder from "./components/ConditionsBuilder";
 import PreviewCard from "./components/PreviewCard";
 import { AudienceInsights } from "./components/AudienceInsights";
+import { FeatureEyebrow } from "app/components/OneApp";
 
 export { loader };
 
@@ -17,6 +18,7 @@ export default function AudienceEditor() {
   return (
     <Page
       title={qualifier ? (qualifier.name ?? "Audience") : "Create audience"}
+      titleMetadata={<FeatureEyebrow featureKey="customer-insights" />}
       backAction={{ onAction: () => navigate("/app/qualifiers") }}
     >
       <Layout>

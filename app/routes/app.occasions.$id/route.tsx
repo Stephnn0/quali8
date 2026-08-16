@@ -25,6 +25,7 @@ import { DeleteIcon } from "@shopify/polaris-icons";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { loader } from "./loader";
 import { action } from "./action";
+import { FeatureEyebrow } from "app/components/OneApp";
 
 export { loader, action };
 
@@ -169,6 +170,7 @@ export default function OccasionEditor() {
   return (
     <Page
       title={isNew ? "Create occasion" : (occasion?.name ?? "Occasion")}
+      titleMetadata={<FeatureEyebrow featureKey="occasion-match" />}
       backAction={{ onAction: () => navigate("/app/occasions") }}
     >
       <Layout>

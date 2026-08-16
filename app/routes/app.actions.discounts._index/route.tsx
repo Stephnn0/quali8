@@ -3,7 +3,6 @@ import {
   IndexTable,
   Page,
   useIndexResourceState,
-  Text,
   Card,
   Button,
   ButtonGroup,
@@ -22,6 +21,7 @@ import { useCallback, useState } from "react";
 import image from "app/assets/sds.png";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import quailifierlogo from "app/assets/disco.png";
+import { FeatureHeader } from "app/components/OneApp";
 export { loader };
 
 export default function AllActions() {
@@ -77,12 +77,10 @@ export default function AllActions() {
           </Badge>
         </IndexTable.Cell>
         <IndexTable.Cell>{codeOrName}</IndexTable.Cell>
-        <IndexTable.Cell> {type}</IndexTable.Cell>
-        <IndexTable.Cell> {discountMethod}</IndexTable.Cell>
+        <IndexTable.Cell>{type}</IndexTable.Cell>
+        <IndexTable.Cell>{discountMethod}</IndexTable.Cell>
         <IndexTable.Cell>
-          <IndexTable.Cell>
-            {type === "percentage" ? `${value}%` : `$${value}`}
-          </IndexTable.Cell>
+          {type === "percentage" ? `${value}%` : `$${value}`}
         </IndexTable.Cell>
         <IndexTable.Cell>
           <ButtonGroup>
@@ -159,9 +157,7 @@ export default function AllActions() {
 
   // ==================================== pagination
 
-  const [searchParams, setSearchParams] = useSearchParams();
-
-  console.log("", searchParams);
+  const [, setSearchParams] = useSearchParams();
 
   const currentPage = loaderData?.payload?.page || 1;
   const totalItems = loaderData?.payload?.total;
@@ -174,17 +170,15 @@ export default function AllActions() {
   };
 
   return (
-    <Page
-      backAction={{
-        onAction: () => navigate("/app/actions"),
-      }}
-      title="Shipping Discounts"
-      primaryAction={
-        <Link to="new">
-          <Button variant="primary">Create Shipping Discount</Button>
-        </Link>
-      }
-    >
+    <Page>
+      <FeatureHeader
+        featureKey="smart-shipping"
+        actions={
+          <Button variant="primary" onClick={() => navigate("new")}>
+            Create shipping discount
+          </Button>
+        }
+      />
       <Layout>
         <Layout.Section>
           <MediaCard
@@ -214,12 +208,7 @@ export default function AllActions() {
         </Layout.Section>
         <Layout.Section>
           {discountActions.length > 0 ? (
-            <Card>
-              <Text variant="headingMd" as="h4">
-                Shipping Discounts
-              </Text>
-              <br />
-
+            <Card padding="0">
               <IndexTable
                 resourceName={resourceName}
                 itemCount={discountActions!.length}
@@ -249,10 +238,10 @@ export default function AllActions() {
           ) : (
             <Card>
               <EmptyState
-                heading="You have no shipping discounts yet"
+                heading="No shipping discounts yet"
                 image={quailifierlogo}
                 action={{
-                  content: "Create a Shipping Discount",
+                  content: "Create shipping discount",
                   onAction: () => {
                     navigate("/app/actions/discounts/new");
                   },
@@ -260,15 +249,15 @@ export default function AllActions() {
                 fullWidth
               >
                 <p>
-                  Create a Shipping Discount to offer your customers a discount
-                  on shipping rates.
+                  Reward the audiences you choose with discounted shipping —
+                  percentage or fixed, automatic or code-based.
                 </p>
               </EmptyState>
             </Card>
           )}
         </Layout.Section>
         <Layout.Section>
-          <FooterHelp>@8Instruments. All rights reserved.</FooterHelp>
+          <FooterHelp>© 8Instruments. All rights reserved.</FooterHelp>
         </Layout.Section>
       </Layout>
 

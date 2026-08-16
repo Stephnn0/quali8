@@ -5,11 +5,11 @@ export default function Actions() {
   return (
     <Page
       title="Promotions"
-      subtitle="Shipping discounts and product bundles for your sales seasons"
+      subtitle="Two OneApp features for your sales seasons: Smart Shipping (01) and Bundle Builder (03)"
     >
       <Layout>
         <Layout.Section>
-          <InlineGrid gap="600" columns={3}>
+          <InlineGrid gap="600" columns={{ xs: 1, sm: 2, md: 3 }}>
             <CheckoutBlock type="date_time_picker" />
             <CheckoutBlock type="bundles" />
             {/* <CheckoutBlock type="product_editor" /> */}

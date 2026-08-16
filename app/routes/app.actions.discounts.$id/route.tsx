@@ -15,6 +15,7 @@ import {
   Banner,
 } from "@shopify/polaris";
 import { loader } from "./loader";
+import { FeatureEyebrow } from "app/components/OneApp";
 import { useDiscountForm } from "./hooks";
 import { useState } from "react";
 import DateSelector from "./components/DateSelector";
@@ -75,7 +76,8 @@ export default function ActionDiscounts() {
 
   return (
     <Page
-      title="Shipping Discounts"
+      title="Shipping discount"
+      titleMetadata={<FeatureEyebrow featureKey="smart-shipping" />}
       backAction={{
         content: "Back",
         onAction: () => navigate("/app/actions/discounts"),

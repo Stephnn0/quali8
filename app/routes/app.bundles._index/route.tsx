@@ -23,6 +23,8 @@ import { useAppBridge } from "@shopify/app-bridge-react";
 import { loader } from "./loader";
 import { action } from "./action";
 import { BundleTypeModal } from "./components/BundleTypeModal";
+import { FeatureHeader } from "app/components/OneApp";
+import emptyImage from "app/assets/bundles-card.svg";
 
 export { loader, action };
 
@@ -142,19 +144,20 @@ export default function Bundles() {
   };
 
   return (
-    <Page
-      title="Product Bundles"
-      subtitle="Discounted product bundles shown on product pages"
-      primaryAction={
-        <Button variant="primary" onClick={openTypeModal}>
-          Create
-        </Button>
-      }
-    >
+    <Page>
+      <FeatureHeader
+        featureKey="bundle-builder"
+        tagline="Discounted product bundles, shown on the product pages of everything they include."
+        actions={
+          <Button variant="primary" onClick={openTypeModal}>
+            Create bundle
+          </Button>
+        }
+      />
       <Layout>
         <Layout.Section>
           {bundles.length > 0 ? (
-            <Card>
+            <Card padding="0">
               <IndexTable
                 resourceName={resourceName}
                 itemCount={bundles.length}
@@ -179,8 +182,8 @@ export default function Bundles() {
           ) : (
             <Card>
               <EmptyState
-                heading="You have no bundles yet"
-                image=""
+                heading="No bundles yet"
+                image={emptyImage}
                 action={{
                   content: "Create bundle",
                   onAction: openTypeModal,

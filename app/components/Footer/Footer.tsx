@@ -5,7 +5,7 @@ export default function Footer() {
   return (
     <footer className={styles.container}>
       <Text alignment="center" as="span">
-        @8Instruments. All rights reserved.
+        © 8Instruments. All rights reserved.
       </Text>
     </footer>
   );
