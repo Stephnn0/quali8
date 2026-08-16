@@ -1,17 +1,7 @@
-import { useNavigate } from "react-router";
-import {
-  Badge,
-  BlockStack,
-  Button,
-  Card,
-  InlineGrid,
-  InlineStack,
-  Text,
-} from "@shopify/polaris";
+import { BlockStack, Button, InlineStack, Text } from "@shopify/polaris";
 import { APP } from "app/constants/app.constants";
 import { APP_PLANS } from "app/constants/plans";
 import type { CoreDate } from "app/services/assistant/coreDates";
-import type { OverviewEntitlements } from "../../route";
 import styles from "./styles.module.css";
 
 const PRICING_PAGE_URL = `shopify://admin/charges/${APP.APP_HANDLE}/pricing_plans`;
@@ -41,49 +31,34 @@ function daysAway(isoDate: string): number {
 
 type Props = {
   upcoming: CoreDate[];
-  counts: {
-    audiences: number;
-    promotions: number;
-    bundles: number;
-    occasions: number;
-  };
-  entitlements: OverviewEntitlements;
 };
 
 /**
- * The home page for Free/Pro merchants: the same "sales season" framing as
- * the Advance dashboard — upcoming commerce dates, quick actions for the
- * features their plan includes — with the AI command center as the upsell.
+ * The seasonal section of the Free/Pro dashboard, below the feature library:
+ * upcoming commerce dates plus the Advance upsell. The feature grid above
+ * covers quick actions, so this section stays focused on the calendar.
  */
-export default function SeasonOverview({ upcoming, counts, entitlements }: Props) {
-  const navigate = useNavigate();
+export default function SeasonOverview({ upcoming }: Props) {
   const next = upcoming[0];
 
   return (
     <BlockStack gap="500">
-      <div className={styles.banner}>
-        <p className={styles.bannerEyebrow}>Season Command Center</p>
-        <h1 className={styles.bannerTitle}>
-          {next
-            ? `${next.name} is ${
-                daysAway(next.date) === 0
-                  ? "today"
-                  : `in ${daysAway(next.date)} days`
-              } — is your store ready?`
-            : "Get your store ready for the next sales season"}
-        </h1>
-        <p className={styles.bannerText}>
-          Quali8 prepares your store for the seasons that drive revenue:
-          plan each date, launch storefront campaigns, tune your SEO, and
-          recommend the right products to the right shoppers.
-        </p>
-      </div>
-
       {upcoming.length ? (
         <BlockStack gap="300">
-          <Text as="h2" variant="headingMd">
-            Your next sales seasons
-          </Text>
+          <BlockStack gap="100">
+            <Text as="h2" variant="headingMd">
+              Your next sales seasons
+            </Text>
+            {next ? (
+              <Text as="p" tone="subdued">
+                {`${next.name} is ${
+                  daysAway(next.date) === 0
+                    ? "today"
+                    : `in ${daysAway(next.date)} days`
+                } — is your store ready?`}
+              </Text>
+            ) : null}
+          </BlockStack>
           <div className={styles.rail}>
             {upcoming.map((core, index) => {
               const [from, to] = ART_GRADIENTS[index % ART_GRADIENTS.length];
@@ -109,60 +84,6 @@ export default function SeasonOverview({ upcoming, counts, entitlements }: Props
         </BlockStack>
       ) : null}
 
-      <InlineGrid columns={{ xs: 1, sm: 2 }} gap="400">
-        <Card>
-          <BlockStack gap="300">
-            <InlineStack align="space-between" blockAlign="center">
-              <Text as="h2" variant="headingMd">
-                Audiences
-              </Text>
-              <Badge tone={counts.audiences ? "success" : undefined}>
-                {counts.audiences ? `${counts.audiences} active` : "Not started"}
-              </Badge>
-            </InlineStack>
-            <Text as="p" tone="subdued">
-              Group customers by behavior — gift buyers, VIPs, first-timers —
-              and target them with seasonal promotions.
-            </Text>
-            <div>
-              <Button onClick={() => navigate("/app/qualifiers")}>
-                {counts.audiences ? "Manage audiences" : "Create your first audience"}
-              </Button>
-            </div>
-          </BlockStack>
-        </Card>
-
-        <Card>
-          <BlockStack gap="300">
-            <InlineStack align="space-between" blockAlign="center">
-              <Text as="h2" variant="headingMd">
-                Promotions
-              </Text>
-              <Badge
-                tone={counts.promotions + counts.bundles ? "success" : undefined}
-              >
-                {counts.promotions + counts.bundles
-                  ? `${counts.promotions + counts.bundles} active`
-                  : entitlements.hasShippingDiscounts
-                    ? "Not started"
-                    : "Pro"}
-              </Badge>
-            </InlineStack>
-            <Text as="p" tone="subdued">
-              Shipping discounts and product bundles that reward your best
-              audiences during peak seasons.
-            </Text>
-            <div>
-              <Button onClick={() => navigate("/app/actions")}>
-                {entitlements.hasShippingDiscounts
-                  ? "Set up promotions"
-                  : "See promotions"}
-              </Button>
-            </div>
-          </BlockStack>
-        </Card>
-      </InlineGrid>
-
       <div className={styles.banner}>
         <p className={styles.bannerEyebrow}>
           {`Upgrade to ${APP_PLANS.ADVANCE.name}`}
@@ -171,7 +92,8 @@ export default function SeasonOverview({ upcoming, counts, entitlements }: Props
           Unlock the full Season Command Center
         </h1>
         <p className={styles.bannerText}>
-          A sales calendar tuned to your niche and country, one-click
+          OneApp prepares your store for the seasons that drive revenue: a
+          sales calendar tuned to your niche and country, one-click
           storefront campaigns (announcement bar, hero, popup, menu),
           AI-optimized SEO for every date, and a readiness plan that tells
           you exactly what to do next.

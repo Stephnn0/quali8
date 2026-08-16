@@ -92,7 +92,7 @@ export default function Settings() {
   return (
     <Page
       title="Plans & billing"
-      subtitle="Manage your Quali8 subscription"
+      subtitle="Manage your OneApp subscription"
       primaryAction={{
         content: isSubscribed ? "Manage plan" : "Choose a plan",
         url: PRICING_PAGE_URL,

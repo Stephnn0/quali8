@@ -25,6 +25,7 @@ import { useCallback, useState } from "react";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import emptyImage from "app/assets/customer-segment-icon.png";
 import { describeCondition } from "app/services/audiences/describeCondition";
+import { FeatureHeader } from "app/components/OneApp";
 import { CustomerInsightsSection } from "./components/insights/CustomerInsightsSection";
 import { loader, type AudienceRow } from "./loader";
 
@@ -222,16 +223,18 @@ export default function Audiences() {
   ));
 
   return (
-    <Page
-      title="Audiences"
-      subtitle="Group customers by behavior and target them with promotions"
-      primaryAction={{
-        content: "Create audience",
-        // Client-side navigation only — a plain link would trigger a full
-        // document load and dump the merchant on the login screen.
-        onAction: () => navigate("/app/qualifiers/new"),
-      }}
-    >
+    <Page>
+      <FeatureHeader
+        featureKey="customer-insights"
+        tagline="See who your customers are, group them into audiences, and target them with promotions."
+        actions={
+          // Client-side navigation only — a plain link would trigger a full
+          // document load and dump the merchant on the login screen.
+          <Button variant="primary" onClick={() => navigate("/app/qualifiers/new")}>
+            Create audience
+          </Button>
+        }
+      />
       <Layout>
         {insights ? (
           <Layout.Section>

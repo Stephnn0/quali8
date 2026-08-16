@@ -9,6 +9,7 @@ import { gatekeepRoute } from "app/services/subscriptions/gatekeepRoute";
 import { generateFaqSuggestions } from "app/services/assistant/collectionFaqs.server";
 import emptyImage from "app/assets/customer-segment-icon.png";
 import FaqCollectionCard from "./components/FaqCollectionCard";
+import { FeatureHeader } from "app/components/OneApp";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const authAdminContext = await authenticate.admin(request);
@@ -206,14 +207,16 @@ export default function CollectionFaqsIndex() {
   };
 
   return (
-    <Page
-      title="Collection FAQs"
-      subtitle="SEO-friendly questions and answers shown below the products on each collection page — with FAQ structured data for search engines"
-      primaryAction={{
-        content: "Add FAQs to a collection",
-        onAction: pickCollection,
-      }}
-    >
+    <Page>
+      <FeatureHeader
+        featureKey="faq-collections"
+        tagline="SEO-friendly Q&As below the products on each collection page, with FAQ structured data for search engines."
+        actions={
+          <Button variant="primary" onClick={pickCollection}>
+            Add FAQs to a collection
+          </Button>
+        }
+      />
       <Layout>
         <Layout.Section>
           {collections.length > 0 ? (

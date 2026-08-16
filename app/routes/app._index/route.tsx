@@ -16,6 +16,13 @@ import { upcomingCoreDates, type CoreDate } from "app/services/assistant/coreDat
 import SeasonOverview from "./sections/Assistant/SeasonOverview";
 import OnboardingCard from "./sections/Assistant/OnboardingCard";
 import AssistantDashboard from "./sections/Assistant/AssistantDashboard";
+import {
+  FeatureGrid,
+  ONEAPP_FEATURES,
+  OneAppHero,
+  RequestFeatureBand,
+} from "app/components/OneApp";
+import styles from "app/components/OneApp/oneapp.module.css";
 
 /** Store facts that drive the readiness score and the status grid. */
 export type SeasonStatus = {
@@ -239,12 +246,22 @@ export default function Index() {
   return (
     <Page>
       <BlockStack gap="500">
+        <OneAppHero />
+
+        <BlockStack gap="300">
+          <div className={styles.sectionHeading}>
+            <h2 className={styles.sectionTitle}>Your features</h2>
+            <span className={styles.sectionHint}>
+              {String(ONEAPP_FEATURES.length).padStart(2, "0")} and growing
+            </span>
+          </div>
+          <FeatureGrid />
+        </BlockStack>
+
+        <RequestFeatureBand />
+
         {data.state === "overview" ? (
-          <SeasonOverview
-            upcoming={data.upcoming}
-            counts={data.counts}
-            entitlements={data.entitlements}
-          />
+          <SeasonOverview upcoming={data.upcoming} />
         ) : null}
 
         {data.state === "onboarding" ? (
@@ -268,11 +285,11 @@ export default function Index() {
         ) : null}
 
         <FooterHelp>
-          Learn more about Quali8 on the{" "}
+          Learn more about OneApp on the{" "}
           <Link url="https://www.8instruments.com/products" target="_blank">
             8Instruments blog
           </Link>
-          . @8Instruments. All rights reserved.
+          . © 8Instruments. All rights reserved.
         </FooterHelp>
       </BlockStack>
     </Page>

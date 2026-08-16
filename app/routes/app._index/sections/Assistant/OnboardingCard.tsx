@@ -57,7 +57,7 @@ export default function OnboardingCard({
           Let&rsquo;s get your store ready for its next sales season
         </h1>
         <p className={styles.bannerText}>
-          Quali8 builds your sales calendar around the occasions that matter
+          OneApp builds your sales calendar around the occasions that matter
           for your business and tells you exactly how to prepare for each
           one. One quick confirmation and it starts working.
         </p>

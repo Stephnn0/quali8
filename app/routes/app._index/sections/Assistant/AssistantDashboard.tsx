@@ -32,7 +32,7 @@ const CATEGORY_LABEL: Record<BriefChecklistItem["category"], string> = {
   store: "Storefront",
   inventory: "Inventory",
   marketing: "Marketing",
-  app: "In Quali8",
+  app: "In OneApp",
 };
 
 const dateBadge = (isoDate: string) =>

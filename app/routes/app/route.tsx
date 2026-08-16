@@ -56,22 +56,24 @@ export default function App() {
     <AppProvider embedded={true} apiKey={apiKey} >
       <PolarisProvider i18n={enTranslations}>
       {/*
-        Seasonal-workflow order: the planning loop (calendar → campaigns →
-        recommendations → promotions) comes before supporting tools.
-        App Bridge NavMenu renders flat text links — grouping/icons live in
-        the in-page hubs, not here.
+        OneApp feature-library order: Dashboard first, then features in
+        index order (01–09; Smart Announcements, SEO AI, and Subscribe
+        Boost live inside the Sales Calendar surface), then the request
+        entry point and billing. App Bridge NavMenu renders flat text
+        links — numbers/icons live on the dashboard grid, not here.
       */}
       <NavMenu>
         <Link to="/app" rel="home">
-          Home
+          Dashboard
         </Link>
+        <Link to="/app/actions/discounts">Smart Shipping</Link>
+        <Link to="/app/qualifiers">Customer Insights</Link>
+        <Link to="/app/bundles">Bundle Builder</Link>
+        <Link to="/app/faqs">FAQ Collections</Link>
+        <Link to="/app/occasions">Occasion Match</Link>
         <Link to="/app/special-dates">Sales Calendar</Link>
-        <Link to="/app/occasions">Recommendations</Link>
-        {/* Promotions hub: shipping discounts + product bundles */}
-        <Link to="/app/actions">Promotions</Link>
-        <Link to="/app/qualifiers">Audiences</Link>
-        <Link to="/app/faqs">Content & SEO</Link>
         {/* <Link to="/app/campaings">Campaigns</Link> */}
+        <Link to="/app/request-feature">Request a Feature</Link>
         <Link to="/app/settings">Plans & billing</Link>
       </NavMenu>
       <Outlet />

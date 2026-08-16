@@ -15,6 +15,7 @@ import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
 import { gatekeepRoute } from "app/services/subscriptions/gatekeepRoute";
 import { generateDateTodos } from "app/services/assistant/dateTodos.server";
+import { FeatureEyebrow } from "app/components/OneApp";
 import TodoBoard from "./components/TodoBoard";
 import AnnouncementScheduler from "./components/AnnouncementScheduler";
 import HeroScheduler from "./components/HeroScheduler";
@@ -613,6 +614,7 @@ export default function SpecialDateManage() {
       backAction={{ onAction: () => navigate("/app/special-dates") }}
       titleMetadata={
         <InlineStack gap="200">
+          <FeatureEyebrow featureKey="sales-calendar" />
           <Badge tone="attention">
             {days === 0 ? "Today" : `In ${days} days`}
           </Badge>
