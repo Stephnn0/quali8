@@ -202,6 +202,179 @@
   text-decoration: underline;
 }
 
+/* --- Plan banner: which plan includes the feature --- */
+
+.planBanner {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  border-radius: 999px;
+  padding: 0.1875rem 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.planFree {
+  background: #e3f5e1;
+  color: #1a5d2e;
+}
+
+.planPro {
+  background: #ebe4fb;
+  color: #2c1f58;
+}
+
+.planAdvance {
+  background: #1d1539;
+  color: #f0c46c;
+}
+
+.planBannerHint {
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  opacity: 0.85;
+}
+
+.planBannerHint::before {
+  content: "\00b7";
+  margin-right: 0.375rem;
+}
+
+/* --- Dashboard groups: one section per category --- */
+
+.groups {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.groupHeading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e3e3e8;
+}
+
+.groupTitle {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #1d1539;
+}
+
+.groupTagline {
+  margin: 0.125rem 0 0;
+  font-size: 0.8125rem;
+  color: #55565b;
+}
+
+.groupLink {
+  flex-shrink: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #2c1f58;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.groupLink:hover {
+  text-decoration: underline;
+}
+
+/* --- Category page: showcase cards with an illustration each --- */
+
+.showcaseGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(20rem, 1fr));
+  gap: 1rem;
+}
+
+.showcase {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #e3e3e8;
+  border-radius: 12px;
+  background: #ffffff;
+}
+
+.showcaseMedia {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  background: #f3effc;
+  border-bottom: 1px solid #e3e3e8;
+}
+
+.showcaseImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.showcaseMedia .planBanner {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  box-shadow: 0 1px 2px rgba(29, 21, 57, 0.15);
+}
+
+.showcaseBody {
+  flex: 1;
+  padding: 1rem 1.125rem 0.5rem;
+}
+
+.showcaseTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.showcaseTitleRow .cardIcon {
+  margin-bottom: 0;
+}
+
+.showcaseName {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: #1d1539;
+}
+
+.showcaseTagline {
+  margin: 0.75rem 0 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #2c1f58;
+}
+
+.showcaseText {
+  margin: 0.375rem 0 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  color: #55565b;
+}
+
+.showcaseFoot {
+  padding: 0.75rem 1.125rem 1.125rem;
+}
+
+.categoryFoot {
+  margin-top: 1.5rem;
+}
+
 /* --- Request-a-feature band: the next, still-empty slot in the library --- */
 
 .requestBand {

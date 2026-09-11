@@ -8,6 +8,7 @@ import { authenticate } from "app/shopify.server";
 import { getAppStatus } from "app/services/setup/getAppStatus";
 import db from "app/db.server";
 import { getSubscription } from "./getSubscription";
+import { ONEAPP_CATEGORIES, categoryPath } from "app/components/OneApp";
 //
 //
 import { AppProvider as PolarisProvider } from "@shopify/polaris";
@@ -56,22 +57,20 @@ export default function App() {
     <AppProvider embedded={true} apiKey={apiKey} >
       <PolarisProvider i18n={enTranslations}>
       {/*
-        OneApp feature-library order: Dashboard first, then features in
-        index order (01–09; Smart Announcements, SEO AI, and Subscribe
-        Boost live inside the Sales Calendar surface), then the request
-        entry point and billing. App Bridge NavMenu renders flat text
-        links — numbers/icons live on the dashboard grid, not here.
+        OneApp navigation: Dashboard, then one entry per feature category
+        (each opens /app/categories/<key> with a showcase card per feature),
+        then the request entry point and billing. App Bridge NavMenu renders
+        flat text links — numbers/icons live on the cards, not here.
       */}
       <NavMenu>
         <Link to="/app" rel="home">
           Dashboard
         </Link>
-        <Link to="/app/actions/discounts">Smart Shipping</Link>
-        <Link to="/app/qualifiers">Customer Insights</Link>
-        <Link to="/app/bundles">Bundle Builder</Link>
-        <Link to="/app/faqs">FAQ Collections</Link>
-        <Link to="/app/occasions">Occasion Match</Link>
-        <Link to="/app/special-dates">Sales Calendar</Link>
+        {ONEAPP_CATEGORIES.map((category) => (
+          <Link key={category.key} to={categoryPath(category.key)}>
+            {category.name}
+          </Link>
+        ))}
         {/* <Link to="/app/campaings">Campaigns</Link> */}
         <Link to="/app/request-feature">Request a Feature</Link>
         <Link to="/app/settings">Plans & billing</Link>

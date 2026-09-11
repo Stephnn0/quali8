@@ -1,7 +1,13 @@
 import { Link } from "react-router";
-import { Badge, Icon } from "@shopify/polaris";
+import { Icon } from "@shopify/polaris";
 import { useGatekeepFeature } from "app/services/subscriptions/hooks/useGatekeepFeature";
-import { ONEAPP_FEATURES, type OneAppFeature } from "./features";
+import {
+  ONEAPP_CATEGORIES,
+  categoryPath,
+  getCategoryFeatures,
+  type OneAppFeature,
+} from "./features";
+import PlanBanner from "./PlanBanner";
 import styles from "./oneapp.module.css";
 
 function FeatureCard({ feature }: { feature: OneAppFeature }) {
@@ -11,7 +17,7 @@ function FeatureCard({ feature }: { feature: OneAppFeature }) {
     <Link to={feature.to} className={styles.card}>
       <div className={styles.cardTop}>
         <span className={styles.cardNumber}>{feature.number}</span>
-        {feature.plan && locked ? <Badge>{`${feature.plan} plan`}</Badge> : null}
+        <PlanBanner plan={feature.plan} locked={locked} />
       </div>
       <div className={styles.cardBody}>
         <span className={styles.cardIcon}>
@@ -30,13 +36,32 @@ function FeatureCard({ feature }: { feature: OneAppFeature }) {
   );
 }
 
-/** The whole library, in index order. */
+/** The whole library, grouped by category in index order. */
 export default function FeatureGrid() {
   return (
-    <div className={styles.grid}>
-      {ONEAPP_FEATURES.map((feature) => (
-        <FeatureCard key={feature.key} feature={feature} />
-      ))}
+    <div className={styles.groups}>
+      {ONEAPP_CATEGORIES.map((category) => {
+        const features = getCategoryFeatures(category.key);
+        if (features.length === 0) return null;
+        return (
+          <section key={category.key} className={styles.group}>
+            <div className={styles.groupHeading}>
+              <div>
+                <h3 className={styles.groupTitle}>{category.name}</h3>
+                <p className={styles.groupTagline}>{category.tagline}</p>
+              </div>
+              <Link to={categoryPath(category.key)} className={styles.groupLink}>
+                View category →
+              </Link>
+            </div>
+            <div className={styles.grid}>
+              {features.map((feature) => (
+                <FeatureCard key={feature.key} feature={feature} />
+              ))}
+            </div>
+          </section>
+        );
+      })}
     </div>
   );
 }

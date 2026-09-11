@@ -23,6 +23,19 @@ The nav labels do **not** match the model/route names — keep this straight:
 
 > Note: "campaing"/"campaings" is a misspelling that is baked into route folders, the `api.campaing` route, model dir `app/models/app.server/campaings`, and components. Match existing spelling when editing those paths; don't silently "fix" it in one place and break imports.
 
+## OneApp feature library & categories (how the admin is organised)
+
+The app is presented to merchants as **OneApp**: a library of numbered features, each belonging to exactly one **category**. This is the organising rule for the admin UI from now on — every new feature gets a registry entry and a category, and the nav/dashboard/category pages pick it up automatically.
+
+- **Registry:** `app/components/OneApp/features.ts` holds `ONEAPP_CATEGORIES` and `ONEAPP_FEATURES`. Each feature has a two-digit `number`, `key`, `name`, `category`, `tagline`, `description`, `icon`, `image`, `to` (the route it opens), `plan` (`"Free" | "Pro" | "Advance"`, the lowest plan that includes it) and an optional `gate` mirroring the target route's `gatekeepRoute` criteria.
+- **Sidebar:** the App Bridge `NavMenu` in `app/routes/app/route.tsx` renders Dashboard, then **one link per category**, then Request a Feature and Plans & billing. Individual features are not nav items.
+- **Category pages:** `app/routes/app.categories.$category/route.tsx` serves `/app/categories/<key>` and shows a `FeatureShowcaseCard` per feature: the feature illustration, a **plan banner** (Free / Pro plan / Advance plan, plus "Upgrade to unlock" when the shop is gated out), the description, and an "Open <feature>" button that navigates to `to`.
+- **Dashboard:** `app/routes/app._index` shows the hero, the feature cards grouped by category (`FeatureGrid`, each group links to its category page), and the "Need another feature?" band. Nothing else lives on the dashboard.
+- **Images:** one SVG per feature in `public/features/<key>.svg` (640×400, referenced as `/features/<key>.svg`). Replace a file at the same path to swap in a real screenshot.
+- **Feature pages** open with `FeatureHeader featureKey="..."` (index pages) or `FeatureEyebrow` (detail pages) so the numbering stays consistent.
+
+Current categories: **Sales & Pricing** (Smart Shipping, Bundle Builder), **Customers** (Customer Insights, Subscribe Boost), **Content & SEO** (FAQ Collections, SEO AI), **Seasonal Marketing** (Occasion Match, Smart Announcements, Sales Calendar). To add a feature: add the registry entry, drop its image in `public/features/`, and gate its route; to add a category: add it to `ONEAPP_CATEGORIES` and the `OneAppCategoryKey` union.
+
 ## Stack
 
 - **React Router 7** in framework mode (migrated from Remix — use `@shopify/shopify-app-react-router`, **not** any `@remix-run/*` runtime package) + **Vite 6**
