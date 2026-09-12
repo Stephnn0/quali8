@@ -1,4 +1,3 @@
-export { default as OneAppHero } from "./OneAppHero";
 export { default as FeatureGrid } from "./FeatureGrid";
 export { default as FeatureShowcaseCard } from "./FeatureShowcaseCard";
 export { default as PlanBanner } from "./PlanBanner";
