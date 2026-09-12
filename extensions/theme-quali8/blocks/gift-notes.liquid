@@ -123,7 +123,7 @@
       "default": 22
     },
 
-    { "type": "header", "content": "Gift toggle" },
+    { "type": "header", "content": "Gift toggle & message" },
     {
       "type": "checkbox",
       "id": "show_gift_toggle",
@@ -133,7 +133,7 @@
     {
       "type": "text",
       "id": "gift_toggle_label",
-      "label": "Label",
+      "label": "Switch label",
       "default": "This order is a gift"
     },
     {
@@ -150,7 +150,6 @@
       "default": "Yes"
     },
 
-    { "type": "header", "content": "Gift message" },
     {
       "type": "checkbox",
       "id": "show_gift_message",
@@ -160,27 +159,27 @@
     {
       "type": "text",
       "id": "gift_message_label",
-      "label": "Label",
+      "label": "Message label",
       "info": "Also the name that appears on the order.",
       "default": "Gift message"
     },
     {
       "type": "text",
       "id": "gift_message_placeholder",
-      "label": "Placeholder",
+      "label": "Message placeholder",
       "default": "Write a message to include with the gift…"
     },
     {
       "type": "range",
       "id": "gift_message_max",
-      "label": "Maximum length",
+      "label": "Message maximum length",
       "min": 50,
       "max": 500,
       "step": 10,
       "default": 200
     },
 
-    { "type": "header", "content": "Special instructions" },
+    { "type": "header", "content": "Instructions & date" },
     {
       "type": "checkbox",
       "id": "show_instructions",
@@ -190,19 +189,19 @@
     {
       "type": "text",
       "id": "instructions_label",
-      "label": "Label",
+      "label": "Instructions label",
       "default": "Special instructions"
     },
     {
       "type": "text",
       "id": "instructions_placeholder",
-      "label": "Placeholder",
+      "label": "Instructions placeholder",
       "default": "Delivery notes, allergies, anything we should know…"
     },
     {
       "type": "select",
       "id": "instructions_target",
-      "label": "Save as",
+      "label": "Save instructions as",
       "options": [
         { "value": "note", "label": "Order note" },
         { "value": "attribute", "label": "Additional detail (attribute)" }
@@ -210,7 +209,6 @@
       "default": "note"
     },
 
-    { "type": "header", "content": "Preferred date" },
     {
       "type": "checkbox",
       "id": "show_date",
@@ -220,7 +218,7 @@
     {
       "type": "text",
       "id": "date_label",
-      "label": "Label",
+      "label": "Date label",
       "default": "Preferred delivery date"
     },
     {
@@ -233,7 +231,7 @@
       "default": 1
     },
 
-    { "type": "header", "content": "Custom field 1" },
+    { "type": "header", "content": "Custom fields" },
     {
       "type": "checkbox",
       "id": "show_custom_1",
@@ -243,16 +241,15 @@
     {
       "type": "text",
       "id": "custom_1_label",
-      "label": "Label",
+      "label": "Field 1 label",
       "default": "Recipient name"
     },
     {
       "type": "text",
       "id": "custom_1_placeholder",
-      "label": "Placeholder"
+      "label": "Field 1 placeholder"
     },
 
-    { "type": "header", "content": "Custom field 2" },
     {
       "type": "checkbox",
       "id": "show_custom_2",
@@ -262,13 +259,13 @@
     {
       "type": "text",
       "id": "custom_2_label",
-      "label": "Label",
+      "label": "Field 2 label",
       "default": "Occasion"
     },
     {
       "type": "text",
       "id": "custom_2_placeholder",
-      "label": "Placeholder"
+      "label": "Field 2 placeholder"
     },
 
     { "type": "header", "content": "Status labels" },
