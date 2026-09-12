@@ -922,6 +922,14 @@
   settings.summary = settings.summary || {};
   settings.order = settings.order || {};
   settings.steps = settings.steps || {};
+  // Copy that is no longer a theme setting (Shopify caps blocks at 75 settings)
+  settings.steps.completed = settings.steps.completed || "Completed";
+  settings.steps.current = settings.steps.current || "In progress";
+  settings.editLabel = settings.editLabel || "Edit";
+  settings.method.checkingLabel = settings.method.checkingLabel || "Checking…";
+  settings.order.itemsLabel = settings.order.itemsLabel || "{count} items";
+  settings.method.labels = settings.method.labels || {};
+  settings.method.labels.zip = settings.method.labels.zip || settings.method.zipPlaceholder || "ZIP code";
   currency = block.dataset.currency;
   defaultCountry = (block.dataset.country || "US").toUpperCase();
   state = initialState(readJson("[data-q8-dc-attributes]") || {});

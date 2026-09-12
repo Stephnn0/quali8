@@ -18,13 +18,10 @@
   "steps": {
     "sender": {{ block.settings.step_sender_label | json }},
     "method": {{ block.settings.step_method_label | json }},
-    "summary": {{ block.settings.step_summary_label | json }},
-    "completed": {{ block.settings.step_completed_label | json }},
-    "current": {{ block.settings.step_current_label | json }}
+    "summary": {{ block.settings.step_summary_label | json }}
   },
   "continueLabel": {{ block.settings.continue_label | json }},
   "backLabel": {{ block.settings.back_label | json }},
-  "editLabel": {{ block.settings.edit_label | json }},
   "sender": {
     "title": {{ block.settings.sender_title | json }},
     "intro": {{ block.settings.sender_intro | json }},
@@ -52,7 +49,6 @@
     "zipPrompt": {{ block.settings.zip_prompt | json }},
     "zipPlaceholder": {{ block.settings.zip_placeholder | json }},
     "checkLabel": {{ block.settings.check_label | json }},
-    "checkingLabel": {{ block.settings.checking_label | json }},
     "successText": {{ block.settings.success_text | json }},
     "priceText": {{ block.settings.price_text | json }},
     "freeText": {{ block.settings.free_text | json }},
@@ -68,8 +64,7 @@
       "address2": {{ block.settings.address2_label | json }},
       "city": {{ block.settings.city_label | json }},
       "province": {{ block.settings.province_label | json }},
-      "country": {{ block.settings.country_label | json }},
-      "zip": {{ block.settings.zip_field_label | json }}
+      "country": {{ block.settings.country_label | json }}
     }
   },
   "summary": {
@@ -83,7 +78,6 @@
   },
   "order": {
     "title": {{ block.settings.order_title | json }},
-    "itemsLabel": {{ block.settings.order_items_label | json }},
     "subtotalLabel": {{ block.settings.order_subtotal_label | json }},
     "deliveryLabel": {{ block.settings.order_delivery_label | json }},
     "deliveryPending": {{ block.settings.order_delivery_pending | json }},
@@ -157,11 +151,8 @@
     { "type": "text", "id": "step_sender_label", "label": "Step 1 label", "default": "Who's sending?" },
     { "type": "text", "id": "step_method_label", "label": "Step 2 label", "default": "Delivery / Pickup" },
     { "type": "text", "id": "step_summary_label", "label": "Step 3 label", "default": "Review & Checkout" },
-    { "type": "text", "id": "step_completed_label", "label": "Completed step subtitle", "default": "Completed" },
-    { "type": "text", "id": "step_current_label", "label": "Current step subtitle", "default": "In progress" },
     { "type": "text", "id": "continue_label", "label": "Continue button", "default": "Continue" },
     { "type": "text", "id": "back_label", "label": "Back link", "default": "Back" },
-    { "type": "text", "id": "edit_label", "label": "Edit link", "default": "Edit" },
     { "type": "text", "id": "saved_label", "label": "Saved indicator", "default": "Saved" },
 
     { "type": "header", "content": "Step 1: Who's sending?" },
@@ -189,7 +180,6 @@
     { "type": "text", "id": "zip_prompt", "label": "Zip prompt", "default": "Check we deliver to the address" },
     { "type": "text", "id": "zip_placeholder", "label": "Zip placeholder", "default": "ZIP code" },
     { "type": "text", "id": "check_label", "label": "Check button", "default": "Check" },
-    { "type": "text", "id": "checking_label", "label": "Check button while checking", "default": "Checking…" },
     { "type": "text", "id": "success_text", "label": "We deliver", "info": "Use {zip}.", "default": "Great, we deliver to {zip}." },
     { "type": "text", "id": "price_text", "label": "Price line", "info": "Use {price}.", "default": "Delivery {price}" },
     { "type": "text", "id": "free_text", "label": "Free delivery line", "default": "Free delivery" },
@@ -205,7 +195,6 @@
     { "type": "text", "id": "city_label", "label": "City label", "default": "City" },
     { "type": "text", "id": "province_label", "label": "State / province label", "default": "State" },
     { "type": "text", "id": "country_label", "label": "Country label", "default": "Country" },
-    { "type": "text", "id": "zip_field_label", "label": "Zip field label", "default": "ZIP code" },
 
     { "type": "header", "content": "Step 3 & order summary" },
     { "type": "text", "id": "summary_title", "label": "Title", "default": "Review & Checkout" },
@@ -216,7 +205,6 @@
     { "type": "text", "id": "checkout_label", "label": "Checkout button", "default": "Continue to checkout" },
     { "type": "text", "id": "checkout_hint", "label": "Hint under the button", "default": "The shipping address will already be filled in." },
     { "type": "text", "id": "order_title", "label": "Order card title", "default": "Order summary" },
-    { "type": "text", "id": "order_items_label", "label": "Items word", "info": "Use {count}.", "default": "{count} items" },
     { "type": "text", "id": "order_subtotal_label", "label": "Subtotal label", "default": "Subtotal" },
     { "type": "text", "id": "order_delivery_label", "label": "Delivery label", "default": "Delivery" },
     { "type": "text", "id": "order_delivery_pending", "label": "Delivery before it's known", "default": "Calculated at checkout" },
