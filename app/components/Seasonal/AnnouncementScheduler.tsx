@@ -152,8 +152,8 @@ export default function AnnouncementScheduler({
           ) : null}
           <Text as="p" tone="subdued" variant="bodySm">
             Shows above your header on every page, only between the dates
-            below. Turn on the &ldquo;Announcement &amp; delivery bar&rdquo;
-            app embed once in your theme editor (Theme settings &rarr; App
+            below. Turn on the &ldquo;Announcement + delivery&rdquo; app
+            embed once in your theme editor (Theme settings &rarr; App
             embeds) — scheduling happens here.
           </Text>
         </InlineStack>
