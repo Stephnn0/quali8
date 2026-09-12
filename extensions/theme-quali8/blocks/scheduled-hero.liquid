@@ -1,21 +1,321 @@
 {%- comment -%}
-  Quali8 — Scheduled hero (home page app block).
-  Fetches the active hero from the app proxy (/apps/quali8/hero); the app
-  decides visibility by date window. Renders nothing when no hero is
-  scheduled for today.
+  Quali8 — Seasonal Hero (app block).
+
+  Images, heading, description, button, height, colours, overlay strength,
+  and the show window are scheduled in the app (Seasonal Hero, or a Sales
+  Calendar date); the block asks the app proxy (/apps/quali8/hero) for the
+  live one. Layout, typography, overlay style, slider behaviour, a second
+  button, an eyebrow, and a countdown are set here in the theme editor.
+  Renders nothing when no hero is scheduled.
 {%- endcomment -%}
 
-<div class="q8-hero" data-quali8-hero hidden></div>
+{%- capture q8_hero_settings -%}
+{
+  "eyebrow": {{ block.settings.eyebrow | json }},
+  "secondaryLabel": {{ block.settings.secondary_button_label | json }},
+  "secondaryUrl": {{ block.settings.secondary_button_url | json }},
+  "showCountdown": {{ block.settings.show_countdown | json }},
+  "countdownLabel": {{ block.settings.countdown_label | json }},
+  "heightMode": {{ block.settings.height_mode | json }},
+  "useAppColors": {{ block.settings.use_app_colors | json }},
+  "textColor": {{ block.settings.text_color | json }},
+  "buttonBackground": {{ block.settings.button_background | json }},
+  "buttonTextColor": {{ block.settings.button_text_color | json }},
+  "overlayStyle": {{ block.settings.overlay_style | json }},
+  "overlayColor": {{ block.settings.overlay_color | json }},
+  "autoplay": {{ block.settings.autoplay | json }},
+  "autoplaySeconds": {{ block.settings.autoplay_seconds | json }},
+  "kenBurns": {{ block.settings.ken_burns | json }},
+  "showDots": {{ block.settings.show_dots | json }},
+  "showArrows": {{ block.settings.show_arrows | json }},
+  "animateIn": {{ block.settings.animate_in | json }}
+}
+{%- endcapture -%}
+
+<div
+  class="q8-hero q8-hero--x-{{ block.settings.content_x }} q8-hero--y-{{ block.settings.content_y }} q8-hero--text-{{ block.settings.text_align }} q8-hero--btn-{{ block.settings.button_shape }} q8-hero--btn-{{ block.settings.button_size }} q8-hero--weight-{{ block.settings.heading_weight }}{% if block.settings.full_bleed %} q8-hero--bleed{% endif %}{% if block.settings.heading_uppercase %} q8-hero--upper{% endif %}"
+  data-quali8-hero
+  style="
+    --q8-hero-heading-max: {{ block.settings.heading_size }}px;
+    --q8-hero-heading-min: {{ block.settings.heading_size | times: 0.55 | round }}px;
+    --q8-hero-desc-size: {{ block.settings.description_size }}px;
+    --q8-hero-content-width: {{ block.settings.content_width }}rem;
+    --q8-hero-radius: {{ block.settings.border_radius }}px;
+  "
+  hidden
+>
+  <script type="application/json" data-q8-hero-settings>{{ q8_hero_settings | strip }}</script>
+</div>
 
 {% schema %}
 {
-  "name": "Scheduled hero",
+  "name": "Seasonal hero",
   "target": "section",
   "javascript": "scheduled-hero.js",
   "stylesheet": "scheduled-hero.css",
   "enabled_on": {
-    "templates": ["index"]
+    "templates": ["index", "collection", "page"]
   },
-  "settings": []
+  "settings": [
+    { "type": "paragraph", "content": "Images, copy, button, colours, and dates come from Seasonal Hero in the app. Style it here." },
+
+    { "type": "header", "content": "Content" },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "info": "Small label above the heading, e.g. Limited time"
+    },
+    {
+      "type": "text",
+      "id": "secondary_button_label",
+      "label": "Second button label"
+    },
+    {
+      "type": "url",
+      "id": "secondary_button_url",
+      "label": "Second button link"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_countdown",
+      "label": "Show countdown to the end date",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "countdown_label",
+      "label": "Countdown label",
+      "default": "Ends in"
+    },
+
+    { "type": "header", "content": "Layout" },
+    {
+      "type": "select",
+      "id": "height_mode",
+      "label": "Height",
+      "options": [
+        { "value": "app", "label": "As set in the app" },
+        { "value": "small", "label": "Small (360px)" },
+        { "value": "medium", "label": "Medium (520px)" },
+        { "value": "large", "label": "Large (680px)" },
+        { "value": "screen", "label": "Full screen" }
+      ],
+      "default": "app"
+    },
+    {
+      "type": "checkbox",
+      "id": "full_bleed",
+      "label": "Full width (edge to edge)",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "Corner radius",
+      "info": "Only when not full width.",
+      "min": 0,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 20
+    },
+    {
+      "type": "select",
+      "id": "content_x",
+      "label": "Content position",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "content_y",
+      "label": "Vertical position",
+      "options": [
+        { "value": "top", "label": "Top" },
+        { "value": "middle", "label": "Middle" },
+        { "value": "bottom", "label": "Bottom" }
+      ],
+      "default": "middle"
+    },
+    {
+      "type": "select",
+      "id": "text_align",
+      "label": "Text alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "range",
+      "id": "content_width",
+      "label": "Content width",
+      "min": 24,
+      "max": 64,
+      "step": 2,
+      "unit": "rem",
+      "default": 40
+    },
+
+    { "type": "header", "content": "Typography" },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "label": "Heading size (desktop)",
+      "min": 28,
+      "max": 96,
+      "step": 2,
+      "unit": "px",
+      "default": 56
+    },
+    {
+      "type": "select",
+      "id": "heading_weight",
+      "label": "Heading weight",
+      "options": [
+        { "value": "semibold", "label": "Semibold" },
+        { "value": "bold", "label": "Bold" },
+        { "value": "black", "label": "Black" }
+      ],
+      "default": "bold"
+    },
+    {
+      "type": "checkbox",
+      "id": "heading_uppercase",
+      "label": "Uppercase heading",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "description_size",
+      "label": "Description size",
+      "min": 14,
+      "max": 26,
+      "step": 1,
+      "unit": "px",
+      "default": 18
+    },
+
+    { "type": "header", "content": "Buttons" },
+    {
+      "type": "select",
+      "id": "button_shape",
+      "label": "Shape",
+      "options": [
+        { "value": "pill", "label": "Pill" },
+        { "value": "rounded", "label": "Rounded" },
+        { "value": "square", "label": "Square" }
+      ],
+      "default": "pill"
+    },
+    {
+      "type": "select",
+      "id": "button_size",
+      "label": "Size",
+      "options": [
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }
+      ],
+      "default": "medium"
+    },
+
+    { "type": "header", "content": "Colors" },
+    {
+      "type": "checkbox",
+      "id": "use_app_colors",
+      "label": "Use the colours set in the app",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "button_background",
+      "label": "Button",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text",
+      "default": "#1a1a1a"
+    },
+
+    { "type": "header", "content": "Overlay" },
+    {
+      "type": "select",
+      "id": "overlay_style",
+      "label": "Style",
+      "info": "Strength comes from the app's overlay setting.",
+      "options": [
+        { "value": "side", "label": "Gradient from the content side" },
+        { "value": "bottom", "label": "Gradient from the bottom" },
+        { "value": "solid", "label": "Even tint" },
+        { "value": "none", "label": "None" }
+      ],
+      "default": "side"
+    },
+    {
+      "type": "color",
+      "id": "overlay_color",
+      "label": "Overlay colour",
+      "default": "#0a0818"
+    },
+
+    { "type": "header", "content": "Slider (2–3 images)" },
+    {
+      "type": "checkbox",
+      "id": "autoplay",
+      "label": "Autoplay",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "autoplay_seconds",
+      "label": "Seconds per slide",
+      "min": 3,
+      "max": 12,
+      "step": 1,
+      "default": 5
+    },
+    {
+      "type": "checkbox",
+      "id": "ken_burns",
+      "label": "Slow zoom on images",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dots",
+      "label": "Show dots",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show arrows",
+      "default": false
+    },
+
+    { "type": "header", "content": "Motion" },
+    {
+      "type": "checkbox",
+      "id": "animate_in",
+      "label": "Animate content in",
+      "default": true
+    }
+  ]
 }
 {% endschema %}

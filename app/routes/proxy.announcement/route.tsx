@@ -33,7 +33,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         endDate: { gte: today },
       },
       orderBy: { endDate: "asc" },
-      select: { message: true, backgroundColor: true, textColor: true },
+      select: {
+        message: true,
+        backgroundColor: true,
+        textColor: true,
+        endDate: true, // lets the theme block show a countdown
+      },
     });
 
     return Response.json({ bar }, { headers });

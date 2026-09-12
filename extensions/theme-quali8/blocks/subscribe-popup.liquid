@@ -1,13 +1,59 @@
 {%- comment -%}
-  Quali8 — Subscribe popup (home page app block).
-  Fetches the active popup from the app proxy (/apps/quali8/popup); the app
-  decides visibility by date window and suppresses signed-in shoppers who
-  already subscribed. Anonymous repeat views are suppressed via
-  localStorage. Subscribing posts to the storefront's native /contact
-  newsletter endpoint and reveals the discount code.
+  Quali8 — Subscribe Boost popup (app block, any template).
+
+  The image, heading, description, discount code, and show window are
+  scheduled in the app (Subscribe Boost, or a Sales Calendar date); the
+  block asks the app proxy (/apps/quali8/popup) whether one is live and
+  suppresses signed-in subscribers. Trigger, layout, size, copy, colours,
+  and behaviour are set here. Subscribing posts to the storefront's native
+  /contact newsletter endpoint and reveals the code (optionally applying
+  it to the cart).
 {%- endcomment -%}
 
-<div class="q8-popup" data-quali8-popup data-delay="{{ block.settings.delay_seconds }}" hidden></div>
+{%- capture q8_popup_settings -%}
+{
+  "trigger": {{ block.settings.trigger | json }},
+  "delaySeconds": {{ block.settings.delay_seconds | json }},
+  "scrollPercent": {{ block.settings.scroll_percent | json }},
+  "showAgainDays": {{ block.settings.show_again_days | json }},
+  "showOnMobile": {{ block.settings.show_on_mobile | json }},
+  "layout": {{ block.settings.layout | json }},
+  "closeOnOverlay": {{ block.settings.close_on_overlay | json }},
+  "showClose": {{ block.settings.show_close | json }},
+  "emailPlaceholder": {{ block.settings.email_placeholder | json }},
+  "showNameField": {{ block.settings.show_name_field | json }},
+  "namePlaceholder": {{ block.settings.name_placeholder | json }},
+  "buttonLabel": {{ block.settings.button_label | json }},
+  "submittingLabel": {{ block.settings.submitting_label | json }},
+  "noteText": {{ block.settings.note_text | json }},
+  "declineLabel": {{ block.settings.decline_label | json }},
+  "successHeading": {{ block.settings.success_heading | json }},
+  "successText": {{ block.settings.success_text | json }},
+  "copyLabel": {{ block.settings.copy_label | json }},
+  "copiedLabel": {{ block.settings.copied_label | json }},
+  "applyDiscount": {{ block.settings.apply_discount | json }},
+  "appliedText": {{ block.settings.applied_text | json }},
+  "customerTags": {{ block.settings.customer_tags | json }},
+  "invalidEmailText": {{ block.settings.invalid_email_text | json }}
+}
+{%- endcapture -%}
+
+<div
+  class="q8-popup q8-popup--{{ block.settings.layout }} q8-popup--image-{{ block.settings.image_side }} q8-popup--{{ block.settings.size }} q8-popup--text-{{ block.settings.text_align }}{% if block.settings.button_gradient %} q8-popup--btn-gradient{% endif %}{% if block.settings.overlay_blur %} q8-popup--blur{% endif %}"
+  data-quali8-popup
+  style="
+    --q8-popup-bg: {{ block.settings.background_color }};
+    --q8-popup-text: {{ block.settings.text_color }};
+    --q8-popup-accent: {{ block.settings.accent_color }};
+    --q8-popup-btn-text: {{ block.settings.button_text_color }};
+    --q8-popup-heading-size: {{ block.settings.heading_size }}px;
+    --q8-popup-radius: {{ block.settings.border_radius }}px;
+    --q8-popup-overlay: {{ block.settings.overlay_opacity | divided_by: 100.0 }};
+  "
+  hidden
+>
+  <script type="application/json" data-q8-popup-settings>{{ q8_popup_settings | strip }}</script>
+</div>
 
 {% schema %}
 {
@@ -16,17 +62,283 @@
   "javascript": "subscribe-popup.js",
   "stylesheet": "subscribe-popup.css",
   "enabled_on": {
-    "templates": ["index"]
+    "templates": ["*"]
   },
   "settings": [
+    { "type": "paragraph", "content": "Image, heading, description, discount code, and dates come from Subscribe Boost in the app. Style it here." },
+
+    { "type": "header", "content": "Trigger" },
+    {
+      "type": "select",
+      "id": "trigger",
+      "label": "Show",
+      "options": [
+        { "value": "delay", "label": "After a delay" },
+        { "value": "scroll", "label": "After scrolling" },
+        { "value": "exit", "label": "On exit intent (desktop)" },
+        { "value": "delay_exit", "label": "After a delay or on exit intent" }
+      ],
+      "default": "delay"
+    },
     {
       "type": "range",
       "id": "delay_seconds",
-      "label": "Show after (seconds)",
+      "label": "Delay",
       "min": 0,
-      "max": 30,
+      "max": 60,
       "step": 1,
+      "unit": "s",
       "default": 4
+    },
+    {
+      "type": "range",
+      "id": "scroll_percent",
+      "label": "Scroll depth",
+      "min": 10,
+      "max": 90,
+      "step": 5,
+      "unit": "%",
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "show_again_days",
+      "label": "Show again after",
+      "info": "Days before a visitor who closed it sees it again. Subscribers never see it again.",
+      "min": 1,
+      "max": 90,
+      "step": 1,
+      "unit": "d",
+      "default": 30
+    },
+    {
+      "type": "checkbox",
+      "id": "show_on_mobile",
+      "label": "Show on mobile",
+      "default": true
+    },
+
+    { "type": "header", "content": "Layout" },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout",
+      "options": [
+        { "value": "split", "label": "Image beside the text" },
+        { "value": "top", "label": "Image above the text" },
+        { "value": "text", "label": "Text only" },
+        { "value": "toast", "label": "Small card in the corner" }
+      ],
+      "default": "split"
+    },
+    {
+      "type": "select",
+      "id": "image_side",
+      "label": "Image side",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "right", "label": "Right" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "size",
+      "label": "Size",
+      "options": [
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "select",
+      "id": "text_align",
+      "label": "Text alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "Corner radius",
+      "min": 0,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Background dim",
+      "min": 0,
+      "max": 90,
+      "step": 5,
+      "unit": "%",
+      "default": 55
+    },
+    {
+      "type": "checkbox",
+      "id": "overlay_blur",
+      "label": "Blur the page behind",
+      "default": true
+    },
+
+    { "type": "header", "content": "Form" },
+    {
+      "type": "text",
+      "id": "email_placeholder",
+      "label": "Email placeholder",
+      "default": "Email address"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_name_field",
+      "label": "Ask for a first name",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "name_placeholder",
+      "label": "Name placeholder",
+      "default": "First name"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Get my code"
+    },
+    {
+      "type": "text",
+      "id": "submitting_label",
+      "label": "Button while sending",
+      "default": "One moment…"
+    },
+    {
+      "type": "text",
+      "id": "note_text",
+      "label": "Small print",
+      "default": "No spam, unsubscribe anytime."
+    },
+    {
+      "type": "text",
+      "id": "decline_label",
+      "label": "Decline link",
+      "info": "Leave empty to hide.",
+      "default": "No thanks"
+    },
+    {
+      "type": "text",
+      "id": "invalid_email_text",
+      "label": "Invalid email message",
+      "default": "Please enter a valid email address."
+    },
+    {
+      "type": "text",
+      "id": "customer_tags",
+      "label": "Extra customer tags",
+      "info": "Comma-separated, added to the subscriber.",
+      "default": "newsletter,quali8-popup"
+    },
+
+    { "type": "header", "content": "After subscribing" },
+    {
+      "type": "text",
+      "id": "success_heading",
+      "label": "Heading",
+      "default": "You're in!"
+    },
+    {
+      "type": "text",
+      "id": "success_text",
+      "label": "Text",
+      "default": "Use this code at checkout:"
+    },
+    {
+      "type": "text",
+      "id": "copy_label",
+      "label": "Copy button",
+      "default": "Copy code"
+    },
+    {
+      "type": "text",
+      "id": "copied_label",
+      "label": "Copied confirmation",
+      "default": "Copied ✓"
+    },
+    {
+      "type": "checkbox",
+      "id": "apply_discount",
+      "label": "Apply the code to the cart automatically",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "applied_text",
+      "label": "Applied confirmation",
+      "default": "Applied — it will show at checkout."
+    },
+
+    { "type": "header", "content": "Style" },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "label": "Heading size",
+      "min": 18,
+      "max": 44,
+      "step": 2,
+      "unit": "px",
+      "default": 26
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#17151f"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent / button",
+      "default": "#5c3d99"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "checkbox",
+      "id": "button_gradient",
+      "label": "Gradient button",
+      "default": true
+    },
+
+    { "type": "header", "content": "Behaviour" },
+    {
+      "type": "checkbox",
+      "id": "show_close",
+      "label": "Show close button",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "close_on_overlay",
+      "label": "Close when clicking outside",
+      "default": true
     }
   ]
 }

@@ -1,12 +1,47 @@
 {%- comment -%}
-  Quali8 — Scheduled announcement bar (home page app block).
-  Fetches the active bar from the app proxy (/apps/quali8/announcement);
-  the app decides visibility by date window, message, and colors — the
-  merchant schedules everything from a special date's manage page. Renders
-  nothing (zero layout shift) when no bar is scheduled for today.
+  Quali8 — Smart Announcements bar (app block, any template).
+
+  The message, colours, and show window are scheduled in the app (Smart
+  Announcements, or a Sales Calendar date); the bar asks the app proxy
+  (/apps/quali8/announcement) whether one is live today. Everything about
+  how it looks and behaves — size, position, link, countdown, dismiss,
+  motion — is set here in the theme editor. Renders nothing (zero layout
+  shift) when no bar is scheduled.
 {%- endcomment -%}
 
-<div class="q8-announcement" data-quali8-announcement hidden></div>
+{%- capture q8_bar_settings -%}
+{
+  "linkUrl": {{ block.settings.link_url | json }},
+  "linkLabel": {{ block.settings.link_label | json }},
+  "linkStyle": {{ block.settings.link_style | json }},
+  "prefix": {{ block.settings.prefix | json }},
+  "position": {{ block.settings.position | json }},
+  "useAppColors": {{ block.settings.use_app_colors | json }},
+  "backgroundColor": {{ block.settings.background_color | json }},
+  "textColor": {{ block.settings.text_color | json }},
+  "showCountdown": {{ block.settings.show_countdown | json }},
+  "countdownLabel": {{ block.settings.countdown_label | json }},
+  "dismissible": {{ block.settings.dismissible | json }},
+  "dismissDays": {{ block.settings.dismiss_days | json }},
+  "animation": {{ block.settings.animation | json }},
+  "marquee": {{ block.settings.marquee | json }}
+}
+{%- endcapture -%}
+
+<div
+  class="q8-bar q8-bar--{{ block.settings.position }} q8-bar--align-{{ block.settings.alignment }} q8-bar--weight-{{ block.settings.font_weight }}{% if block.settings.full_bleed %} q8-bar--bleed{% endif %}{% if block.settings.uppercase %} q8-bar--upper{% endif %}{% if block.settings.sheen %} q8-bar--sheen{% endif %}{% if block.settings.gradient %} q8-bar--gradient{% endif %}{% if block.settings.marquee %} q8-bar--marquee{% endif %}"
+  data-quali8-announcement
+  style="
+    --q8-bar-size: {{ block.settings.text_size }}px;
+    --q8-bar-size-mobile: {{ block.settings.text_size | times: 0.9 | round }}px;
+    --q8-bar-pad: {{ block.settings.padding_y }}px;
+    --q8-bar-radius: {{ block.settings.border_radius }}px;
+    --q8-bar-tracking: {{ block.settings.letter_spacing | divided_by: 100.0 }}em;
+  "
+  hidden
+>
+  <script type="application/json" data-q8-bar-settings>{{ q8_bar_settings | strip }}</script>
+</div>
 
 {% schema %}
 {
@@ -15,8 +50,209 @@
   "javascript": "announcement-bar.js",
   "stylesheet": "announcement-bar.css",
   "enabled_on": {
-    "templates": ["index"]
+    "templates": ["*"]
   },
-  "settings": []
+  "settings": [
+    { "type": "paragraph", "content": "The message, colours, and dates come from Smart Announcements in the app. Style it here." },
+
+    { "type": "header", "content": "Content" },
+    {
+      "type": "text",
+      "id": "prefix",
+      "label": "Prefix",
+      "info": "An emoji or short word before the message, e.g. 🎁",
+      "default": "✨"
+    },
+    {
+      "type": "url",
+      "id": "link_url",
+      "label": "Link"
+    },
+    {
+      "type": "text",
+      "id": "link_label",
+      "label": "Link label",
+      "default": "Shop now"
+    },
+    {
+      "type": "select",
+      "id": "link_style",
+      "label": "Link style",
+      "options": [
+        { "value": "text", "label": "Underlined text" },
+        { "value": "button", "label": "Button" }
+      ],
+      "default": "text"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_countdown",
+      "label": "Show countdown to the end date",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "countdown_label",
+      "label": "Countdown label",
+      "default": "Ends in"
+    },
+
+    { "type": "header", "content": "Layout" },
+    {
+      "type": "select",
+      "id": "position",
+      "label": "Position",
+      "options": [
+        { "value": "inline", "label": "In place" },
+        { "value": "sticky", "label": "Sticky at the top" }
+      ],
+      "default": "inline"
+    },
+    {
+      "type": "checkbox",
+      "id": "full_bleed",
+      "label": "Full width (edge to edge)",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "alignment",
+      "label": "Alignment",
+      "options": [
+        { "value": "center", "label": "Center" },
+        { "value": "left", "label": "Left" },
+        { "value": "between", "label": "Message left, link right" }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "range",
+      "id": "padding_y",
+      "label": "Height (vertical padding)",
+      "min": 6,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "Corner radius",
+      "info": "Only when not full width.",
+      "min": 0,
+      "max": 24,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+
+    { "type": "header", "content": "Typography" },
+    {
+      "type": "range",
+      "id": "text_size",
+      "label": "Text size",
+      "min": 12,
+      "max": 22,
+      "step": 1,
+      "unit": "px",
+      "default": 15
+    },
+    {
+      "type": "select",
+      "id": "font_weight",
+      "label": "Weight",
+      "options": [
+        { "value": "regular", "label": "Regular" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "bold", "label": "Bold" }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "range",
+      "id": "letter_spacing",
+      "label": "Letter spacing",
+      "min": 0,
+      "max": 10,
+      "step": 1,
+      "unit": "%",
+      "default": 2
+    },
+    {
+      "type": "checkbox",
+      "id": "uppercase",
+      "label": "Uppercase",
+      "default": false
+    },
+
+    { "type": "header", "content": "Colors" },
+    {
+      "type": "checkbox",
+      "id": "use_app_colors",
+      "label": "Use the colours set in the app",
+      "default": true
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#2c1f58"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#ffffff"
+    },
+    {
+      "type": "checkbox",
+      "id": "gradient",
+      "label": "Soft gradient",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "sheen",
+      "label": "Top sheen",
+      "default": true
+    },
+
+    { "type": "header", "content": "Behaviour" },
+    {
+      "type": "checkbox",
+      "id": "dismissible",
+      "label": "Show a close button",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "dismiss_days",
+      "label": "Stay hidden after closing",
+      "min": 1,
+      "max": 30,
+      "step": 1,
+      "unit": "d",
+      "default": 1
+    },
+    {
+      "type": "select",
+      "id": "animation",
+      "label": "Entrance animation",
+      "options": [
+        { "value": "slide", "label": "Slide down" },
+        { "value": "fade", "label": "Fade in" },
+        { "value": "none", "label": "None" }
+      ],
+      "default": "slide"
+    },
+    {
+      "type": "checkbox",
+      "id": "marquee",
+      "label": "Scrolling ticker",
+      "info": "Scrolls the message continuously. Off under reduced-motion.",
+      "default": false
+    }
+  ]
 }
 {% endschema %}

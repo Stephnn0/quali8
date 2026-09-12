@@ -41,6 +41,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         buttonBackground: true,
         buttonTextColor: true,
         overlayOpacity: true,
+        endDate: true, // lets the theme block show a countdown
       },
     });
 

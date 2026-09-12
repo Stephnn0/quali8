@@ -1,21 +1,63 @@
-.q8-hero {
-  /* Full-bleed: break out of the theme's page-width container */
-  width: 100vw;
-  max-width: 100vw;
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
-  box-sizing: border-box;
-  min-height: var(--q8-hero-height, 480px);
-  display: flex;
-  align-items: center;
-  color: var(--q8-hero-text, #ffffff);
-  position: relative;
-  overflow: hidden;
-}
+/*
+ * Quali8 — Seasonal hero. Height, colours, and overlay strength come from
+ * the app; typography, position, overlay style, buttons, and motion from
+ * CSS variables and modifier classes the Liquid block sets.
+ */
 
 .q8-hero[hidden] {
   display: none !important;
 }
+
+.q8-hero {
+  position: relative;
+  box-sizing: border-box;
+  min-height: var(--q8-hero-height, 480px);
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  color: var(--q8-hero-text, #ffffff);
+  border-radius: var(--q8-hero-radius, 20px);
+  overflow: hidden;
+  isolation: isolate;
+  background: #14101f;
+}
+
+.q8-hero *,
+.q8-hero *::before,
+.q8-hero *::after {
+  box-sizing: border-box;
+}
+
+.q8-hero--bleed {
+  width: 100vw;
+  max-width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  border-radius: 0;
+}
+
+.q8-hero--screen {
+  min-height: max(480px, 100svh);
+}
+
+/* Content position */
+.q8-hero--x-center {
+  justify-content: center;
+}
+
+.q8-hero--x-right {
+  justify-content: flex-end;
+}
+
+.q8-hero--y-top {
+  align-items: flex-start;
+}
+
+.q8-hero--y-bottom {
+  align-items: flex-end;
+}
+
+/* --- Slides ------------------------------------------------------------------- */
 
 .q8-hero__slide {
   position: absolute;
@@ -24,68 +66,205 @@
   background-position: center;
   opacity: 0;
   transition: opacity 900ms ease;
+  z-index: 0;
 }
 
 .q8-hero__slide--active {
   opacity: 1;
 }
 
-/* Directional scrim, merchant-controlled strength (0% = untouched image) */
+.q8-hero--zoom .q8-hero__slide--active {
+  animation: q8-hero-zoom 14s ease-out both;
+}
+
+@keyframes q8-hero-zoom {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.08);
+  }
+}
+
+/* --- Overlay ------------------------------------------------------------------ */
+
 .q8-hero::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(
-    100deg,
-    rgba(10, 8, 24, var(--q8-hero-ov-strong, 0.5)) 0%,
-    rgba(10, 8, 24, var(--q8-hero-ov-weak, 0.15)) 70%
-  );
+  z-index: 1;
   pointer-events: none;
 }
 
+.q8-hero--ov-side::after {
+  background: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--q8-hero-ov-color, #0a0818) calc(var(--q8-hero-ov-strong, 0.5) * 100%), transparent) 0%,
+    color-mix(in srgb, var(--q8-hero-ov-color, #0a0818) calc(var(--q8-hero-ov-weak, 0.15) * 100%), transparent) 70%
+  );
+}
+
+.q8-hero--ov-side.q8-hero--x-right::after {
+  background: linear-gradient(
+    260deg,
+    color-mix(in srgb, var(--q8-hero-ov-color, #0a0818) calc(var(--q8-hero-ov-strong, 0.5) * 100%), transparent) 0%,
+    color-mix(in srgb, var(--q8-hero-ov-color, #0a0818) calc(var(--q8-hero-ov-weak, 0.15) * 100%), transparent) 70%
+  );
+}
+
+.q8-hero--ov-side.q8-hero--x-center::after,
+.q8-hero--ov-solid::after {
+  background: color-mix(in srgb, var(--q8-hero-ov-color, #0a0818) calc(var(--q8-hero-ov-flat, 0.35) * 100%), transparent);
+}
+
+.q8-hero--ov-bottom::after {
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--q8-hero-ov-color, #0a0818) calc(var(--q8-hero-ov-strong, 0.5) * 100%), transparent) 0%,
+    color-mix(in srgb, var(--q8-hero-ov-color, #0a0818) calc(var(--q8-hero-ov-weak, 0.15) * 100%), transparent) 55%,
+    transparent 100%
+  );
+}
+
+.q8-hero--ov-none::after {
+  display: none;
+}
+
+/* --- Content ------------------------------------------------------------------ */
+
 .q8-hero__inner {
   position: relative;
-  z-index: 1;
-  max-width: 38rem;
-  padding: clamp(2rem, 6vw, 4rem) clamp(1.5rem, 6vw, 5rem);
+  z-index: 2;
+  width: 100%;
+  max-width: var(--q8-hero-content-width, 40rem);
+  padding: clamp(2rem, 6vw, 4.5rem) clamp(1.5rem, 6vw, 5rem);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.q8-hero--text-center .q8-hero__inner {
+  align-items: center;
+  text-align: center;
+}
+
+.q8-hero--text-right .q8-hero__inner {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.q8-hero--animate .q8-hero__inner {
   animation: q8-hero-in 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
   animation-delay: 120ms;
+}
+
+.q8-hero__top {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+  margin-bottom: 1rem;
+}
+
+.q8-hero__eyebrow {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.q8-hero__countdown {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+  background: var(--q8-hero-btn-bg, #ffffff);
+  color: var(--q8-hero-btn-text, #14101f);
+  font-variant-numeric: tabular-nums;
+}
+
+.q8-hero__countdown-label {
+  font-weight: 500;
+  opacity: 0.75;
 }
 
 .q8-hero__heading {
   margin: 0;
   color: inherit;
-  font-size: clamp(1.75rem, 4.5vw, 3rem);
-  line-height: 1.1;
-  font-weight: 750;
-  letter-spacing: -0.015em;
+  font-size: clamp(var(--q8-hero-heading-min, 31px), 5vw, var(--q8-hero-heading-max, 56px));
+  line-height: 1.05;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   text-wrap: balance;
   text-shadow: 0 2px 24px rgba(0, 0, 0, 0.3);
+}
+
+.q8-hero--weight-semibold .q8-hero__heading {
+  font-weight: 600;
+}
+
+.q8-hero--weight-black .q8-hero__heading {
+  font-weight: 800;
+}
+
+.q8-hero--upper .q8-hero__heading {
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
 }
 
 .q8-hero__description {
   margin: 1rem 0 0;
   color: inherit;
-  font-size: clamp(0.9375rem, 1.6vw, 1.125rem);
-  line-height: 1.6;
-  max-width: 32rem;
+  font-size: var(--q8-hero-desc-size, 18px);
+  line-height: 1.55;
+  max-width: 34rem;
   opacity: 0.94;
   text-shadow: 0 1px 12px rgba(0, 0, 0, 0.3);
 }
 
-.q8-hero__button {
-  display: inline-block;
+/* --- Buttons ----------------------------------------------------------------- */
+
+.q8-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
   margin-top: 1.75rem;
+}
+
+.q8-hero--text-center .q8-hero__actions {
+  justify-content: center;
+}
+
+.q8-hero--text-right .q8-hero__actions {
+  justify-content: flex-end;
+}
+
+.q8-hero__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   background: var(--q8-hero-btn-bg, #ffffff);
   color: var(--q8-hero-btn-text, #14101f);
   text-decoration: none;
+  border: 1.5px solid var(--q8-hero-btn-bg, #ffffff);
   border-radius: 999px;
-  padding: 0.875rem 2rem;
+  padding: 0.9375rem 2.125rem;
   font-weight: 650;
   font-size: 0.9375rem;
   letter-spacing: 0.01em;
   box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.5);
-  transition: transform 160ms ease, box-shadow 160ms ease;
+  transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease, color 160ms ease;
 }
 
 .q8-hero__button:hover {
@@ -93,10 +272,41 @@
   box-shadow: 0 14px 32px -10px rgba(0, 0, 0, 0.55);
 }
 
+.q8-hero__button--ghost {
+  background: transparent;
+  color: var(--q8-hero-text, #ffffff);
+  border-color: currentColor;
+  box-shadow: none;
+}
+
+.q8-hero__button--ghost:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.q8-hero--btn-rounded .q8-hero__button {
+  border-radius: 10px;
+}
+
+.q8-hero--btn-square .q8-hero__button {
+  border-radius: 0;
+}
+
+.q8-hero--btn-small .q8-hero__button {
+  padding: 0.6875rem 1.5rem;
+  font-size: 0.8125rem;
+}
+
+.q8-hero--btn-large .q8-hero__button {
+  padding: 1.125rem 2.75rem;
+  font-size: 1.0625rem;
+}
+
+/* --- Slider controls --------------------------------------------------------- */
+
 .q8-hero__dots {
   position: absolute;
-  z-index: 1;
-  bottom: 1rem;
+  z-index: 3;
+  bottom: 1.125rem;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -108,16 +318,54 @@
   border: none;
   width: 0.5625rem;
   height: 0.5625rem;
-  border-radius: 50%;
+  border-radius: 999px;
   background: rgba(255, 255, 255, 0.45);
   cursor: pointer;
   padding: 0;
-  transition: background 160ms ease, transform 160ms ease;
+  transition: background 160ms ease, width 200ms ease;
 }
 
 .q8-hero__dot--active {
   background: #ffffff;
-  transform: scale(1.25);
+  width: 1.5rem;
+}
+
+.q8-hero__arrow {
+  position: absolute;
+  z-index: 3;
+  top: 50%;
+  transform: translateY(-50%);
+  appearance: none;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(0, 0, 0, 0.25);
+  color: #ffffff;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: background 120ms ease;
+}
+
+.q8-hero__arrow:hover {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+.q8-hero__arrow svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.q8-hero__arrow--prev {
+  left: 1rem;
+}
+
+.q8-hero__arrow--next {
+  right: 1rem;
 }
 
 @keyframes q8-hero-in {
@@ -131,20 +379,32 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
+/* --- Responsive --------------------------------------------------------------- */
+
+@media (max-width: 749px) {
+  .q8-hero:not(.q8-hero--screen) {
+    min-height: min(var(--q8-hero-height, 480px), 26rem);
+  }
+
   .q8-hero__inner {
-    animation: none;
+    max-width: 100%;
   }
-  .q8-hero__slide {
-    transition: none;
-  }
-  .q8-hero__button {
-    transition: none;
+
+  .q8-hero__arrow {
+    width: 2.25rem;
+    height: 2.25rem;
   }
 }
 
-@media (max-width: 600px) {
-  .q8-hero {
-    min-height: min(var(--q8-hero-height, 480px), 22rem);
+@media (prefers-reduced-motion: reduce) {
+  .q8-hero__inner,
+  .q8-hero__slide--active {
+    animation: none;
+  }
+
+  .q8-hero__slide,
+  .q8-hero__button,
+  .q8-hero__dot {
+    transition: none;
   }
 }
