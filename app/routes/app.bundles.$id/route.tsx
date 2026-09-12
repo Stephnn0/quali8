@@ -1,28 +1,32 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useFetcher, useLoaderData, useNavigate, useParams } from "react-router";
 import {
+  Badge,
   Banner,
   BlockStack,
   Button,
+  ButtonGroup,
   Card,
   EmptyState,
+  InlineGrid,
   InlineStack,
   Layout,
   Page,
-  Select,
+  PageActions,
   Text,
   TextField,
-  Thumbnail,
 } from "@shopify/polaris";
-import { DeleteIcon } from "@shopify/polaris-icons";
+import { DeleteIcon, ImageIcon } from "@shopify/polaris-icons";
 import { useAppBridge } from "@shopify/app-bridge-react";
-import { applyPercentDiscount } from "app/utils/bundlePricing";
+import { applyPercentDiscount, computeBundlePricing } from "app/utils/bundlePricing";
 import { FeatureEyebrow } from "app/components/OneApp";
-import emptyImage from "app/assets/bundles-card.svg";
+import illustration from "app/assets/bundle-card.svg";
 import { loader } from "./loader";
 import { action } from "./action";
 import { BundlePreview } from "./components/BundlePreview";
+import { SectionHead } from "./components/SectionHead";
 import type { BundleFormItemState, PickedProduct } from "./types";
+import styles from "../app.bundles._index/bundles.module.css";
 
 export { loader, action };
 
@@ -33,6 +37,8 @@ type ActionData = {
 
 const MIN_PRODUCTS = 2;
 const MAX_PRODUCTS = 4;
+const DISCOUNT_PICKS = [10, 15, 20, 25, 30];
+const money = (value: number) => `$${value.toFixed(2)}`;
 
 export default function BundleForm() {
   const loaderData = useLoaderData<typeof loader>();
@@ -45,35 +51,53 @@ export default function BundleForm() {
   const bundle = loaderData?.payload?.bundle ?? null;
   const notFound = !isNew && loaderData?.code === "not_found";
 
-  const [title, setTitle] = useState(bundle?.title ?? "Frequently bought together");
-  const [description, setDescription] = useState(bundle?.description ?? "");
-  const [status, setStatus] = useState(bundle?.status ?? "INACTIVE");
-  const [discountPercent, setDiscountPercent] = useState(
-    bundle ? String(bundle.discountPercent) : "",
-  );
-  const [items, setItems] = useState<BundleFormItemState[]>(
-    bundle?.items.map((item) => ({
-      variantId: item.variantId,
-      productId: item.productId ?? "",
-      quantity: 1,
-      productTitle: item.productTitle,
-      variantTitle: item.variantTitle,
-      price: item.price,
-      imageUrl: item.imageUrl,
-    })) ?? [],
+  const initial = useMemo(
+    () => ({
+      title: bundle?.title ?? "Frequently bought together",
+      description: bundle?.description ?? "",
+      // New bundles start active so they show up as soon as they're saved.
+      status: (bundle?.status ?? "ACTIVE") as "ACTIVE" | "INACTIVE",
+      discountPercent: bundle ? String(bundle.discountPercent) : "",
+      items:
+        bundle?.items.map<BundleFormItemState>((item) => ({
+          variantId: item.variantId,
+          productId: item.productId ?? "",
+          quantity: 1,
+          productTitle: item.productTitle,
+          variantTitle: item.variantTitle,
+          price: item.price,
+          imageUrl: item.imageUrl,
+        })) ?? [],
+    }),
+    [bundle],
   );
 
+  const [title, setTitle] = useState(initial.title);
+  const [description, setDescription] = useState(initial.description);
+  const [status, setStatus] = useState(initial.status);
+  const [discountPercent, setDiscountPercent] = useState(initial.discountPercent);
+  const [items, setItems] = useState<BundleFormItemState[]>(initial.items);
+
   const percent = parseFloat(discountPercent) || 0;
+  const percentValid = percent > 0 && percent < 100;
+  const pricing = computeBundlePricing(items, percentValid ? percent : 0);
+
+  const dirty =
+    title !== initial.title ||
+    description !== initial.description ||
+    status !== initial.status ||
+    discountPercent !== initial.discountPercent ||
+    JSON.stringify(items) !== JSON.stringify(initial.items);
 
   const actionData = fetcher.data as ActionData | undefined;
   const saving = fetcher.state !== "idle";
 
   useEffect(() => {
     if (actionData?.code === "saved") {
-      shopify.toast.show("Bundle saved");
+      shopify.toast.show(isNew ? "Bundle created" : "Bundle saved");
       navigate("/app/bundles");
     }
-  }, [actionData, navigate, shopify]);
+  }, [actionData, navigate, shopify, isNew]);
 
   const pickProducts = async () => {
     const selected = (await shopify.resourcePicker({
@@ -91,7 +115,6 @@ export default function BundleForm() {
       // storefront can add it to the cart.
       const variant = product.variants?.[0];
       if (!variant?.id) continue;
-      // Duplicate prevention: a product can appear in the bundle only once.
       if (next.some((item) => item.productId === product.id)) continue;
 
       next.push({
@@ -109,35 +132,33 @@ export default function BundleForm() {
     setItems(next.slice(0, MAX_PRODUCTS));
   };
 
-  const removeItem = (productId: string) => {
+  const removeItem = (productId: string) =>
     setItems((current) => current.filter((item) => item.productId !== productId));
-  };
 
   const canSave =
     !saving &&
+    dirty &&
     title.trim().length > 0 &&
     items.length >= MIN_PRODUCTS &&
     items.length <= MAX_PRODUCTS &&
-    percent > 0 &&
-    percent < 100;
+    percentValid;
 
   const handleSave = () => {
-    const body = {
-      title: title.trim(),
-      description: description.trim() || null,
-      status,
-      discountPercent: percent,
-      items,
-    };
-
     fetcher.submit(
-      { body: JSON.stringify(body) },
       {
-        method: isNew ? "POST" : "PUT",
-        encType: "multipart/form-data",
+        body: JSON.stringify({
+          title: title.trim(),
+          description: description.trim() || null,
+          status,
+          discountPercent: percent,
+          items,
+        }),
       },
+      { method: isNew ? "POST" : "PUT", encType: "multipart/form-data" },
     );
   };
+
+  const back = () => navigate("/app/bundles");
 
   if (notFound) {
     return (
@@ -148,11 +169,8 @@ export default function BundleForm() {
         <Card>
           <EmptyState
             heading="This bundle doesn't exist"
-            image={emptyImage}
-            action={{
-              content: "Back to bundles",
-              onAction: () => navigate("/app/bundles"),
-            }}
+            image={illustration}
+            action={{ content: "Back to bundles", onAction: back }}
           >
             <p>It may have been deleted.</p>
           </EmptyState>
@@ -161,17 +179,18 @@ export default function BundleForm() {
     );
   }
 
+  const productsHint =
+    items.length === 0
+      ? `Pick ${MIN_PRODUCTS} to ${MAX_PRODUCTS} products`
+      : items.length < MIN_PRODUCTS
+        ? `Add ${MIN_PRODUCTS - items.length} more`
+        : `${items.length} of ${MAX_PRODUCTS} products`;
+
   return (
     <Page
-      title={isNew ? "Create bundle" : "Edit bundle"}
+      title={isNew ? "New bundle" : bundle?.title || "Edit bundle"}
       titleMetadata={<FeatureEyebrow featureKey="bundle-builder" />}
-      backAction={{ content: "Bundles", onAction: () => navigate("/app/bundles") }}
-      primaryAction={{
-        content: "Save",
-        onAction: handleSave,
-        disabled: !canSave,
-        loading: saving,
-      }}
+      backAction={{ content: "Bundle Builder", onAction: back }}
     >
       <Layout>
         {actionData?.errors?.length ? (
@@ -188,148 +207,259 @@ export default function BundleForm() {
           </Layout.Section>
         ) : null}
 
-        <Layout.Section variant="oneHalf">
+        <Layout.Section>
           <BlockStack gap="400">
+            {/* 1 · Products */}
             <Card>
               <BlockStack gap="400">
-                <Text as="h2" variant="headingMd">
-                  General information
-                </Text>
-                <TextField
-                  label="Title"
-                  value={title}
-                  onChange={setTitle}
-                  autoComplete="off"
-                  helpText="Shown as the heading of the storefront widget."
-                />
-                <TextField
-                  label="Description"
-                  value={description}
-                  onChange={setDescription}
-                  autoComplete="off"
-                  multiline={3}
-                  maxLength={1000}
-                  helpText="Optional subtitle shown under the heading."
-                />
-                <Select
-                  label="Status"
-                  options={[
-                    { label: "Active", value: "ACTIVE" },
-                    { label: "Inactive", value: "INACTIVE" },
-                  ]}
-                  value={status}
-                  onChange={(value) => setStatus(value as "ACTIVE" | "INACTIVE")}
-                  helpText="Only active bundles are shown on your storefront."
-                />
-                <TextField
-                  label="Discount percentage"
-                  type="number"
-                  min={1}
-                  max={99}
-                  value={discountPercent}
-                  onChange={setDiscountPercent}
-                  autoComplete="off"
-                  suffix="%"
-                  helpText="Percent off the combined product prices."
-                  error={
-                    discountPercent !== "" && (percent <= 0 || percent >= 100)
-                      ? "Enter a percentage between 1 and 99"
-                      : undefined
-                  }
-                />
+                <InlineStack align="space-between" blockAlign="start" gap="300">
+                  <SectionHead
+                    number="1"
+                    title="Products in the bundle"
+                    text="Two to four products that sell well together. The bundle shows on each of their pages."
+                  />
+                  <div className={styles.slots} aria-label={productsHint}>
+                    {Array.from({ length: MAX_PRODUCTS }, (_, i) => (
+                      <span
+                        key={i}
+                        className={`${styles.slot} ${
+                          i < items.length ? styles.slotFilled : ""
+                        }`}
+                      />
+                    ))}
+                    <span>{productsHint}</span>
+                  </div>
+                </InlineStack>
+
+                {items.length === 0 ? (
+                  <div className={styles.dropzone}>
+                    <p className={styles.dropzoneTitle}>No products yet</p>
+                    <span>
+                      Choose from your catalog. Each product is added as its
+                      default variant.
+                    </span>
+                    <Button variant="primary" onClick={pickProducts}>
+                      Select products
+                    </Button>
+                  </div>
+                ) : (
+                  <BlockStack gap="300">
+                    <div className={styles.productList}>
+                      {items.map((item) => (
+                        <div key={item.productId} className={styles.productRow}>
+                          {item.imageUrl ? (
+                            <img
+                              className={styles.productThumb}
+                              src={item.imageUrl}
+                              alt={item.productTitle}
+                            />
+                          ) : (
+                            <span className={`${styles.productThumb} ${styles.thumbEmpty}`}>
+                              <ImageIcon width={18} height={18} />
+                            </span>
+                          )}
+                          <div className={styles.productBody}>
+                            <span className={styles.productTitle}>
+                              {item.productTitle}
+                            </span>
+                            {item.variantTitle ? (
+                              <span className={styles.productMeta}>
+                                {item.variantTitle}
+                              </span>
+                            ) : null}
+                          </div>
+                          <div className={styles.productPrice}>
+                            {percentValid ? (
+                              <>
+                                <span className={styles.productPriceWas}>
+                                  {money(item.price)}
+                                </span>
+                                <span className={styles.productPriceNow}>
+                                  {money(applyPercentDiscount(item.price, percent))}
+                                </span>
+                              </>
+                            ) : (
+                              <span className={styles.productPriceNow}>
+                                {money(item.price)}
+                              </span>
+                            )}
+                          </div>
+                          <Button
+                            variant="tertiary"
+                            icon={DeleteIcon}
+                            accessibilityLabel={`Remove ${item.productTitle}`}
+                            onClick={() => removeItem(item.productId)}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    <InlineStack gap="300" blockAlign="center">
+                      <Button onClick={pickProducts}>Change products</Button>
+                      {items.length < MIN_PRODUCTS ? (
+                        <Text as="span" tone="critical" variant="bodySm">
+                          A bundle needs at least {MIN_PRODUCTS} products.
+                        </Text>
+                      ) : null}
+                    </InlineStack>
+                  </BlockStack>
+                )}
               </BlockStack>
             </Card>
 
+            {/* 2 · Discount */}
             <Card>
               <BlockStack gap="400">
-                <InlineStack align="space-between" blockAlign="center">
-                  <Text as="h2" variant="headingMd">
-                    Discounted products in bundle
-                  </Text>
-                  <Button onClick={pickProducts}>
-                    {items.length ? "Edit products" : "Select products"}
-                  </Button>
-                </InlineStack>
-                <Text as="p" tone="subdued">
-                  Select the products you want to offer in the bundle. Pick
-                  between {MIN_PRODUCTS} and {MAX_PRODUCTS} products — smaller
-                  bundles render faster and won't overwhelm your customers. The
-                  bundle is shown on the product page of every product it
-                  contains.
-                </Text>
-                {items.length === 0 ? (
-                  <Text as="p" tone="subdued">
-                    No products selected yet.
-                  </Text>
-                ) : (
-                  <BlockStack gap="300">
-                    {items.map((item) => (
-                      <InlineStack
-                        key={item.productId}
-                        gap="300"
-                        blockAlign="center"
-                        align="space-between"
-                        wrap={false}
-                      >
-                        <InlineStack gap="300" blockAlign="center">
-                          <Thumbnail
-                            source={item.imageUrl || ""}
-                            alt={item.productTitle}
-                            size="small"
-                          />
-                          <BlockStack gap="050">
-                            <Text as="span" fontWeight="semibold">
-                              {item.productTitle}
-                            </Text>
-                            <Text as="span" tone="subdued">
-                              {percent > 0 && percent < 100 ? (
-                                <>
-                                  <s>${item.price.toFixed(2)}</s>{" "}
-                                  ${applyPercentDiscount(item.price, percent).toFixed(2)}
-                                </>
-                              ) : (
-                                <>${item.price.toFixed(2)}</>
-                              )}
-                            </Text>
-                          </BlockStack>
-                        </InlineStack>
-                        <Button
-                          icon={DeleteIcon}
-                          accessibilityLabel="Remove product"
-                          onClick={() => removeItem(item.productId)}
-                        />
-                      </InlineStack>
-                    ))}
+                <SectionHead
+                  number="2"
+                  title="Bundle discount"
+                  text="A percentage off the combined price of the products."
+                />
+                <InlineGrid columns={{ xs: 1, sm: "1fr 2fr" }} gap="400" alignItems="start">
+                  <TextField
+                    label="Percent off"
+                    type="number"
+                    inputMode="decimal"
+                    min={1}
+                    max={99}
+                    value={discountPercent}
+                    onChange={setDiscountPercent}
+                    autoComplete="off"
+                    suffix="%"
+                    placeholder="15"
+                    error={
+                      discountPercent !== "" && !percentValid
+                        ? "Enter a percentage between 1 and 99"
+                        : undefined
+                    }
+                  />
+                  <BlockStack gap="200">
+                    <Text as="span" variant="bodySm" tone="subdued">
+                      Quick picks
+                    </Text>
+                    <div className={styles.chips}>
+                      {DISCOUNT_PICKS.map((pick) => (
+                        <button
+                          key={pick}
+                          type="button"
+                          className={`${styles.chip} ${
+                            percent === pick ? styles.chipSelected : ""
+                          }`}
+                          onClick={() => setDiscountPercent(String(pick))}
+                        >
+                          {pick}%
+                        </button>
+                      ))}
+                    </div>
                   </BlockStack>
-                )}
-                {items.length === 1 ? (
-                  <Text as="p" tone="critical">
-                    Add at least one more product — a bundle needs{" "}
-                    {MIN_PRODUCTS} to {MAX_PRODUCTS} products.
-                  </Text>
+                </InlineGrid>
+                {items.length > 0 && percentValid ? (
+                  <div className={styles.savings}>
+                    <span>Shoppers pay</span>
+                    <span className={styles.savingsStrong}>
+                      {money(pricing.finalTotal)}
+                    </span>
+                    <span>
+                      instead of {money(pricing.originalTotal)}, saving{" "}
+                      {money(pricing.discountAmount)}.
+                    </span>
+                  </div>
                 ) : null}
+              </BlockStack>
+            </Card>
+
+            {/* 3 · Storefront text */}
+            <Card>
+              <BlockStack gap="400">
+                <SectionHead
+                  number="3"
+                  title="What shoppers see"
+                  text="The heading and optional subtitle of the bundle block on your product pages."
+                />
+                <TextField
+                  label="Heading"
+                  value={title}
+                  onChange={setTitle}
+                  autoComplete="off"
+                  placeholder="Frequently bought together"
+                  error={title.trim() ? undefined : "Enter a heading"}
+                />
+                <TextField
+                  label="Subtitle"
+                  value={description}
+                  onChange={setDescription}
+                  autoComplete="off"
+                  multiline={2}
+                  maxLength={1000}
+                  placeholder="Complete the look and save 15%"
+                  helpText="Optional. Shown under the heading."
+                />
               </BlockStack>
             </Card>
           </BlockStack>
         </Layout.Section>
 
-        <Layout.Section variant="oneHalf">
-          <Card>
-            <BlockStack gap="400">
-              <Text as="h2" variant="headingMd">
-                Widget preview
-              </Text>
-              <Text as="p" tone="subdued">
-                This is how the bundle will look in your theme's app block.
-              </Text>
+        <Layout.Section variant="oneThird">
+          <BlockStack gap="400">
+            <Card>
+              <div className={styles.statusRow}>
+                <BlockStack gap="050">
+                  <Text as="h2" variant="headingSm">
+                    Status
+                  </Text>
+                  {status === "ACTIVE" ? (
+                    <Badge tone="success">Active</Badge>
+                  ) : (
+                    <Badge>Inactive</Badge>
+                  )}
+                </BlockStack>
+                <ButtonGroup variant="segmented">
+                  <Button
+                    pressed={status === "ACTIVE"}
+                    onClick={() => setStatus("ACTIVE")}
+                  >
+                    Active
+                  </Button>
+                  <Button
+                    pressed={status === "INACTIVE"}
+                    onClick={() => setStatus("INACTIVE")}
+                  >
+                    Inactive
+                  </Button>
+                </ButtonGroup>
+              </div>
+              <div style={{ marginTop: "0.5rem" }}>
+                <Text as="p" variant="bodySm" tone="subdued">
+                  Only active bundles appear on your storefront.
+                </Text>
+              </div>
+            </Card>
+
+            <div className={styles.previewWrap}>
+              <p className={styles.previewEyebrow}>Storefront preview</p>
               <BundlePreview
                 title={title}
                 description={description}
-                discountPercent={percent}
+                discountPercent={percentValid ? percent : 0}
                 items={items}
               />
-            </BlockStack>
-          </Card>
+              <p className={styles.previewHint}>
+                This is the app block as it renders on the product page of
+                every product in the bundle.
+              </p>
+            </div>
+          </BlockStack>
+        </Layout.Section>
+
+        <Layout.Section>
+          <PageActions
+            primaryAction={{
+              content: isNew ? "Create bundle" : "Save changes",
+              onAction: handleSave,
+              disabled: !canSave,
+              loading: saving,
+            }}
+            secondaryActions={[{ content: "Cancel", onAction: back }]}
+          />
         </Layout.Section>
       </Layout>
     </Page>

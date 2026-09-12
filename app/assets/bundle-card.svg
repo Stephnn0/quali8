@@ -1,0 +1,83 @@
+<svg width="800" height="520" viewBox="0 0 800 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Bundle Builder illustration: three products joined with plus signs
+       under a percent-off tag, a struck total and the bundle price, and an
+       add-to-cart button. Text-free so it needs no localization. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="800" y2="520" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F6F3FC"/>
+      <stop offset="1" stop-color="#E6DFF5"/>
+    </linearGradient>
+    <linearGradient id="tileA" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#E6DFF5"/><stop offset="1" stop-color="#CFC4EC"/></linearGradient>
+    <linearGradient id="tileB" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#F6DDE6"/><stop offset="1" stop-color="#E4B7C7"/></linearGradient>
+    <linearGradient id="tileC" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#F5E7C4"/><stop offset="1" stop-color="#E8CB8A"/></linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="10"/>
+      <feOffset dy="8" result="b"/>
+      <feFlood flood-color="#1D1539" flood-opacity="0.14"/>
+      <feComposite in2="b" operator="in"/>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="800" height="520" rx="24" fill="url(#bg)"/>
+
+  <!-- widget card -->
+  <g filter="url(#shadow)">
+    <rect x="120" y="70" width="560" height="380" rx="20" fill="#FFFFFF"/>
+  </g>
+  <rect x="156" y="104" width="220" height="16" rx="8" fill="#1D1539"/>
+  <rect x="156" y="130" width="140" height="8" rx="4" fill="#CFC4EC"/>
+
+  <!-- product tiles with plus signs -->
+  <g transform="translate(156 160)">
+    <rect x="0" y="0" width="120" height="120" rx="14" fill="url(#tileA)"/>
+    <rect x="30" y="24" width="60" height="72" rx="8" fill="#FFFFFF" opacity="0.85"/>
+    <rect x="44" y="40" width="32" height="6" rx="3" fill="#CFC4EC"/>
+    <rect x="44" y="52" width="24" height="6" rx="3" fill="#CFC4EC"/>
+  </g>
+  <path d="M302 220 h20 M312 210 v20" stroke="#8A80A8" stroke-width="5" stroke-linecap="round"/>
+  <g transform="translate(348 160)">
+    <rect x="0" y="0" width="120" height="120" rx="14" fill="url(#tileB)"/>
+    <circle cx="60" cy="60" r="34" fill="#FFFFFF" opacity="0.85"/>
+    <circle cx="60" cy="60" r="16" fill="#E4B7C7"/>
+  </g>
+  <path d="M494 220 h20 M504 210 v20" stroke="#8A80A8" stroke-width="5" stroke-linecap="round"/>
+  <g transform="translate(540 160)">
+    <rect x="0" y="0" width="104" height="120" rx="14" fill="url(#tileC)"/>
+    <path d="M28 88 L52 34 L76 88 Z" fill="#FFFFFF" opacity="0.85"/>
+    <rect x="42" y="88" width="20" height="8" rx="3" fill="#E8CB8A"/>
+  </g>
+
+  <!-- line items -->
+  <rect x="156" y="304" width="180" height="8" rx="4" fill="#E3DCF5"/>
+  <rect x="580" y="304" width="52" height="8" rx="4" fill="#CFC4EC"/>
+  <rect x="156" y="324" width="140" height="8" rx="4" fill="#E3DCF5"/>
+  <rect x="580" y="324" width="52" height="8" rx="4" fill="#CFC4EC"/>
+  <rect x="156" y="344" width="160" height="8" rx="4" fill="#E3DCF5"/>
+  <rect x="580" y="344" width="52" height="8" rx="4" fill="#CFC4EC"/>
+  <path d="M156 370 H644" stroke="#EDE9F7" stroke-width="2"/>
+
+  <!-- struck total, bundle price, save pill, button -->
+  <rect x="156" y="392" width="64" height="10" rx="5" fill="#CFC4EC"/>
+  <path d="M150 397 H226" stroke="#8A80A8" stroke-width="2.5" stroke-linecap="round"/>
+  <rect x="236" y="386" width="96" height="22" rx="6" fill="#1D1539"/>
+  <rect x="346" y="386" width="92" height="22" rx="11" fill="#DDF2E0"/>
+  <path d="M362 397 l5 5 l10 -10" stroke="#1F7A3E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <rect x="384" y="393" width="40" height="8" rx="4" fill="#1F7A3E"/>
+  <rect x="520" y="380" width="124" height="34" rx="9" fill="#2C1F58"/>
+  <rect x="546" y="393" width="72" height="8" rx="4" fill="#F0C46C"/>
+
+  <!-- percent tag -->
+  <g transform="translate(600 30) rotate(14)">
+    <path d="M0 18 L18 0 H84 a10 10 0 0 1 10 10 V44 a10 10 0 0 1 -10 10 H18 L0 36 Z" fill="#F0C46C"/>
+    <circle cx="18" cy="27" r="5" fill="#1D1539"/>
+    <circle cx="44" cy="20" r="5" fill="none" stroke="#1D1539" stroke-width="3"/>
+    <circle cx="68" cy="36" r="5" fill="none" stroke="#1D1539" stroke-width="3"/>
+    <path d="M38 42 L74 14" stroke="#1D1539" stroke-width="3.5" stroke-linecap="round"/>
+  </g>
+
+  <!-- sparkles -->
+  <path d="M70 150 l4 12 l12 4 l-12 4 l-4 12 l-4 -12 l-12 -4 l12 -4z" fill="#F0C46C"/>
+  <path d="M736 250 l2.5 7.5 l7.5 2.5 l-7.5 2.5 l-2.5 7.5 l-2.5 -7.5 l-7.5 -2.5 l7.5 -2.5z" fill="#2C1F58"/>
+  <circle cx="60" cy="420" r="6" fill="#B9A4D6"/>
+  <circle cx="752" cy="120" r="4" fill="#B9A4D6"/>
+</svg>

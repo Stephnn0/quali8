@@ -1,32 +1,27 @@
 import { useCallback, useState } from "react";
-import {
-  Link,
-  useFetcher,
-  useLoaderData,
-  useNavigate,
-  useSearchParams,
-} from "react-router";
+import { useFetcher, useLoaderData, useNavigate, useSearchParams } from "react-router";
 import {
   Badge,
   Button,
   ButtonGroup,
-  Card,
-  EmptyState,
-  IndexTable,
   Layout,
   Modal,
   Page,
-  Text,
+  Pagination,
 } from "@shopify/polaris";
-import { DeleteIcon, EditIcon } from "@shopify/polaris-icons";
+import { DeleteIcon, EditIcon, ImageIcon } from "@shopify/polaris-icons";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { loader } from "./loader";
 import { action } from "./action";
 import { BundleTypeModal } from "./components/BundleTypeModal";
 import { FeatureHeader } from "app/components/OneApp";
-import emptyImage from "app/assets/bundles-card.svg";
+import { computeBundlePricing } from "app/utils/bundlePricing";
+import illustration from "app/assets/bundle-card.svg";
+import styles from "./bundles.module.css";
 
 export { loader, action };
+
+const money = (value: number) => `$${value.toFixed(2)}`;
 
 export default function Bundles() {
   const loaderData = useLoaderData<typeof loader>();
@@ -35,16 +30,16 @@ export default function Bundles() {
   const fetcher = useFetcher();
 
   const bundles = loaderData?.payload?.bundles ?? [];
+  const busy = fetcher.state !== "idle";
 
-  const [modalActive, setModalActive] = useState(false);
+  const activeCount = bundles.filter((b) => b.status === "ACTIVE").length;
+  const productCount = new Set(
+    bundles.flatMap((b) => b.items.map((item) => item.productId)),
+  ).size;
+
+  // ==================================== create / delete / status
+
   const [typeModalActive, setTypeModalActive] = useState(false);
-  const [selectedBundleId, setSelectedBundleId] = useState<number | null>(null);
-
-  const handleModalChange = useCallback(
-    () => setModalActive((prev) => !prev),
-    [],
-  );
-
   const openTypeModal = useCallback(() => setTypeModalActive(true), []);
   const closeTypeModal = useCallback(() => setTypeModalActive(false), []);
   const handleSelectClassic = useCallback(() => {
@@ -52,23 +47,23 @@ export default function Bundles() {
     navigate("/app/bundles/new");
   }, [navigate]);
 
-  const handleDeleteClick = (id: number) => {
-    setSelectedBundleId(id);
-    setModalActive(true);
-  };
+  const [pendingDelete, setPendingDelete] = useState<{
+    id: number;
+    title: string;
+  } | null>(null);
+  const closeDelete = useCallback(() => setPendingDelete(null), []);
 
-  const handleDeleteConfirm = () => {
-    setModalActive(false);
-    if (selectedBundleId === null) return;
-
+  const confirmDelete = () => {
+    if (!pendingDelete) return;
     fetcher.submit(
-      { body: JSON.stringify({ bundleId: selectedBundleId }) },
+      { body: JSON.stringify({ bundleId: pendingDelete.id }) },
       { method: "DELETE", encType: "multipart/form-data" },
     );
     shopify.toast.show("Bundle deleted");
+    setPendingDelete(null);
   };
 
-  const handleToggleStatus = (id: number, status: string) => {
+  const toggleStatus = (id: number, status: string) => {
     fetcher.submit(
       {
         body: JSON.stringify({
@@ -80,151 +75,240 @@ export default function Bundles() {
     );
   };
 
-  const resourceName = {
-    singular: "Bundle",
-    plural: "Bundles",
-  };
-
-  const rowMarkup = bundles.map((bundle, index) => (
-    <IndexTable.Row id={String(bundle.id)} key={bundle.id} position={index}>
-      <IndexTable.Cell>
-        <Text variant="bodyMd" fontWeight="bold" as="span">
-          {bundle.title}
-        </Text>
-      </IndexTable.Cell>
-      <IndexTable.Cell>
-        <Text variant="bodyMd" as="span">
-          {bundle.items.map((item) => item.productTitle).join(", ")}
-        </Text>
-      </IndexTable.Cell>
-      <IndexTable.Cell>
-        <Text variant="bodyMd" as="span">
-          {bundle.discountPercent}% off
-        </Text>
-      </IndexTable.Cell>
-      <IndexTable.Cell>
-        {bundle.status === "ACTIVE" ? (
-          <Badge tone="success">Active</Badge>
-        ) : (
-          <Badge>Inactive</Badge>
-        )}
-      </IndexTable.Cell>
-      <IndexTable.Cell>
-        <ButtonGroup>
-          <Button
-            onClick={() => handleToggleStatus(bundle.id, bundle.status)}
-            disabled={fetcher.state !== "idle"}
-          >
-            {bundle.status === "ACTIVE" ? "Deactivate" : "Activate"}
-          </Button>
-          <Link to={`/app/bundles/${bundle.id}`}>
-            <Button icon={EditIcon}></Button>
-          </Link>
-          <Button
-            icon={DeleteIcon}
-            onClick={() => handleDeleteClick(bundle.id)}
-          ></Button>
-        </ButtonGroup>
-      </IndexTable.Cell>
-    </IndexTable.Row>
-  ));
-
   // ==================================== pagination
 
   const [, setSearchParams] = useSearchParams();
-
-  const currentPage = loaderData?.payload?.page || 1;
+  const currentPage = loaderData?.payload?.page ?? 1;
   const totalItems = loaderData?.payload?.total ?? 0;
   const itemsPerPage = loaderData?.payload?.itemsPerPage ?? 15;
   const hasNext = currentPage * itemsPerPage < totalItems;
   const hasPrevious = currentPage > 1;
-
-  const goToPage = (page: number) => {
-    setSearchParams({ page: page.toString() });
-  };
+  const goToPage = (page: number) => setSearchParams({ page: String(page) });
 
   return (
     <Page>
       <FeatureHeader
         featureKey="bundle-builder"
-        tagline="Discounted product bundles, shown on the product pages of everything they include."
+        tagline="Frequently-bought-together sets at a discount, shown on the page of every product they include."
         actions={
           <Button variant="primary" onClick={openTypeModal}>
             Create bundle
           </Button>
         }
       />
+
       <Layout>
         <Layout.Section>
           {bundles.length > 0 ? (
-            <Card padding="0">
-              <IndexTable
-                resourceName={resourceName}
-                itemCount={bundles.length}
-                selectable={false}
-                headings={[
-                  { title: "Title" },
-                  { title: "Products" },
-                  { title: "Discount" },
-                  { title: "Status" },
-                  { title: "Actions" },
-                ]}
-                pagination={{
-                  hasNext,
-                  hasPrevious,
-                  onNext: () => goToPage(currentPage + 1),
-                  onPrevious: () => goToPage(currentPage - 1),
-                }}
-              >
-                {rowMarkup}
-              </IndexTable>
-            </Card>
+            <>
+              <div className={styles.stats}>
+                <div className={styles.stat}>
+                  <p className={styles.statLabel}>Live on storefront</p>
+                  <p className={styles.statValue}>{activeCount}</p>
+                  <p className={styles.statHint}>
+                    {activeCount === 1 ? "bundle is" : "bundles are"} active
+                  </p>
+                </div>
+                <div className={styles.stat}>
+                  <p className={styles.statLabel}>Inactive</p>
+                  <p className={styles.statValue}>
+                    {bundles.length - activeCount}
+                  </p>
+                  <p className={styles.statHint}>hidden until activated</p>
+                </div>
+                <div className={styles.stat}>
+                  <p className={styles.statLabel}>Products bundled</p>
+                  <p className={styles.statValue}>{productCount}</p>
+                  <p className={styles.statHint}>
+                    across {bundles.length}{" "}
+                    {bundles.length === 1 ? "bundle" : "bundles"}
+                  </p>
+                </div>
+              </div>
+
+              <div className={styles.bundleGrid}>
+                {bundles.map((bundle) => {
+                  const active = bundle.status === "ACTIVE";
+                  const pricing = computeBundlePricing(
+                    bundle.items,
+                    bundle.discountPercent,
+                  );
+                  return (
+                    <article
+                      key={bundle.id}
+                      className={`${styles.bundleCard} ${
+                        active ? "" : styles.bundleCardInactive
+                      }`}
+                    >
+                      <div className={styles.bundleTop}>
+                        {active ? (
+                          <Badge tone="success">Active</Badge>
+                        ) : (
+                          <Badge>Inactive</Badge>
+                        )}
+                        <span className={styles.savePill}>
+                          {bundle.discountPercent}% off
+                        </span>
+                      </div>
+                      <div className={styles.thumbRow}>
+                        {bundle.items.map((item, index) => (
+                          <span key={item.id} className={styles.thumbRow}>
+                            {index > 0 ? (
+                              <span className={styles.plus}>+</span>
+                            ) : null}
+                            {item.imageUrl ? (
+                              <img
+                                className={styles.thumb}
+                                src={item.imageUrl}
+                                alt={item.productTitle}
+                              />
+                            ) : (
+                              <span
+                                className={`${styles.thumb} ${styles.thumbEmpty}`}
+                              >
+                                <ImageIcon width={20} height={20} />
+                              </span>
+                            )}
+                          </span>
+                        ))}
+                      </div>
+                      <div>
+                        <h3 className={styles.bundleTitle}>{bundle.title}</h3>
+                        <p className={styles.bundleProducts}>
+                          {bundle.items.map((item) => item.productTitle).join(" + ")}
+                        </p>
+                      </div>
+                      <div className={styles.priceRow}>
+                        <span className={styles.priceWas}>
+                          {money(pricing.originalTotal)}
+                        </span>
+                        <span className={styles.priceNow}>
+                          {money(pricing.finalTotal)}
+                        </span>
+                      </div>
+                      <div className={styles.cardActions}>
+                        <Button
+                          size="slim"
+                          onClick={() => toggleStatus(bundle.id, bundle.status)}
+                          disabled={busy}
+                        >
+                          {active ? "Deactivate" : "Activate"}
+                        </Button>
+                        <ButtonGroup>
+                          <Button
+                            size="slim"
+                            icon={EditIcon}
+                            accessibilityLabel="Edit bundle"
+                            onClick={() => navigate(`/app/bundles/${bundle.id}`)}
+                          />
+                          <Button
+                            size="slim"
+                            icon={DeleteIcon}
+                            accessibilityLabel="Delete bundle"
+                            onClick={() =>
+                              setPendingDelete({ id: bundle.id, title: bundle.title })
+                            }
+                          />
+                        </ButtonGroup>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+
+              {hasNext || hasPrevious ? (
+                <div className={styles.pager}>
+                  <Pagination
+                    hasNext={hasNext}
+                    hasPrevious={hasPrevious}
+                    onNext={() => goToPage(currentPage + 1)}
+                    onPrevious={() => goToPage(currentPage - 1)}
+                  />
+                </div>
+              ) : null}
+            </>
           ) : (
-            <Card>
-              <EmptyState
-                heading="No bundles yet"
-                image={emptyImage}
-                action={{
-                  content: "Create bundle",
-                  onAction: openTypeModal,
-                }}
-                fullWidth
-              >
-                <p>
-                  Bundles let you offer a percentage discount when shoppers buy
-                  a set of products together. They appear on the included
-                  products' pages once you add the app block to your theme.
+            <section className={styles.empty}>
+              <img
+                className={styles.emptyArt}
+                src={illustration}
+                alt=""
+                width={800}
+                height={520}
+              />
+              <div>
+                <p className={styles.emptyEyebrow}>Bundle Builder</p>
+                <h2 className={styles.emptyTitle}>
+                  Turn products that sell together into one offer
+                </h2>
+                <p className={styles.emptyText}>
+                  A bundle groups two to four products at a percentage off.
+                  Shoppers add the whole set in one click, and the discount is
+                  applied automatically at checkout.
                 </p>
-              </EmptyState>
-            </Card>
+                <ol className={styles.steps}>
+                  <li className={styles.step}>
+                    <span className={styles.stepNumber}>1</span>
+                    <div>
+                      <p className={styles.stepTitle}>Pick the products</p>
+                      <p className={styles.stepText}>
+                        Choose two to four products that go well together.
+                      </p>
+                    </div>
+                  </li>
+                  <li className={styles.step}>
+                    <span className={styles.stepNumber}>2</span>
+                    <div>
+                      <p className={styles.stepTitle}>Set the discount</p>
+                      <p className={styles.stepText}>
+                        A percentage off the combined price, with a live
+                        preview of what shoppers see.
+                      </p>
+                    </div>
+                  </li>
+                  <li className={styles.step}>
+                    <span className={styles.stepNumber}>3</span>
+                    <div>
+                      <p className={styles.stepTitle}>Activate it</p>
+                      <p className={styles.stepText}>
+                        The bundle appears on every included product's page
+                        once the app block is in your theme.
+                      </p>
+                    </div>
+                  </li>
+                </ol>
+                <div className={styles.emptyActions}>
+                  <Button variant="primary" onClick={openTypeModal}>
+                    Create bundle
+                  </Button>
+                </div>
+              </div>
+            </section>
           )}
         </Layout.Section>
       </Layout>
+
       <BundleTypeModal
         open={typeModalActive}
         onClose={closeTypeModal}
         onSelectClassic={handleSelectClassic}
       />
+
       <Modal
-        open={modalActive}
-        onClose={handleModalChange}
-        title="Are you sure you want to delete this bundle?"
+        open={pendingDelete !== null}
+        onClose={closeDelete}
+        title={`Delete “${pendingDelete?.title ?? ""}”?`}
         primaryAction={{
-          content: "Delete",
+          content: "Delete bundle",
           destructive: true,
-          onAction: handleDeleteConfirm,
+          onAction: confirmDelete,
         }}
-        secondaryActions={[
-          {
-            content: "Cancel",
-            onAction: handleModalChange,
-          },
-        ]}
+        secondaryActions={[{ content: "Cancel", onAction: closeDelete }]}
       >
         <Modal.Section>
           <p>
-            This action cannot be undone. The bundle will stop showing on the
-            storefront immediately.
+            The bundle disappears from your storefront right away and its
+            discount stops applying. This cannot be undone.
           </p>
         </Modal.Section>
       </Modal>
