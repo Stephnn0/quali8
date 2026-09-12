@@ -574,6 +574,7 @@ model Occasion {
   //
   name       String
   slug       String /// Storefront identifier + tag suffix (q8:occasion:<slug>)
+  icon       String? /// Emoji shown on the storefront tile (suggested from the name)
   status     OccasionStatus    @default(ACTIVE)
   startMonth Int? /// 1-12
   startDay   Int? /// 1-31

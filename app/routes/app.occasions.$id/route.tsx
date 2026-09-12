@@ -26,6 +26,10 @@ import { useAppBridge } from "@shopify/app-bridge-react";
 import { loader } from "./loader";
 import { action } from "./action";
 import { FeatureEyebrow } from "app/components/OneApp";
+import {
+  OCCASION_ICON_CHOICES,
+  suggestOccasionIcon,
+} from "app/services/recommendations/occasionIcons";
 
 export { loader, action };
 
@@ -89,6 +93,7 @@ export default function OccasionEditor() {
   const notFound = !isNew && loaderData?.code === "not_found";
 
   const [name, setName] = useState(occasion?.name ?? "");
+  const [icon, setIcon] = useState(occasion?.icon ?? "");
   const [status, setStatus] = useState<"ACTIVE" | "INACTIVE">(
     occasion?.status ?? "ACTIVE",
   );
@@ -188,6 +193,7 @@ export default function OccasionEditor() {
         body: JSON.stringify({
           id: occasion?.id ?? null,
           name,
+          icon: icon || suggestOccasionIcon(name),
           status,
           startMonth: startMonth ? Number(startMonth) : null,
           startDay: startDay ? Number(startDay) : null,
@@ -250,6 +256,35 @@ export default function OccasionEditor() {
                     }
                   />
                 </InlineGrid>
+                <BlockStack gap="200">
+                  <TextField
+                    label="Icon"
+                    autoComplete="off"
+                    value={icon}
+                    onChange={setIcon}
+                    placeholder={suggestOccasionIcon(name)}
+                    helpText="Shown on the storefront tile. Leave empty to use the suggestion."
+                    maxLength={8}
+                    prefix={
+                      <span style={{ fontSize: "1.25rem", lineHeight: 1 }}>
+                        {icon || suggestOccasionIcon(name)}
+                      </span>
+                    }
+                  />
+                  <InlineStack gap="100" wrap>
+                    {OCCASION_ICON_CHOICES.map((choice) => (
+                      <Button
+                        key={choice}
+                        size="slim"
+                        pressed={icon === choice}
+                        onClick={() => setIcon(choice)}
+                        accessibilityLabel={`Use ${choice}`}
+                      >
+                        {choice}
+                      </Button>
+                    ))}
+                  </InlineStack>
+                </BlockStack>
               </BlockStack>
             </Card>
 

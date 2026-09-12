@@ -11,6 +11,7 @@ const daySchema = z.number().int().min(1).max(31).nullable();
 const saveOccasionSchema = z.object({
   id: z.number().int().positive().nullable(),
   name: z.string().trim().min(1, "Name is required"),
+  icon: z.string().trim().max(8).nullable(),
   status: z.enum(["ACTIVE", "INACTIVE"]),
   startMonth: monthSchema,
   startDay: daySchema,
@@ -74,6 +75,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
     const shared = {
       name: body.name,
+      icon: body.icon || null,
       status: body.status,
       startMonth: body.startMonth,
       startDay: body.startMonth ? (body.startDay ?? 1) : null,

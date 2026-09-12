@@ -1,11 +1,10 @@
 /*
- * Quali8 — Occasions + Gifts storefront block (product pages).
+ * Quali8 — Occasions + Gifts (product pages).
  *
- * Reads its settings from the JSON blob the Liquid block renders, fetches
- * gift picks for the chosen occasion from the app proxy, and renders
- * occasion chips above a product carousel or grid. The chosen occasion
- * persists in sessionStorage across product pages. All DOM is built with
- * createElement/textContent — never innerHTML with remote data.
+ * Renders a sideways-scrolling row of occasion tiles (icon + name). Tapping
+ * a tile opens a popup with gift picks for that occasion from the app
+ * proxy. All DOM is built with createElement/textContent — never innerHTML
+ * with remote data.
  *
  * Add-to-cart posts form-encoded to the Ajax Cart API; when a variant is
  * rejected (stale id, sold out) and the product handle is known, it
@@ -16,12 +15,48 @@
   var ROOT =
     (window.Shopify && window.Shopify.routes && window.Shopify.routes.root) ||
     "/";
-  var STORE_KEY = "q8-recs-selection";
 
-  var blocks = document.querySelectorAll("[data-quali8-recs]");
+  var blocks = document.querySelectorAll("[data-quali8-occasions]");
   if (!blocks.length) return;
 
-  // --- Utilities -----------------------------------------------------------
+  var reducedMotion =
+    window.matchMedia &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  // Fallback icons for occasions saved before icons existed
+  var ICONS = [
+    [/valentine|love|romance/, "💝"],
+    [/mother|mom|mum/, "🌷"],
+    [/father|dad/, "👔"],
+    [/christmas|xmas|holiday/, "🎄"],
+    [/birthday/, "🎂"],
+    [/anniversar/, "💍"],
+    [/sympathy|condolence|memorial/, "🕊️"],
+    [/wedding|bridal|engagement/, "💐"],
+    [/baby|shower/, "🍼"],
+    [/graduat/, "🎓"],
+    [/easter|spring/, "🐣"],
+    [/halloween/, "🎃"],
+    [/thanksgiving|harvest|autumn|fall/, "🍂"],
+    [/new year/, "🎉"],
+    [/get well/, "🌼"],
+    [/home/, "🏡"],
+    [/retire/, "🥂"],
+    [/thank/, "🙏"],
+    [/congrat|celebrat/, "🥳"],
+    [/just because/, "✨"],
+  ];
+
+  function iconFor(occasion) {
+    if (occasion.icon) return occasion.icon;
+    var name = String(occasion.name || "").toLowerCase();
+    for (var i = 0; i < ICONS.length; i += 1) {
+      if (ICONS[i][0].test(name)) return ICONS[i][1];
+    }
+    return "🎁";
+  }
+
+  // --- Utilities -------------------------------------------------------------
 
   function readSettings(block) {
     var node = block.querySelector("[data-q8-settings]");
@@ -50,9 +85,9 @@
     return node;
   }
 
-  function svgIcon(pathD, viewBox) {
+  function svgIcon(pathD) {
     var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("viewBox", viewBox || "0 0 16 16");
+    svg.setAttribute("viewBox", "0 0 16 16");
     svg.setAttribute("aria-hidden", "true");
     var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
     path.setAttribute("d", pathD);
@@ -65,42 +100,17 @@
     return svg;
   }
 
-  function spinner() {
-    var wrap = el("span", "q8-om__spinner");
-    wrap.setAttribute("aria-hidden", "true");
-    return wrap;
-  }
-
-  function readSelection() {
-    try {
-      return JSON.parse(sessionStorage.getItem(STORE_KEY) || "{}") || {};
-    } catch (e) {
-      return {};
-    }
-  }
-
-  function writeSelection(selection) {
-    try {
-      sessionStorage.setItem(STORE_KEY, JSON.stringify(selection));
-    } catch (e) {
-      /* private browsing — selection just won't persist */
-    }
-  }
-
   function numericId(gid) {
     return String(gid || "").split("/").pop();
   }
 
-  // --- Data ----------------------------------------------------------------
+  // --- Data --------------------------------------------------------------------
 
-  function fetchRecommendations(block, settings, selection) {
+  function fetchPicks(block, settings, occasionSlug) {
     var params = new URLSearchParams();
-    if (selection.occasion) params.set("occasion", selection.occasion);
-    params.set("limit", String(settings.limit || 4));
-    if (settings.fallback === "hide") params.set("fallback", "0");
-
+    if (occasionSlug) params.set("occasion", occasionSlug);
+    params.set("limit", String(settings.limit || 6));
     if (block.dataset.productId) params.set("exclude", block.dataset.productId);
-
     return fetch(ROOT + "apps/quali8/recommendations?" + params.toString(), {
       headers: { Accept: "application/json" },
     }).then(function (response) {
@@ -109,13 +119,12 @@
     });
   }
 
-  // --- Cart ----------------------------------------------------------------
+  // --- Cart --------------------------------------------------------------------
 
   function postToCart(variantId) {
     var body = new FormData();
     body.append("id", String(variantId));
     body.append("quantity", "1");
-
     return fetch(ROOT + "cart/add.js", {
       method: "POST",
       headers: { Accept: "application/json" },
@@ -133,7 +142,6 @@
     });
   }
 
-  /** Storefront-truth fallback: resolve a currently-available variant. */
   function resolveAvailableVariant(handle) {
     return fetch(ROOT + "products/" + handle + ".js", {
       headers: { Accept: "application/json" },
@@ -143,9 +151,8 @@
         return response.json();
       })
       .then(function (product) {
-        var variants = (product && product.variants) || [];
-        var available = variants.filter(function (variant) {
-          return variant.available;
+        var available = ((product && product.variants) || []).filter(function (v) {
+          return v.available;
         })[0];
         return available ? available.id : null;
       });
@@ -162,186 +169,220 @@
     });
   }
 
-  /** Let themes with an Ajax cart drawer refresh themselves. */
   function announceCartChange(payload) {
     try {
-      document.dispatchEvent(
-        new CustomEvent("cart:refresh", { bubbles: true, detail: payload }),
-      );
-      document.dispatchEvent(
-        new CustomEvent("quali8:cart:added", { bubbles: true, detail: payload }),
-      );
+      document.dispatchEvent(new CustomEvent("cart:refresh", { bubbles: true, detail: payload }));
+      document.dispatchEvent(new CustomEvent("quali8:cart:added", { bubbles: true, detail: payload }));
     } catch (e) {
-      /* old browsers — nothing to announce to */
+      /* nothing to announce to */
     }
   }
 
-  // --- Filter chips --------------------------------------------------------
-
-  /**
-   * One filter: a small label and a row of chips. `options` items are
-   * { slug, label, badge? }; the first chip clears the filter.
-   */
-  function chipGroup(label, allLabel, options, selectedSlug, onPick) {
-    var group = el("div", "q8-om__group");
-    group.setAttribute("role", "group");
-    if (label) {
-      group.setAttribute("aria-label", label);
-      group.appendChild(el("span", "q8-om__group-label", label));
-    }
-
-    var row = el("div", "q8-om__chips");
-
-    function chip(text, slug, badge) {
-      var isSelected = slug === (selectedSlug || null);
-      var button = el("button", "q8-om__chip");
-      button.type = "button";
-      button.setAttribute("aria-pressed", isSelected ? "true" : "false");
-      if (isSelected) button.classList.add("q8-om__chip--on");
-      button.appendChild(el("span", "q8-om__chip-text", text));
-      if (badge) button.appendChild(el("span", "q8-om__chip-badge", badge));
-      button.addEventListener("click", function () {
-        if (isSelected && slug !== null) onPick(null);
-        else onPick(slug);
-      });
-      return button;
-    }
-
-    row.appendChild(chip(allLabel, null, null));
-    options.forEach(function (option) {
-      row.appendChild(chip(option.label, option.slug, option.badge));
-    });
-
-    group.appendChild(row);
-    return group;
-  }
+  // --- Tiles -------------------------------------------------------------------
 
   function arrowButton(direction) {
-    var button = el("button", "q8-om__arrow q8-om__arrow--" + direction);
+    var button = el("button", "q8-og__arrow q8-og__arrow--" + direction);
     button.type = "button";
-    button.setAttribute(
-      "aria-label",
-      direction === "prev" ? "Previous products" : "More products",
-    );
-    button.appendChild(
-      svgIcon(direction === "prev" ? "M 10 3 L 5 8 L 10 13" : "M 6 3 L 11 8 L 6 13"),
-    );
+    button.setAttribute("aria-label", direction === "prev" ? "Scroll occasions left" : "Scroll occasions right");
+    button.appendChild(svgIcon(direction === "prev" ? "M 10 3 L 5 8 L 10 13" : "M 6 3 L 11 8 L 6 13"));
     return button;
   }
 
-  // --- Render --------------------------------------------------------------
+  function tile(settings, occasion, index, onOpen) {
+    var button = el("button", "q8-og__tile");
+    button.type = "button";
+    button.style.setProperty("--i", String(index));
+    button.setAttribute("aria-haspopup", "dialog");
 
-  function render(block, settings, data, selection) {
-    // Keep the settings node; rebuild everything else.
+    var square = el("span", "q8-og__square");
+    square.appendChild(el("span", "q8-og__icon", iconFor(occasion)));
+    if (occasion.inSeason && settings.showNowBadge !== false) {
+      square.appendChild(el("span", "q8-og__now", settings.nowLabel || "Now"));
+    }
+    button.appendChild(square);
+    button.appendChild(el("span", "q8-og__name", occasion.name));
+    button.addEventListener("click", function () {
+      onOpen(occasion, button);
+    });
+    return button;
+  }
+
+  function renderTiles(block, settings, occasions) {
     Array.prototype.slice.call(block.children).forEach(function (child) {
       if (!child.hasAttribute("data-q8-settings")) block.removeChild(child);
     });
 
-    var hasSelection = Boolean(selection.occasion);
+    var list = occasions.slice();
+    if (settings.showAllTile !== false || list.length === 0) {
+      list.push({
+        slug: null,
+        name: settings.allTileLabel || "All gifts",
+        icon: settings.allTileIcon || "🎁",
+        inSeason: false,
+      });
+    }
 
-    if (!data.products.length && !hasSelection && !selection.touched) {
-      // Nothing to show and the shopper hasn't interacted — stay hidden.
-      block.hidden = true;
-      return;
-    }
-    block.hidden = false;
-
-    // Header: heading, subheading, carousel arrows
-    var header = el("div", "q8-om__header");
-    var titles = el("div", "q8-om__titles");
-    if (settings.heading) {
-      titles.appendChild(el("h2", "q8-om__heading", settings.heading));
-    }
-    if (settings.subheading) {
-      titles.appendChild(el("p", "q8-om__subheading", settings.subheading));
-    }
+    var header = el("div", "q8-og__header");
+    var titles = el("div", "q8-og__titles");
+    if (settings.heading) titles.appendChild(el("h2", "q8-og__heading", settings.heading));
+    if (settings.subheading) titles.appendChild(el("p", "q8-og__subheading", settings.subheading));
     header.appendChild(titles);
 
     var prev = arrowButton("prev");
     var next = arrowButton("next");
-    var arrows = el("div", "q8-om__arrows");
+    var arrows = el("div", "q8-og__arrows");
     arrows.appendChild(prev);
     arrows.appendChild(next);
     arrows.hidden = true;
-    if (settings.layout !== "grid") header.appendChild(arrows);
+    if (settings.showArrows !== false) header.appendChild(arrows);
     block.appendChild(header);
 
-    // Occasion chips
-    if (settings.showOccasions !== false && data.occasions.length > 0) {
-      var filters = el("div", "q8-om__filters");
-      filters.appendChild(
-        chipGroup(
-          settings.occasionLabel,
-          settings.anyOccasionLabel || "Any occasion",
-          data.occasions.map(function (occasion) {
-            return {
-              slug: occasion.slug,
-              label: occasion.name,
-              badge: occasion.inSeason ? settings.nowLabel || "Now" : null,
-            };
-          }),
-          selection.occasion,
-          function (slug) {
-            update(block, settings, { occasion: slug });
-          },
-        ),
+    var row = el("div", "q8-og__row");
+    row.setAttribute("role", "list");
+    list.forEach(function (occasion, index) {
+      var item = el("div", "q8-og__item");
+      item.setAttribute("role", "listitem");
+      item.appendChild(
+        tile(settings, occasion, index, function (chosen, trigger) {
+          openPopup(block, settings, chosen, trigger);
+        }),
       );
-      block.appendChild(filters);
-    }
-
-    // Products
-    if (!data.products.length) {
-      block.appendChild(
-        el(
-          "p",
-          "q8-om__empty",
-          settings.emptyText || "No matches for these filters yet.",
-        ),
-      );
-      return;
-    }
-
-    var track = el(
-      "div",
-      settings.layout === "grid" ? "q8-om__grid" : "q8-om__track",
-    );
-    data.products.forEach(function (product) {
-      track.appendChild(productCard(block, settings, product));
+      row.appendChild(item);
     });
-    block.appendChild(track);
-
-    var errorLine = el("p", "q8-om__error");
-    errorLine.hidden = true;
-    block.appendChild(errorLine);
-    block.q8ErrorLine = errorLine;
-
-    if (settings.layout === "grid") return;
+    block.appendChild(row);
+    block.hidden = false;
 
     function syncArrows() {
-      var overflow = track.scrollWidth > track.clientWidth + 4;
+      var overflow = row.scrollWidth > row.clientWidth + 4;
       arrows.hidden = !overflow;
       if (!overflow) return;
-      prev.disabled = track.scrollLeft <= 4;
-      next.disabled =
-        track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
+      prev.disabled = row.scrollLeft <= 4;
+      next.disabled = row.scrollLeft + row.clientWidth >= row.scrollWidth - 4;
     }
     prev.addEventListener("click", function () {
-      track.scrollBy({ left: -track.clientWidth * 0.9, behavior: "smooth" });
+      row.scrollBy({ left: -row.clientWidth * 0.8, behavior: "smooth" });
     });
     next.addEventListener("click", function () {
-      track.scrollBy({ left: track.clientWidth * 0.9, behavior: "smooth" });
+      row.scrollBy({ left: row.clientWidth * 0.8, behavior: "smooth" });
     });
-    track.addEventListener("scroll", syncArrows, { passive: true });
+    row.addEventListener("scroll", syncArrows, { passive: true });
     window.addEventListener("resize", syncArrows, { passive: true });
     requestAnimationFrame(syncArrows);
   }
 
-  function productCard(block, settings, product) {
-    var card = el("article", "q8-om__card");
+  // --- Popup -------------------------------------------------------------------
+
+  function closeButton() {
+    var close = el("button", "q8-og__close");
+    close.type = "button";
+    close.setAttribute("aria-label", "Close");
+    close.appendChild(svgIcon("M 4 4 L 12 12 M 12 4 L 4 12"));
+    return close;
+  }
+
+  function skeletonGrid(count) {
+    var grid = el("div", "q8-og__grid q8-og__grid--skeleton");
+    grid.setAttribute("aria-hidden", "true");
+    for (var i = 0; i < count; i += 1) {
+      var card = el("div", "q8-og__card q8-og__card--skeleton");
+      card.appendChild(el("div", "q8-og__media"));
+      var body = el("div", "q8-og__body");
+      body.appendChild(el("span", "q8-og__bone q8-og__bone--title"));
+      body.appendChild(el("span", "q8-og__bone q8-og__bone--price"));
+      body.appendChild(el("span", "q8-og__bone q8-og__bone--button"));
+      card.appendChild(body);
+      grid.appendChild(card);
+    }
+    return grid;
+  }
+
+  function openPopup(block, settings, occasion, trigger) {
+    var overlay = el("div", "q8-og__overlay");
+    // The overlay is appended to <body>: carry the block's variables and
+    // modifiers over so theme-editor styling applies inside the popup.
+    overlay.setAttribute("style", block.getAttribute("style") || "");
+    Array.prototype.forEach.call(block.classList, function (name) {
+      if (name.indexOf("q8-og--") === 0) overlay.classList.add("q8-og__overlay--" + name.slice(7));
+    });
+
+    var modal = el("div", "q8-og__modal");
+    modal.setAttribute("role", "dialog");
+    modal.setAttribute("aria-modal", "true");
+    modal.setAttribute("aria-label", occasion.name);
+    modal.tabIndex = -1;
+
+    var head = el("div", "q8-og__modal-head");
+    var badge = el("span", "q8-og__modal-icon", iconFor(occasion));
+    head.appendChild(badge);
+    var titles = el("div", "q8-og__modal-titles");
+    var title = (settings.popupTitle || "Gifts for {occasion}").replace("{occasion}", occasion.name);
+    titles.appendChild(el("h3", "q8-og__modal-title", occasion.slug ? title : occasion.name));
+    if (settings.popupSubtext) titles.appendChild(el("p", "q8-og__modal-subtext", settings.popupSubtext));
+    head.appendChild(titles);
+    var close = closeButton();
+    head.appendChild(close);
+    modal.appendChild(head);
+
+    var content = el("div", "q8-og__modal-body");
+    content.appendChild(skeletonGrid(Math.min(settings.limit || 6, 6)));
+    modal.appendChild(content);
+
+    var errorLine = el("p", "q8-og__error");
+    errorLine.hidden = true;
+    modal.appendChild(errorLine);
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    document.documentElement.classList.add("q8-og-open");
+    setTimeout(function () {
+      modal.focus({ preventScroll: true });
+    }, 30);
+
+    function dismiss() {
+      overlay.classList.add("q8-og__overlay--out");
+      document.documentElement.classList.remove("q8-og-open");
+      document.removeEventListener("keydown", onKey);
+      setTimeout(function () {
+        if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+        if (trigger && trigger.focus) trigger.focus({ preventScroll: true });
+      }, reducedMotion ? 0 : 200);
+    }
+    function onKey(event) {
+      if (event.key === "Escape") dismiss();
+    }
+    close.addEventListener("click", dismiss);
+    if (settings.closeOnOverlay !== false) {
+      overlay.addEventListener("click", function (event) {
+        if (event.target === overlay) dismiss();
+      });
+    }
+    document.addEventListener("keydown", onKey);
+
+    fetchPicks(block, settings, occasion.slug)
+      .then(function (data) {
+        content.textContent = "";
+        if (!data.products || !data.products.length) {
+          content.appendChild(el("p", "q8-og__empty", settings.emptyText || "No gift picks yet."));
+          return;
+        }
+        var grid = el("div", "q8-og__grid");
+        data.products.forEach(function (product, index) {
+          grid.appendChild(productCard(block, settings, product, index, errorLine));
+        });
+        content.appendChild(grid);
+      })
+      .catch(function () {
+        content.textContent = "";
+        content.appendChild(el("p", "q8-og__empty", settings.emptyText || "No gift picks yet."));
+      });
+  }
+
+  function productCard(block, settings, product, index, errorLine) {
+    var card = el("article", "q8-og__card");
+    card.style.setProperty("--i", String(index));
     var productUrl = product.handle ? ROOT + "products/" + product.handle : null;
 
-    // Media (with the reason tag overlaid)
-    var media = el("div", "q8-om__media");
+    var media = el("div", "q8-og__media");
     if (product.imageUrl) {
       var img = document.createElement("img");
       img.src = product.imageUrl;
@@ -349,25 +390,24 @@
       img.loading = "lazy";
       media.appendChild(img);
     } else {
-      media.appendChild(el("span", "q8-om__media-placeholder"));
+      media.appendChild(el("span", "q8-og__media-placeholder"));
     }
     if (settings.showReason !== false && product.reason) {
-      media.appendChild(el("span", "q8-om__reason", product.reason));
+      media.appendChild(el("span", "q8-og__reason", product.reason));
     }
     if (productUrl) {
-      var mediaLink = document.createElement("a");
-      mediaLink.className = "q8-om__media-link";
-      mediaLink.href = productUrl;
-      mediaLink.setAttribute("aria-label", product.title);
-      mediaLink.appendChild(media);
-      card.appendChild(mediaLink);
+      var link = document.createElement("a");
+      link.className = "q8-og__media-link";
+      link.href = productUrl;
+      link.setAttribute("aria-label", product.title);
+      link.appendChild(media);
+      card.appendChild(link);
     } else {
       card.appendChild(media);
     }
 
-    // Body
-    var body = el("div", "q8-om__body");
-    var title = el("h3", "q8-om__title");
+    var body = el("div", "q8-og__body");
+    var title = el("h4", "q8-og__title");
     if (productUrl) {
       var titleLink = document.createElement("a");
       titleLink.href = productUrl;
@@ -377,33 +417,32 @@
       title.textContent = product.title;
     }
     body.appendChild(title);
-    body.appendChild(
-      el("p", "q8-om__price", formatMoney(product.price, block.dataset.currency)),
-    );
+    body.appendChild(el("p", "q8-og__price", formatMoney(product.price, block.dataset.currency)));
 
     if (product.variantId) {
-      var button = el("button", "q8-om__add");
+      var button = el("button", "q8-og__add");
       button.type = "button";
-      var label = el("span", "q8-om__add-label", settings.buttonLabel || "Add to cart");
+      var label = el("span", "q8-og__add-label", settings.buttonLabel || "Add to cart");
       button.appendChild(label);
 
       function setState(state, text) {
-        button.classList.remove("q8-om__add--busy", "q8-om__add--done");
-        var old = button.querySelector(".q8-om__spinner");
+        button.classList.remove("q8-og__add--busy", "q8-og__add--done");
+        var old = button.querySelector(".q8-og__spinner");
         if (old) button.removeChild(old);
         if (state === "busy") {
-          button.classList.add("q8-om__add--busy");
-          button.insertBefore(spinner(), label);
+          button.classList.add("q8-og__add--busy");
+          var spinner = el("span", "q8-og__spinner");
+          spinner.setAttribute("aria-hidden", "true");
+          button.insertBefore(spinner, label);
         }
-        if (state === "done") button.classList.add("q8-om__add--done");
+        if (state === "done") button.classList.add("q8-og__add--done");
         label.textContent = text;
       }
 
       button.addEventListener("click", function () {
         button.disabled = true;
         setState("busy", settings.addingLabel || "Adding…");
-        if (block.q8ErrorLine) block.q8ErrorLine.hidden = true;
-
+        errorLine.hidden = true;
         addToCart(product)
           .then(function (payload) {
             announceCartChange(payload);
@@ -420,12 +459,9 @@
           .catch(function (error) {
             button.disabled = false;
             setState("idle", settings.buttonLabel || "Add to cart");
-            if (block.q8ErrorLine) {
-              block.q8ErrorLine.textContent =
-                "Couldn't add to cart: " +
-                (error && error.message ? error.message : "please try again.");
-              block.q8ErrorLine.hidden = false;
-            }
+            errorLine.textContent =
+              "Couldn't add to cart: " + (error && error.message ? error.message : "please try again.");
+            errorLine.hidden = false;
             if (window.console && console.error) {
               console.error("Quali8 Occasions + Gifts add-to-cart failed:", error);
             }
@@ -438,33 +474,27 @@
     return card;
   }
 
-  // --- State ---------------------------------------------------------------
-
-  function update(block, settings, patch) {
-    var selection = readSelection();
-    Object.keys(patch).forEach(function (key) {
-      selection[key] = patch[key];
-    });
-    selection.touched = true;
-    writeSelection(selection);
-    block.classList.add("q8-om--loading");
-    load(block, settings, selection);
-  }
-
-  function load(block, settings, selection) {
-    fetchRecommendations(block, settings, selection)
-      .then(function (data) {
-        block.classList.remove("q8-om--loading");
-        render(block, settings, data, selection);
-      })
-      .catch(function () {
-        // Never break the storefront — leave the block hidden.
-        block.classList.remove("q8-om--loading");
-        block.hidden = true;
-      });
-  }
+  // --- Boot --------------------------------------------------------------------
 
   blocks.forEach(function (block) {
-    load(block, readSettings(block), readSelection());
+    var settings = readSettings(block);
+    // One light call for the occasion list; products load per tile on open.
+    var params = new URLSearchParams();
+    params.set("limit", "1");
+    fetch(ROOT + "apps/quali8/recommendations?" + params.toString(), {
+      headers: { Accept: "application/json" },
+    })
+      .then(function (response) {
+        if (!response.ok) throw new Error("HTTP " + response.status);
+        return response.json();
+      })
+      .then(function (data) {
+        var occasions = (data && data.occasions) || [];
+        if (!occasions.length && settings.showAllTile === false) return;
+        renderTiles(block, settings, occasions);
+      })
+      .catch(function () {
+        block.hidden = true; // never break the storefront
+      });
   });
 })();

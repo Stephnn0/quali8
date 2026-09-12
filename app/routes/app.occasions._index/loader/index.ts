@@ -39,6 +39,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
           shop: session.shop,
           name: occasion.name,
           slug: occasion.slug,
+          icon: occasion.icon,
           startMonth: occasion.startMonth,
           startDay: occasion.startDay,
           endMonth: occasion.endMonth,

@@ -48,14 +48,14 @@ export const TAG_PREFIX = {
 
 /** Starter occasions seeded for every shop; merchants edit or delete them. */
 export const DEFAULT_OCCASIONS = [
-  { name: "Valentine's Day", slug: "valentines-day", startMonth: 2, startDay: 1, endMonth: 2, endDay: 14 },
-  { name: "Mother's Day", slug: "mothers-day", startMonth: 4, startDay: 25, endMonth: 5, endDay: 14 },
-  { name: "Father's Day", slug: "fathers-day", startMonth: 6, startDay: 1, endMonth: 6, endDay: 21 },
-  { name: "Christmas", slug: "christmas", startMonth: 12, startDay: 1, endMonth: 12, endDay: 25 },
-  { name: "Birthday", slug: "birthday", startMonth: null, startDay: null, endMonth: null, endDay: null },
-  { name: "Anniversary", slug: "anniversary", startMonth: null, startDay: null, endMonth: null, endDay: null },
-  { name: "Sympathy", slug: "sympathy", startMonth: null, startDay: null, endMonth: null, endDay: null },
-  { name: "Just because", slug: "just-because", startMonth: null, startDay: null, endMonth: null, endDay: null },
+  { name: "Valentine's Day", slug: "valentines-day", icon: "💝", startMonth: 2, startDay: 1, endMonth: 2, endDay: 14 },
+  { name: "Mother's Day", slug: "mothers-day", icon: "🌷", startMonth: 4, startDay: 25, endMonth: 5, endDay: 14 },
+  { name: "Father's Day", slug: "fathers-day", icon: "👔", startMonth: 6, startDay: 1, endMonth: 6, endDay: 21 },
+  { name: "Christmas", slug: "christmas", icon: "🎄", startMonth: 12, startDay: 1, endMonth: 12, endDay: 25 },
+  { name: "Birthday", slug: "birthday", icon: "🎂", startMonth: null, startDay: null, endMonth: null, endDay: null },
+  { name: "Anniversary", slug: "anniversary", icon: "💍", startMonth: null, startDay: null, endMonth: null, endDay: null },
+  { name: "Sympathy", slug: "sympathy", icon: "🕊️", startMonth: null, startDay: null, endMonth: null, endDay: null },
+  { name: "Just because", slug: "just-because", icon: "✨", startMonth: null, startDay: null, endMonth: null, endDay: null },
 ] as const;
 
 /**

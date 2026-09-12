@@ -45,7 +45,7 @@ export type RecommendationResponse = {
   /** True when some products came from the general pool, not a match. */
   fallbackUsed: boolean;
   /** Picker data: the shop's active occasions, with the in-season default. */
-  occasions: Array<{ slug: string; name: string; inSeason: boolean }>;
+  occasions: Array<{ slug: string; name: string; icon: string | null; inSeason: boolean }>;
   recipients: Array<{ slug: string; label: string }>;
   budgets: Array<{ slug: string; label: string }>;
 };
@@ -253,6 +253,7 @@ export async function recommendProducts(
     occasions: occasions.map((occasion) => ({
       slug: occasion.slug,
       name: occasion.name,
+      icon: occasion.icon,
       inSeason: occasionWindowContains(occasion, now),
     })),
     recipients: RECIPIENTS.map(({ slug, label }) => ({ slug, label })),

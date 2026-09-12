@@ -1,27 +1,29 @@
 {%- comment -%}
   Quali8 — Occasions + Gifts (product page app block).
 
-  Fetches gift picks for the shopper's chosen occasion from the app proxy
-  (/apps/quali8/recommendations) and renders occasion chips above a product
-  carousel or grid. Occasions and their products/collections are managed in
-  the app. Occasions are optional: with none set, or when nothing matches,
-  the engine tops the list up with general picks (unless "When nothing
-  matches" is set to hide). Stays hidden (zero layout shift) until loaded.
+  A sideways-scrolling row of occasion tiles (icon in a square, name
+  below). Tapping a tile opens a popup with gift picks for that occasion,
+  fetched from the app proxy (/apps/quali8/recommendations). Occasions,
+  their icons, products, and collections are managed in the app. The row
+  stays hidden (zero layout shift) until the occasions have loaded.
 {%- endcomment -%}
 
 {%- capture q8_settings_json -%}
 {
   "heading": {{ block.settings.heading | json }},
   "subheading": {{ block.settings.subheading | json }},
-  "emptyText": {{ block.settings.empty_text | json }},
-  "showOccasions": {{ block.settings.show_occasions | json }},
-  "occasionLabel": {{ block.settings.occasion_label | json }},
-  "anyOccasionLabel": {{ block.settings.any_occasion_label | json }},
+  "showAllTile": {{ block.settings.show_all_tile | json }},
+  "allTileLabel": {{ block.settings.all_tile_label | json }},
+  "allTileIcon": {{ block.settings.all_tile_icon | json }},
+  "showNowBadge": {{ block.settings.show_now_badge | json }},
   "nowLabel": {{ block.settings.now_label | json }},
+  "showArrows": {{ block.settings.show_arrows | json }},
+  "popupTitle": {{ block.settings.popup_title | json }},
+  "popupSubtext": {{ block.settings.popup_subtext | json }},
+  "emptyText": {{ block.settings.empty_text | json }},
   "limit": {{ block.settings.products_limit | json }},
-  "layout": {{ block.settings.layout | json }},
-  "fallback": {{ block.settings.fallback | json }},
   "showReason": {{ block.settings.show_reason | json }},
+  "closeOnOverlay": {{ block.settings.close_on_overlay | json }},
   "buttonLabel": {{ block.settings.button_label | json }},
   "addingLabel": {{ block.settings.adding_label | json }},
   "addedLabel": {{ block.settings.added_label | json }},
@@ -30,27 +32,29 @@
 {%- endcapture -%}
 
 <div
-  class="q8-om q8-om--{{ block.settings.layout }} q8-om--filters-{{ block.settings.filter_size }} q8-om--btn-{{ block.settings.button_size }} q8-om--btn-{{ block.settings.button_style }} q8-om--cards-{{ block.settings.card_style }} q8-om--align-{{ block.settings.text_align }}"
-  data-quali8-recs
-  data-context="{{ request.page_type }}"
+  class="q8-og q8-og--tiles-{{ block.settings.tile_size }} q8-og--shape-{{ block.settings.tile_shape }} q8-og--style-{{ block.settings.tile_style }} q8-og--align-{{ block.settings.text_align }} q8-og--btn-{{ block.settings.button_size }} q8-og--btn-{{ block.settings.button_style }} q8-og--popup-{{ block.settings.popup_size }}{% if block.settings.overlay_blur %} q8-og--blur{% endif %}"
+  data-quali8-occasions
   {%- if product %} data-product-id="{{ product.id }}"{% endif -%}
   data-currency="{{ cart.currency.iso_code | default: shop.currency }}"
   style="
-    --q8-om-bg: {{ block.settings.background_color }};
-    --q8-om-text: {{ block.settings.text_color }};
-    --q8-om-accent: {{ block.settings.accent_color }};
-    --q8-om-btn-bg: {{ block.settings.button_background }};
-    --q8-om-btn-text: {{ block.settings.button_text_color }};
-    --q8-om-card-bg: {{ block.settings.card_background }};
-    --q8-om-heading-size: {{ block.settings.heading_size }}px;
-    --q8-om-heading-size-mobile: {{ block.settings.heading_size | times: 0.8 | round }}px;
-    --q8-om-radius: {{ block.settings.border_radius }}px;
-    --q8-om-card-radius: {{ block.settings.card_radius }}px;
-    --q8-om-padding: {{ block.settings.padding }}px;
-    --q8-om-border: {% if block.settings.show_border %}1px solid rgba(0, 0, 0, 0.08){% else %}none{% endif %};
-    --q8-om-columns: {{ block.settings.columns_desktop }};
-    --q8-om-columns-mobile: {{ block.settings.columns_mobile }};
-    --q8-om-image-ratio: {% case block.settings.image_ratio %}{% when 'portrait' %}4 / 5{% when 'landscape' %}4 / 3{% else %}1 / 1{% endcase %};
+    --q8-og-bg: {{ block.settings.background_color }};
+    --q8-og-text: {{ block.settings.text_color }};
+    --q8-og-accent: {{ block.settings.accent_color }};
+    --q8-og-tile-bg: {{ block.settings.tile_background }};
+    --q8-og-popup-bg: {{ block.settings.popup_background }};
+    --q8-og-btn-bg: {{ block.settings.button_background }};
+    --q8-og-btn-text: {{ block.settings.button_text_color }};
+    --q8-og-overlay: {{ block.settings.overlay_opacity | divided_by: 100.0 }};
+    --q8-og-heading-size: {{ block.settings.heading_size }}px;
+    --q8-og-heading-size-mobile: {{ block.settings.heading_size | times: 0.8 | round }}px;
+    --q8-og-radius: {{ block.settings.border_radius }}px;
+    --q8-og-tile-radius: {{ block.settings.tile_radius }}px;
+    --q8-og-popup-radius: {{ block.settings.popup_radius }}px;
+    --q8-og-padding: {{ block.settings.padding }}px;
+    --q8-og-border: {% if block.settings.show_border %}1px solid rgba(0, 0, 0, 0.08){% else %}none{% endif %};
+    --q8-og-columns: {{ block.settings.popup_columns }};
+    --q8-og-columns-mobile: {{ block.settings.columns_mobile }};
+    --q8-og-image-ratio: {% case block.settings.image_ratio %}{% when 'portrait' %}4 / 5{% when 'landscape' %}4 / 3{% else %}1 / 1{% endcase %};
   "
   hidden
 >
@@ -72,70 +76,40 @@
       "type": "text",
       "id": "heading",
       "label": "Heading",
-      "default": "Find the perfect gift"
+      "default": "Shopping for an occasion?"
     },
     {
       "type": "text",
       "id": "subheading",
-      "label": "Subheading"
+      "label": "Subheading",
+      "default": "Tap one to see our gift picks."
     },
     {
       "type": "range",
       "id": "heading_size",
       "label": "Heading size",
       "min": 16,
-      "max": 48,
+      "max": 44,
       "step": 2,
       "unit": "px",
-      "default": 26
+      "default": 22
     },
     {
       "type": "select",
       "id": "text_align",
-      "label": "Heading alignment",
+      "label": "Alignment",
       "options": [
         { "value": "left", "label": "Left" },
         { "value": "center", "label": "Center" }
       ],
       "default": "left"
     },
-    {
-      "type": "text",
-      "id": "empty_text",
-      "label": "Text when nothing matches",
-      "default": "No gift picks for this occasion yet."
-    },
 
-    { "type": "header", "content": "Occasions" },
-    {
-      "type": "checkbox",
-      "id": "show_occasions",
-      "label": "Show occasion chips",
-      "info": "Only shows when at least one occasion is active in the app.",
-      "default": true
-    },
-    {
-      "type": "text",
-      "id": "occasion_label",
-      "label": "Label",
-      "default": "Occasion"
-    },
-    {
-      "type": "text",
-      "id": "any_occasion_label",
-      "label": "\"All\" chip",
-      "default": "Any occasion"
-    },
-    {
-      "type": "text",
-      "id": "now_label",
-      "label": "In-season tag",
-      "default": "Now"
-    },
+    { "type": "header", "content": "Occasion tiles" },
     {
       "type": "select",
-      "id": "filter_size",
-      "label": "Chip size",
+      "id": "tile_size",
+      "label": "Tile size",
       "options": [
         { "value": "small", "label": "Small" },
         { "value": "medium", "label": "Medium" },
@@ -143,8 +117,97 @@
       ],
       "default": "medium"
     },
+    {
+      "type": "select",
+      "id": "tile_shape",
+      "label": "Tile shape",
+      "options": [
+        { "value": "rounded", "label": "Rounded square" },
+        { "value": "square", "label": "Square" },
+        { "value": "circle", "label": "Circle" }
+      ],
+      "default": "rounded"
+    },
+    {
+      "type": "select",
+      "id": "tile_style",
+      "label": "Tile style",
+      "options": [
+        { "value": "soft", "label": "Soft fill" },
+        { "value": "outline", "label": "Outline" },
+        { "value": "solid", "label": "Solid accent" }
+      ],
+      "default": "soft"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_all_tile",
+      "label": "Add an \"all gifts\" tile",
+      "info": "Opens picks without an occasion. Also shows when no occasion is active.",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "all_tile_label",
+      "label": "\"All gifts\" tile label",
+      "default": "All gifts"
+    },
+    {
+      "type": "text",
+      "id": "all_tile_icon",
+      "label": "\"All gifts\" tile icon",
+      "default": "🎁"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_now_badge",
+      "label": "Mark in-season occasions",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "now_label",
+      "label": "In-season badge",
+      "default": "Now"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_arrows",
+      "label": "Show scroll arrows",
+      "default": true
+    },
 
-    { "type": "header", "content": "Products" },
+    { "type": "header", "content": "Popup" },
+    {
+      "type": "text",
+      "id": "popup_title",
+      "label": "Popup title",
+      "info": "Use {occasion} for the occasion name.",
+      "default": "Gifts for {occasion}"
+    },
+    {
+      "type": "text",
+      "id": "popup_subtext",
+      "label": "Popup subtext",
+      "default": "Hand-picked for the moment."
+    },
+    {
+      "type": "text",
+      "id": "empty_text",
+      "label": "Text when nothing matches",
+      "default": "No gift picks for this occasion yet."
+    },
+    {
+      "type": "select",
+      "id": "popup_size",
+      "label": "Popup width",
+      "options": [
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }
+      ],
+      "default": "medium"
+    },
     {
       "type": "range",
       "id": "products_limit",
@@ -152,26 +215,16 @@
       "min": 2,
       "max": 12,
       "step": 1,
-      "default": 4
-    },
-    {
-      "type": "select",
-      "id": "layout",
-      "label": "Layout",
-      "options": [
-        { "value": "carousel", "label": "Carousel" },
-        { "value": "grid", "label": "Grid" }
-      ],
-      "default": "carousel"
+      "default": 6
     },
     {
       "type": "range",
-      "id": "columns_desktop",
+      "id": "popup_columns",
       "label": "Columns on desktop",
       "min": 2,
-      "max": 5,
+      "max": 4,
       "step": 1,
-      "default": 4
+      "default": 3
     },
     {
       "type": "select",
@@ -195,31 +248,32 @@
       "default": "square"
     },
     {
-      "type": "select",
-      "id": "card_style",
-      "label": "Card style",
-      "options": [
-        { "value": "minimal", "label": "Minimal" },
-        { "value": "boxed", "label": "Boxed" }
-      ],
-      "default": "boxed"
-    },
-    {
       "type": "checkbox",
       "id": "show_reason",
       "label": "Show \"why this pick\" tags",
       "default": true
     },
     {
-      "type": "select",
-      "id": "fallback",
-      "label": "When nothing matches",
-      "info": "Occasions are optional. \"Show other picks\" fills the block from your catalog so it never sits empty.",
-      "options": [
-        { "value": "general", "label": "Show other picks" },
-        { "value": "hide", "label": "Hide the block" }
-      ],
-      "default": "general"
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Background dim",
+      "min": 0,
+      "max": 90,
+      "step": 5,
+      "unit": "%",
+      "default": 55
+    },
+    {
+      "type": "checkbox",
+      "id": "overlay_blur",
+      "label": "Blur the page behind",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "close_on_overlay",
+      "label": "Close when clicking outside",
+      "default": true
     },
 
     { "type": "header", "content": "Add to cart button" },
@@ -267,7 +321,7 @@
       "id": "after_add",
       "label": "After adding to cart",
       "options": [
-        { "value": "stay", "label": "Stay on page" },
+        { "value": "stay", "label": "Stay in the popup" },
         { "value": "cart", "label": "Go to cart" }
       ],
       "default": "stay"
@@ -277,13 +331,19 @@
     {
       "type": "color",
       "id": "background_color",
-      "label": "Background",
+      "label": "Block background",
       "default": "#ffffff"
     },
     {
       "type": "color",
-      "id": "card_background",
-      "label": "Card background",
+      "id": "tile_background",
+      "label": "Tile background",
+      "default": "#f3effc"
+    },
+    {
+      "type": "color",
+      "id": "popup_background",
+      "label": "Popup background",
       "default": "#ffffff"
     },
     {
@@ -296,7 +356,7 @@
       "type": "color",
       "id": "accent_color",
       "label": "Accent",
-      "info": "Selected chips, tags, and focus rings.",
+      "info": "Selected tile, badges, tags, and focus rings.",
       "default": "#5c3d99"
     },
     {
@@ -321,7 +381,7 @@
       "max": 48,
       "step": 4,
       "unit": "px",
-      "default": 24
+      "default": 20
     },
     {
       "type": "range",
@@ -335,19 +395,30 @@
     },
     {
       "type": "range",
-      "id": "card_radius",
-      "label": "Card corner radius",
-      "min": 0,
-      "max": 24,
+      "id": "tile_radius",
+      "label": "Tile corner radius",
+      "info": "Rounded square shape only.",
+      "min": 4,
+      "max": 32,
       "step": 2,
       "unit": "px",
-      "default": 12
+      "default": 18
+    },
+    {
+      "type": "range",
+      "id": "popup_radius",
+      "label": "Popup corner radius",
+      "min": 0,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "default": 20
     },
     {
       "type": "checkbox",
       "id": "show_border",
       "label": "Show block border",
-      "default": true
+      "default": false
     }
   ]
 }
