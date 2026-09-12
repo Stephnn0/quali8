@@ -4,7 +4,7 @@ import { useAppLoaderData, useGatekeepFeature } from "./useGatekeepFeature";
 export function useAppSubscription() {
   const { subscription } = useAppLoaderData();
 
-  const isNotSubscribed = useGatekeepFeature({ appPlan: APP_PLANS.BASIC.name }); // Checks if its subscribed to at least the pro plan, incrementally
+  const isNotSubscribed = useGatekeepFeature({ appPlan: APP_PLANS.ADVANCE.name }); // Advance is the only paid plan
 
   const subHasQualifiers = !useGatekeepFeature({ hasQualifiers: true });
   const subHasShippingDiscounts = !useGatekeepFeature({

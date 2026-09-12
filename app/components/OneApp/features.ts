@@ -54,7 +54,7 @@ export const ONEAPP_CATEGORIES: OneAppCategory[] = [
   },
 ];
 
-export type OneAppPlan = "Free" | "Pro" | "Advance";
+export type OneAppPlan = "Free" | "Advance";
 
 /**
  * The OneApp feature library. Every entry maps to an existing admin surface —
@@ -96,7 +96,7 @@ export const ONEAPP_FEATURES: OneAppFeature[] = [
     icon: DeliveryIcon,
     image: "/features/smart-shipping.svg",
     to: "/app/actions/discounts",
-    plan: "Pro",
+    plan: "Advance",
     gate: { hasShippingDiscounts: true },
   },
   {
@@ -123,7 +123,7 @@ export const ONEAPP_FEATURES: OneAppFeature[] = [
     icon: PackageIcon,
     image: "/features/bundle-builder.svg",
     to: "/app/bundles",
-    plan: "Pro",
+    plan: "Advance",
     gate: { hasBundles: true },
   },
   {
@@ -151,7 +151,7 @@ export const ONEAPP_FEATURES: OneAppFeature[] = [
     icon: ConfettiIcon,
     image: "/features/occasion-match.svg",
     to: "/app/occasions",
-    plan: "Pro",
+    plan: "Advance",
     gate: { hasRecommendations: true },
   },
   {

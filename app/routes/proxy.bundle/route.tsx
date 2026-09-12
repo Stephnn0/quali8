@@ -30,7 +30,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 
   try {
-    // Bundles are a Pro-plan feature — render nothing for other plans.
+    // Bundles are an Advance-plan feature — render nothing for other plans.
     if (!(await shopHasBundles(shop, db))) {
       return Response.json({ bundle: null }, { headers });
     }

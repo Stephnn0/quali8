@@ -17,7 +17,7 @@ function FeatureCard({ feature }: { feature: OneAppFeature }) {
     <Link to={feature.to} className={styles.card}>
       <div className={styles.cardTop}>
         <span className={styles.cardNumber}>{feature.number}</span>
-        <PlanBanner plan={feature.plan} locked={locked} />
+        <PlanBanner plan={feature.plan} locked={locked} compact />
       </div>
       <div className={styles.cardBody}>
         <span className={styles.cardIcon}>

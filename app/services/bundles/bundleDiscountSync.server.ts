@@ -36,7 +36,7 @@ export async function syncBundleDiscounts(session: Session, db: PrismaClient) {
     getShopifyStore({ where: { shop } }, db),
     shopHasBundles(shop, db),
   ]);
-  // A shop that lost the Pro plan keeps its bundles in our DB, but the
+  // A shop that lost the Advance plan keeps its bundles in our DB, but the
   // checkout discount is torn down like there were none.
   const activeBundles = entitled
     ? bundles.filter((bundle) => bundle.items.length > 0)

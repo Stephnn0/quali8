@@ -1,7 +1,7 @@
 import type { PrismaClient } from "@prisma/client";
 
 /**
- * Whether the shop's active subscription includes bundles (Pro plan —
+ * Whether the shop's active subscription includes bundles (Advance plan —
  * `RecurringPlan.hasBundles`).
  *
  * For contexts without an admin session (app proxy, discount sync), where

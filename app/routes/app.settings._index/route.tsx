@@ -21,7 +21,8 @@ const PRICING_PAGE_URL = `shopify://admin/charges/${APP.APP_HANDLE}/pricing_plan
 /**
  * The public plan cards. Feature lists cover everything the app currently
  * offers; entitlements must match the seeded `RecurringPlan` flags
- * (`hasQualifiers` / `hasShippingDiscounts` / `hasBundles`).
+ * (`hasQualifiers` / `hasShippingDiscounts` / `hasBundles` /
+ * `hasRecommendations` / `hasAssistant`). There are two plans: Free and Advance.
  */
 const PLAN_CARDS = [
   {
@@ -36,28 +37,17 @@ const PLAN_CARDS = [
     ],
   },
   {
-    name: APP_PLANS.BASIC.name, // "Pro" — the mid paid plan
-    price: "$10/month",
-    priceDetail: `or $108/year (save 10%) · ${APP_PLANS.BASIC.trialDays}-day free trial`,
-    description: "Everything in Free, plus the discounts that convert.",
-    features: [
-      "Everything in the Free plan",
-      "Shipping discounts at checkout — automatic or code-based, targeted at your Audiences",
-      "Promotion controls: minimum cart value, selected shipping rates, start and end dates",
-      "Product bundles (frequently bought together) with automatic checkout discounts",
-      "Smart Recommendations blocks for your product and cart pages",
-    ],
-  },
-  {
     name: APP_PLANS.ADVANCE.name,
     price: "$25/month",
     priceDetail: `${APP_PLANS.ADVANCE.trialDays}-day free trial`,
-    description: "Everything in Pro, plus your AI shop assistant.",
+    description: "Every OneApp feature, including the AI tools.",
     features: [
-      "Everything in the Pro plan",
-      "AI assistant dashboard tailored to your niche",
-      "Upcoming occasion radar for your business and country",
-      "Store-readiness checklists generated for each season",
+      "Everything in the Free plan",
+      "Smart Shipping — shipping discounts at checkout, automatic or code-based, targeted at your Audiences",
+      "Bundle Builder — frequently-bought-together bundles with automatic checkout discounts",
+      "Occasion Match — occasion recommendations with your products",
+      "Sales Calendar with Smart Announcements, Subscribe Boost, and SEO AI",
+      "FAQ Collections drafted by AI for your collection pages",
     ],
   },
 ] as const;
@@ -122,15 +112,15 @@ export default function Settings() {
               </Text>
             ) : (
               <Text as="p" tone="subdued">
-                You’re on the Free plan. Upgrade to {APP_PLANS.BASIC.name} to
-                unlock shipping discounts and product bundles.
+                You’re on the Free plan. Upgrade to {APP_PLANS.ADVANCE.name}{" "}
+                to unlock every feature in your library.
               </Text>
             )}
           </BlockStack>
         </Card>
 
         {/* Plan comparison */}
-        <InlineGrid columns={{ xs: 1, sm: 2, md: 3 }} gap="400">
+        <InlineGrid columns={{ xs: 1, sm: 2 }} gap="400">
           {PLAN_CARDS.map((plan) => {
             const isCurrent = plan.name === currentPlanName;
             const isPaidCard = plan.name !== APP_PLANS.FREE.name;

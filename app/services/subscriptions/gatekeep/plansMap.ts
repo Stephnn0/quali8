@@ -43,6 +43,5 @@ export const SHOP_PLANS_MAP: Record<
  */
 export const APP_PLANS_MAP: Record<(typeof APP.PLANS)[number], number> = {
   [APP_PLANS.FREE.name]: 0,
-  [APP_PLANS.BASIC.name]: 1,
-  [APP_PLANS.ADVANCE.name]: 2,
+  [APP_PLANS.ADVANCE.name]: 1,
 } as const;

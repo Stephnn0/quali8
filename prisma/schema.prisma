@@ -372,7 +372,7 @@ model RecurringPlan {
 
 enum RecurringPlanLevel {
   FREE
-  BASIC
+  BASIC /// Legacy "Pro" tier — no longer seeded or sold; kept so historical rows load
   ADVANCE
 }
 

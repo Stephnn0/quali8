@@ -2,7 +2,7 @@ import type { PrismaClient } from "@prisma/client";
 
 /**
  * Whether the shop's active subscription includes Smart Recommendations
- * (Pro plan — `RecurringPlan.hasRecommendations`).
+ * (Advance plan — `RecurringPlan.hasRecommendations`).
  *
  * For contexts without an admin session (the app proxy), where
  * `gatekeepRoute`/`useGatekeepFeature` can't run. A shop without a

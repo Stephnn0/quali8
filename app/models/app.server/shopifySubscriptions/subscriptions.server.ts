@@ -299,8 +299,8 @@ async function syncSubscription(
 
   // Resolve the seeded plan (see npx prisma db seed) the Shopify subscription
   // belongs to. The subscription name is localized by Shopify and no longer
-  // matches our public plan names (DB says "Pro", the Partner Dashboard plan
-  // is "Basic"), and the seeded shopifyPlanID predates the planId → planHandle
+  // matches our public plan names (legacy rows say "Pro", the Partner
+  // Dashboard plan was "Basic"), and the seeded shopifyPlanID predates the planId → planHandle
   // switch in the GraphQL query — so the reliable identifier is the
   // managed-pricing plan handle, mapped to our plan level via APP_PLANS.
   const planForHandle = Object.values(APP_PLANS).find(

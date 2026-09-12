@@ -50,7 +50,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 
   try {
-    // Smart Recommendations is a Pro-plan feature — render nothing otherwise.
+    // Smart Recommendations is an Advance-plan feature — render nothing otherwise.
     if (!(await shopHasRecommendations(shop, db))) {
       return Response.json(EMPTY, { headers });
     }

@@ -6,19 +6,19 @@ OneApp is an embedded Shopify admin app that bundles several storefront and chec
 
 - **Dashboard** (`/app`): the OneApp hero, every feature card grouped by category, and a "Need another feature?" request band.
 - **Sidebar**: Dashboard, one link per category, Request a Feature, Plans & billing.
-- **Category page** (`/app/categories/<key>`): one showcase card per feature with an illustration, a plan banner (Free, Pro or Advance), a short description, and a button that opens the feature.
+- **Category page** (`/app/categories/<key>`): one showcase card per feature with an illustration, a plan banner (Free or Advance), a short description, and a button that opens the feature.
 
 ### Categories and features
 
 | Category | # | Feature | Plan | Opens |
 |----------|---|---------|------|-------|
-| Sales & Pricing | 01 | Smart Shipping | Pro | `/app/actions/discounts` |
-| Sales & Pricing | 03 | Bundle Builder | Pro | `/app/bundles` |
+| Sales & Pricing | 01 | Smart Shipping | Advance | `/app/actions/discounts` |
+| Sales & Pricing | 03 | Bundle Builder | Advance | `/app/bundles` |
 | Customers | 02 | Customer Insights | Free | `/app/qualifiers` |
 | Customers | 08 | Subscribe Boost | Advance | `/app/special-dates` |
 | Content & SEO | 04 | FAQ Collections | Advance | `/app/faqs` |
 | Content & SEO | 07 | SEO AI | Advance | `/app/special-dates` |
-| Seasonal Marketing | 05 | Occasion Match | Pro | `/app/occasions` |
+| Seasonal Marketing | 05 | Occasion Match | Advance | `/app/occasions` |
 | Seasonal Marketing | 06 | Smart Announcements | Advance | `/app/special-dates` |
 | Seasonal Marketing | 09 | Sales Calendar | Advance | `/app/special-dates` |
 

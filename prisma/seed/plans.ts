@@ -5,9 +5,11 @@ import { APP_PLANS } from 'app/constants/plans';
 export async function seedPlans(db: PrismaClient) {
   // shopifyPlanHandle is app-side only — RecurringPlan has no such column
   const { shopifyPlanHandle: _freeHandle, ...FREE } = APP_PLANS.FREE;
-  const { shopifyPlanHandle: _basicHandle, ...BASIC } = APP_PLANS.BASIC;
   const { shopifyPlanHandle: _advanceHandle, ...ADVANCE } = APP_PLANS.ADVANCE;
 
+  // Only Free and Advance are seeded. The retired Pro rows (`pro-monthly`,
+  // `pro-annual`) are left untouched so existing subscriptions keep their
+  // foreign keys; nothing new can subscribe to them.
   const PLANS: Prisma.RecurringPlanCreateInput[] = [
     {
         ...FREE,
@@ -19,22 +21,6 @@ export async function seedPlans(db: PrismaClient) {
     {
         ...FREE,
         code: 'free-annual',
-        interval: "ANNUAL",
-        read_generalApis: false,
-        write_generalApis: false
-    },
-    {
-        ...BASIC,
-        price: 10.00,
-        code: 'pro-monthly',
-        interval: "EVERY_30_DAYS",
-        read_generalApis: false,
-        write_generalApis: false
-    },
-    {
-        ...BASIC,
-        price: 108,
-        code: 'pro-annual',
         interval: "ANNUAL",
         read_generalApis: false,
         write_generalApis: false

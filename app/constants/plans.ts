@@ -19,29 +19,10 @@ export const APP_PLANS = {
     hasAssistant: false,
   },
 
-  // The paid plan. Historically named "Basic" (the constant key and the
-  // `BASIC` level are kept for stability); publicly it is the "Pro" plan —
-  // its seed codes were always `pro-monthly`/`pro-annual`. Subscription→plan
-  // matching also works via `shopifyPlanID`, so the rename is safe.
-  BASIC: {
-    name: "Pro",
-    level: "BASIC",
-    // The Partner Dashboard plan is still handled/named "Basic".
-    shopifyPlanHandle: "basic",
-    trialDays: 5,
-
-    // Check for when importing in the client
-    shopifyPlanID:
-      typeof process !== "undefined" ? process.env.SHOPIFY_BASIC_PLAN_ID : "",
-
-    hasQualifiers: true,
-    hasShippingDiscounts: true,
-    hasBundles: true,
-    hasRecommendations: true,
-    hasAssistant: false,
-  },
-
-  // The top tier: everything in Pro plus the AI assistant dashboard.
+  // The only paid plan: every feature, including the AI assistant.
+  // (The former mid tier "Pro" — level `BASIC`, handle `basic`, seed codes
+  // `pro-monthly`/`pro-annual` — was retired; its enum value stays in the
+  // Prisma schema only so historical subscription rows keep loading.)
   ADVANCE: {
     name: "Advance",
     level: "ADVANCE",
