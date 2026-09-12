@@ -4,6 +4,7 @@ import { authenticate } from "app/shopify.server";
 import {
   FeatureGrid,
   ONEAPP_FEATURES,
+  OneAppHero,
   RequestFeatureBand,
 } from "app/components/OneApp";
 import styles from "app/components/OneApp/oneapp.module.css";
@@ -17,6 +18,8 @@ export default function Index() {
   return (
     <Page>
       <BlockStack gap="500">
+        <OneAppHero />
+
         <BlockStack gap="300">
           <div className={styles.sectionHeading}>
             <h2 className={styles.sectionTitle}>Your features</h2>
