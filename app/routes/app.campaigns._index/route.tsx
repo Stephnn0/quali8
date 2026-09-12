@@ -19,7 +19,7 @@ import styles from "app/components/OneApp/oneapp.module.css";
  * place (turn them on and off per sales date, see what is live). This is
  * the Sales Calendar's new home; until it ships, the tab shows what is
  * coming. The seasonal features themselves are usable today from their own
- * pages under Seasonal Marketing.
+ * pages under Theme Extensions.
  */
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   await authenticate.admin(request);
@@ -27,7 +27,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 };
 
 export default function CampaignsComingSoon() {
-  const seasonal = getCategoryFeatures("seasonal-marketing");
+  const seasonal = getCategoryFeatures("theme-extensions");
 
   return (
     <Page>
@@ -56,7 +56,7 @@ export default function CampaignsComingSoon() {
               feature for it from a single screen: the announcement bar, hero,
               menu item, subscribe popup, SEO changes, and prep lists. Until
               this hub ships, every one of those features has its own page
-              under Seasonal Marketing.
+              under Theme Extensions.
             </Text>
           </BlockStack>
         </Card>

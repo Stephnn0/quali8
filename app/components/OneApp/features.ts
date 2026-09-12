@@ -22,7 +22,7 @@ export type OneAppCategoryKey =
   | "sales-pricing"
   | "customers"
   | "content-seo"
-  | "seasonal-marketing";
+  | "theme-extensions";
 
 export type OneAppCategory = {
   key: OneAppCategoryKey;
@@ -48,9 +48,9 @@ export const ONEAPP_CATEGORIES: OneAppCategory[] = [
     tagline: "AI-written content that helps shoppers and search engines.",
   },
   {
-    key: "seasonal-marketing",
-    name: "Seasonal Marketing",
-    tagline: "Everything a sales date needs on your storefront, on a schedule.",
+    key: "theme-extensions",
+    name: "Theme Extensions",
+    tagline: "Blocks for your storefront: gift picks, announcements, and popups.",
   },
 ];
 
@@ -145,7 +145,7 @@ export const ONEAPP_FEATURES: OneAppFeature[] = [
     number: "05",
     key: "occasions-gifts",
     name: "Occasions + Gift Recommendations",
-    category: "seasonal-marketing",
+    category: "theme-extensions",
     tagline: "Occasion and gift picks on product pages.",
     description:
       "Create occasions, connect products or whole collections to each one, and show shoppers the right gifts for the moment on your product pages.",
@@ -159,7 +159,7 @@ export const ONEAPP_FEATURES: OneAppFeature[] = [
     number: "06",
     key: "smart-announcements",
     name: "Smart Announcements",
-    category: "seasonal-marketing",
+    category: "theme-extensions",
     tagline: "Announcement bars timed to your sales dates.",
     description:
       "Schedule an announcement bar for your home page so it appears on the date you choose and disappears when the moment has passed.",
@@ -187,7 +187,7 @@ export const ONEAPP_FEATURES: OneAppFeature[] = [
     number: "08",
     key: "subscribe-boost",
     name: "Subscribe Boost",
-    category: "seasonal-marketing",
+    category: "theme-extensions",
     tagline: "Subscribe popups that grow your list.",
     description:
       "Launch a subscribe popup with its own headline, offer, and timing, and capture emails before the rush.",
