@@ -1,11 +1,5 @@
 import { z } from "zod";
 import type { PrismaClient } from "@prisma/client";
-import type { DeliveryConfig } from "app/components/Delivery/types";
-import {
-  deliveryActionSchema,
-  loadDeliveryConfig,
-  runDeliveryAction,
-} from "app/services/delivery/deliveryZones.server";
 import type {
   AnnouncementBarConfig,
   PopupConfig,
@@ -35,8 +29,9 @@ export type ShopFeatureConfig = {
   popup: PopupConfig | null;
   /** Latest SEO changes applied anywhere in this shop, newest first. */
   seoActions: SeoAppliedAction[];
-  /** Zip code delivery checker (lives on the announcements page). */
-  delivery: DeliveryConfig;
+  /** Summary of the zip checker, which is managed on the Delivery page. */
+  deliveryCheckEnabled: boolean;
+  deliveryZoneCount: number;
 };
 
 const shopWide = (shop: string) => ({ shop, specialDateId: null });
@@ -45,7 +40,7 @@ export async function loadShopFeatureConfig(
   db: PrismaClient,
   shop: string,
 ): Promise<ShopFeatureConfig> {
-  const [announcementBar, popup, seoActions, delivery] = await Promise.all([
+  const [announcementBar, popup, seoActions, store, deliveryZoneCount] = await Promise.all([
     db.announcementBar.findFirst({ where: shopWide(shop) }),
     db.subscribePopup.findFirst({ where: shopWide(shop) }),
     db.seoMetaAction.findMany({
@@ -53,14 +48,16 @@ export async function loadShopFeatureConfig(
       orderBy: { createdAt: "desc" },
       take: 20,
     }),
-    loadDeliveryConfig(db, shop),
+    db.shopifyStore.findUnique({ where: { shop }, select: { deliveryCheckEnabled: true } }),
+    db.deliveryZone.count({ where: { shop } }),
   ]);
 
   return {
     announcementBar: announcementBar ? toAnnouncementConfig(announcementBar) : null,
     popup: popup ? toPopupConfig(popup) : null,
     seoActions: seoActions.map(toSeoAppliedAction),
-    delivery,
+    deliveryCheckEnabled: store?.deliveryCheckEnabled ?? false,
+    deliveryZoneCount,
   };
 }
 
@@ -69,7 +66,6 @@ export const shopFeatureActionSchema = z.discriminatedUnion("action", [
   removeAnnouncementSchema,
   savePopupSchema,
   removePopupSchema,
-  ...deliveryActionSchema.options,
 ]);
 
 export type ShopFeatureActionBody = z.infer<typeof shopFeatureActionSchema>;
@@ -81,14 +77,6 @@ export async function runShopFeatureAction(input: {
   body: ShopFeatureActionBody;
 }): Promise<SpecialDateActionResult> {
   const { db, shop, body } = input;
-
-  if (
-    body.action === "set-delivery-check" ||
-    body.action === "save-zone" ||
-    body.action === "delete-zone"
-  ) {
-    return runDeliveryAction({ db, shop, body });
-  }
 
   if (
     "startDate" in body &&

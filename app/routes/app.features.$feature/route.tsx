@@ -4,9 +4,9 @@ import type {
   HeadersFunction,
   LoaderFunctionArgs,
 } from "react-router";
-import { useLoaderData, useRouteError } from "react-router";
+import { useLoaderData, useNavigate, useRouteError } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
-import { BlockStack, Card, Layout, Page, Text } from "@shopify/polaris";
+import { BlockStack, Button, Card, Layout, Page, Text } from "@shopify/polaris";
 import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
 import { gatekeepRoute } from "app/services/subscriptions/gatekeepRoute";
@@ -19,7 +19,6 @@ import {
 import AnnouncementScheduler from "app/components/Seasonal/AnnouncementScheduler";
 import PopupScheduler from "app/components/Seasonal/PopupScheduler";
 import SeoOptimizer from "app/components/Seasonal/SeoOptimizer";
-import DeliveryZonesEditor from "app/components/Delivery/DeliveryZonesEditor";
 import {
   loadShopFeatureConfig,
   runShopFeatureAction,
@@ -75,6 +74,20 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 type Section = { title: string; help: string; node: ReactNode };
 
+function DeliveryLink({ enabled, zones }: { enabled: boolean; zones: number }) {
+  const navigate = useNavigate();
+  return (
+    <BlockStack gap="200">
+      <Text as="p" tone="subdued">
+        Zip checker {enabled ? "on" : "off"} · {zones} {zones === 1 ? "zone" : "zones"}
+      </Text>
+      <div>
+        <Button onClick={() => navigate("/app/delivery")}>Manage delivery zones</Button>
+      </div>
+    </BlockStack>
+  );
+}
+
 /** The cards on a feature page: the primary editor, plus extras. */
 function sectionsFor(featureKey: FeaturePageKey, config: ShopFeatureConfig): Section[] {
   const feature = FEATURE_PAGES[featureKey];
@@ -89,8 +102,8 @@ function sectionsFor(featureKey: FeaturePageKey, config: ShopFeatureConfig): Sec
         {
           title: "Zip code delivery check",
           help:
-            "Shoppers type their zip or postal code into the bar and see whether you deliver there and for how much. Zones are matched top to bottom.",
-          node: <DeliveryZonesEditor {...config.delivery} />,
+            "The bar can also let shoppers check whether you deliver to their zip code. The zones, prices, and the on/off switch live on the Delivery page.",
+          node: <DeliveryLink enabled={config.deliveryCheckEnabled} zones={config.deliveryZoneCount} />,
         },
       ];
     case "subscribe-boost":

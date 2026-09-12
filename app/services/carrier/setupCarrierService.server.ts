@@ -24,6 +24,42 @@ const looksLikeScopeError = (message: string) =>
 const looksLikePlanError = (message: string) =>
   /carrier.calculated|plan|not (?:available|enabled|supported)|third.party/i.test(message);
 
+export type CarrierDetectStatus =
+  | { state: "installed"; id: string; callbackUrl: string }
+  | { state: "stale"; id: string; callbackUrl: string; registeredUrl: string | null }
+  | { state: "missing"; callbackUrl: string }
+  | { state: "scope-missing"; message: string }
+  | { state: "error"; message: string };
+
+/** Read-only check: is our carrier service on the shop, and pointing here? */
+export async function detectCarrierService(
+  graphql: AdminGraphqlClient,
+): Promise<CarrierDetectStatus> {
+  const callbackUrl = carrierCallbackUrl();
+  if (!process.env.SHOPIFY_APP_URL) {
+    return { state: "error", message: "SHOPIFY_APP_URL is not set on the server" };
+  }
+  try {
+    const existing = (await getCarrierServices(graphql)).find(
+      (service) => service.name === CARRIER_SERVICE_NAME,
+    );
+    if (!existing) return { state: "missing", callbackUrl };
+    if (existing.callbackUrl === callbackUrl && existing.active) {
+      return { state: "installed", id: existing.id, callbackUrl };
+    }
+    return {
+      state: "stale",
+      id: existing.id,
+      callbackUrl,
+      registeredUrl: existing.callbackUrl,
+    };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    if (looksLikeScopeError(message)) return { state: "scope-missing", message };
+    return { state: "error", message };
+  }
+}
+
 /**
  * Registers (or repairs) the app's carrier service on the shop and records
  * its GID. Shopify rejects the create on plans without carrier-calculated
