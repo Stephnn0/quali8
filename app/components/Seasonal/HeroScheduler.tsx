@@ -14,6 +14,7 @@ import {
 import { ImageIcon } from "@shopify/polaris-icons";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import FilesPickerModal from "./FilesPickerModal";
+import { scheduleWindow } from "./dates";
 
 export type HeroConfig = {
   enabled: boolean;
@@ -34,18 +35,11 @@ export type HeroConfig = {
 };
 
 type Props = {
-  specialDateName: string;
-  specialDateDate: string;
+  /** When set, defaults anchor to this sales date; otherwise to today. */
+  specialDateName?: string;
+  specialDateDate?: string;
   hero: HeroConfig | null;
 };
-
-const isoDay = (date: Date) => date.toISOString().slice(0, 10);
-
-function defaultStart(dateIso: string): string {
-  const date = new Date(dateIso + "T00:00:00Z");
-  date.setUTCDate(date.getUTCDate() - 14);
-  return isoDay(date);
-}
 
 type PickedProduct = {
   images?: Array<{ originalSrc?: string; src?: string }>;
@@ -115,7 +109,8 @@ export default function HeroScheduler({
   ]);
   const [filesOpenFor, setFilesOpenFor] = useState<number | null>(null);
   const [heading, setHeading] = useState(
-    hero?.heading ?? `${specialDateName} is coming`,
+    hero?.heading ??
+      (specialDateName ? `${specialDateName} is coming` : "New season, new arrivals"),
   );
   const [description, setDescription] = useState(hero?.description ?? "");
   const [buttonLabel, setButtonLabel] = useState(hero?.buttonLabel ?? "");
@@ -132,9 +127,9 @@ export default function HeroScheduler({
     hero?.overlayOpacity ?? 35,
   );
   const [startDate, setStartDate] = useState(
-    hero?.startDate ?? defaultStart(specialDateDate),
+    hero?.startDate ?? scheduleWindow(specialDateDate).start,
   );
-  const [endDate, setEndDate] = useState(hero?.endDate ?? specialDateDate);
+  const [endDate, setEndDate] = useState(hero?.endDate ?? scheduleWindow(specialDateDate).end);
 
   const setImage = (index: number, url: string) =>
     setImages((current) =>

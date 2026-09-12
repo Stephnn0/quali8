@@ -729,8 +729,9 @@ model SeoMetaAction {
   newSeoTitle            String
   newSeoDescription      String
   //
-  specialDateId          Int
-  specialDate            SpecialDate @relation(fields: [specialDateId], references: [id], onDelete: Cascade)
+  /// Null when applied from the SEO AI page; set when optimized for a Sales Calendar date.
+  specialDateId          Int?
+  specialDate            SpecialDate? @relation(fields: [specialDateId], references: [id], onDelete: Cascade)
   shop                   String
 
   @@index([specialDateId])
@@ -776,8 +777,10 @@ model AnnouncementBar {
   startDate       String /// ISO yyyy-mm-dd, inclusive
   endDate         String /// ISO yyyy-mm-dd, inclusive
   //
-  specialDateId   Int         @unique
-  specialDate     SpecialDate @relation(fields: [specialDateId], references: [id], onDelete: Cascade)
+  /// Null for the shop-wide config edited from its feature page; set when
+  /// scheduled from a Sales Calendar date.
+  specialDateId   Int?         @unique
+  specialDate     SpecialDate? @relation(fields: [specialDateId], references: [id], onDelete: Cascade)
   shop            String
 
   @@index([shop, startDate, endDate])
@@ -828,8 +831,10 @@ model ScheduledHero {
   startDate        String /// ISO yyyy-mm-dd, inclusive
   endDate          String /// ISO yyyy-mm-dd, inclusive
   //
-  specialDateId Int         @unique
-  specialDate   SpecialDate @relation(fields: [specialDateId], references: [id], onDelete: Cascade)
+  /// Null for the shop-wide config edited from its feature page; set when
+  /// scheduled from a Sales Calendar date.
+  specialDateId Int?         @unique
+  specialDate   SpecialDate? @relation(fields: [specialDateId], references: [id], onDelete: Cascade)
   shop          String
 
   @@index([shop, startDate, endDate])
@@ -851,8 +856,10 @@ model SubscribePopup {
   startDate     String /// ISO yyyy-mm-dd, inclusive
   endDate       String /// ISO yyyy-mm-dd, inclusive
   //
-  specialDateId Int         @unique
-  specialDate   SpecialDate @relation(fields: [specialDateId], references: [id], onDelete: Cascade)
+  /// Null for the shop-wide config edited from its feature page; set when
+  /// scheduled from a Sales Calendar date.
+  specialDateId Int?         @unique
+  specialDate   SpecialDate? @relation(fields: [specialDateId], references: [id], onDelete: Cascade)
   shop          String
 
   @@index([shop, startDate, endDate])

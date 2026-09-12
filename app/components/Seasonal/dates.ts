@@ -23,3 +23,24 @@ export const prettyDate = (isoDate: string) =>
 /** "11-24 → 11-30" from two ISO days. */
 export const windowLabel = (start: string, end: string) =>
   `${start.slice(5)} → ${end.slice(5)}`;
+
+const isoDay = (date: Date) => date.toISOString().slice(0, 10);
+
+/**
+ * Default show window for a scheduled theme block: the two weeks up to a
+ * sales date, or, with no date, today through the next 30 days.
+ */
+export function scheduleWindow(specialDateDate?: string): {
+  start: string;
+  end: string;
+} {
+  if (specialDateDate) {
+    const start = new Date(specialDateDate + "T00:00:00Z");
+    start.setUTCDate(start.getUTCDate() - 14);
+    return { start: isoDay(start), end: specialDateDate };
+  }
+  const start = new Date();
+  const end = new Date();
+  end.setUTCDate(end.getUTCDate() + 30);
+  return { start: isoDay(start), end: isoDay(end) };
+}

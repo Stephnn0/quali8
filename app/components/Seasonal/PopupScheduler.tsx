@@ -13,6 +13,7 @@ import {
 import { ImageIcon } from "@shopify/polaris-icons";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import FilesPickerModal from "./FilesPickerModal";
+import { scheduleWindow } from "./dates";
 
 export type PopupConfig = {
   enabled: boolean;
@@ -25,18 +26,11 @@ export type PopupConfig = {
 };
 
 type Props = {
-  specialDateName: string;
-  specialDateDate: string;
+  /** When set, defaults anchor to this sales date; otherwise to today. */
+  specialDateName?: string;
+  specialDateDate?: string;
   popup: PopupConfig | null;
 };
-
-const isoDay = (date: Date) => date.toISOString().slice(0, 10);
-
-function defaultStart(dateIso: string): string {
-  const date = new Date(dateIso + "T00:00:00Z");
-  date.setUTCDate(date.getUTCDate() - 14);
-  return isoDay(date);
-}
 
 type PickedProduct = {
   images?: Array<{ originalSrc?: string; src?: string }>;
@@ -56,7 +50,8 @@ export default function PopupScheduler({
   const [enabled, setEnabled] = useState(popup?.enabled ?? true);
   const [imageUrl, setImageUrl] = useState(popup?.imageUrl ?? "");
   const [heading, setHeading] = useState(
-    popup?.heading ?? `Get ready for ${specialDateName}`,
+    popup?.heading ??
+      (specialDateName ? `Get ready for ${specialDateName}` : "Join the list"),
   );
   const [description, setDescription] = useState(
     popup?.description ??
@@ -64,9 +59,9 @@ export default function PopupScheduler({
   );
   const [discountCode, setDiscountCode] = useState(popup?.discountCode ?? "");
   const [startDate, setStartDate] = useState(
-    popup?.startDate ?? defaultStart(specialDateDate),
+    popup?.startDate ?? scheduleWindow(specialDateDate).start,
   );
-  const [endDate, setEndDate] = useState(popup?.endDate ?? specialDateDate);
+  const [endDate, setEndDate] = useState(popup?.endDate ?? scheduleWindow(specialDateDate).end);
 
   const validDates =
     /^\d{4}-\d{2}-\d{2}$/.test(startDate) &&

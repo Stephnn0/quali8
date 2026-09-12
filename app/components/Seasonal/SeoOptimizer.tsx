@@ -38,8 +38,9 @@ type AppliedAction = {
 };
 
 type Props = {
-  specialDateId: number;
-  specialDateName: string;
+  /** Sales date to optimize for; null for evergreen metadata. */
+  specialDateId: number | null;
+  specialDateName?: string;
   appliedActions: AppliedAction[];
 };
 
@@ -214,9 +215,9 @@ export default function SeoOptimizer({
   return (
     <BlockStack gap="400">
         <Text as="p" tone="subdued" variant="bodySm">
-          Pick products or collections, generate metadata optimized for
-          {" "}{specialDateName}, review, and apply — changes go live on your
-          store immediately.
+          Pick products or collections, generate metadata
+          {specialDateName ? ` optimized for ${specialDateName}` : " with AI"},
+          review, and apply — changes go live on your store immediately.
         </Text>
 
         {error ? <Banner tone="warning" title={error} /> : null}

@@ -11,6 +11,7 @@ import {
   TextField,
 } from "@shopify/polaris";
 import { useAppBridge } from "@shopify/app-bridge-react";
+import { scheduleWindow } from "./dates";
 
 type Bar = {
   enabled: boolean;
@@ -22,18 +23,11 @@ type Bar = {
 };
 
 type Props = {
-  specialDateName: string;
-  specialDateDate: string;
+  /** When set, defaults anchor to this sales date; otherwise to today. */
+  specialDateName?: string;
+  specialDateDate?: string;
   announcementBar: Bar | null;
 };
-
-const isoDay = (date: Date) => date.toISOString().slice(0, 10);
-
-function defaultStart(dateIso: string): string {
-  const date = new Date(dateIso + "T00:00:00Z");
-  date.setUTCDate(date.getUTCDate() - 14);
-  return isoDay(date);
-}
 
 function ColorField({
   label,
@@ -96,7 +90,10 @@ export default function AnnouncementScheduler({
 
   const [enabled, setEnabled] = useState(announcementBar?.enabled ?? true);
   const [message, setMessage] = useState(
-    announcementBar?.message ?? `Order in time for ${specialDateName}!`,
+    announcementBar?.message ??
+      (specialDateName
+        ? `Order in time for ${specialDateName}!`
+        : "Free shipping on every order this week!"),
   );
   const [backgroundColor, setBackgroundColor] = useState(
     announcementBar?.backgroundColor ?? "#2c1f58",
@@ -105,10 +102,10 @@ export default function AnnouncementScheduler({
     announcementBar?.textColor ?? "#ffffff",
   );
   const [startDate, setStartDate] = useState(
-    announcementBar?.startDate ?? defaultStart(specialDateDate),
+    announcementBar?.startDate ?? scheduleWindow(specialDateDate).start,
   );
   const [endDate, setEndDate] = useState(
-    announcementBar?.endDate ?? specialDateDate,
+    announcementBar?.endDate ?? scheduleWindow(specialDateDate).end,
   );
 
   const validColors =

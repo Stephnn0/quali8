@@ -36,7 +36,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 const suggestSchema = z.object({
   action: z.literal("suggest"),
-  specialDateId: z.number().int().positive(),
+  /** Optimize for this sales date; null/omitted for evergreen metadata. */
+  specialDateId: z.number().int().positive().nullable().optional(),
   items: z
     .array(
       z.object({
@@ -52,7 +53,8 @@ const suggestSchema = z.object({
 
 const applySchema = z.object({
   action: z.literal("apply"),
-  specialDateId: z.number().int().positive(),
+  /** Optimize for this sales date; null/omitted for evergreen metadata. */
+  specialDateId: z.number().int().positive().nullable().optional(),
   items: z
     .array(
       z.object({
@@ -81,11 +83,13 @@ export async function action({ request }: ActionFunctionArgs) {
     const formData = await request.formData();
     const body = bodySchema.parse(JSON.parse(String(formData.get("body") ?? "{}")));
 
-    // The special date must belong to this shop
-    const specialDate = await db.specialDate.findFirst({
-      where: { id: body.specialDateId, shop: session.shop },
-    });
-    if (!specialDate) {
+    // When given, the special date must belong to this shop
+    const specialDate = body.specialDateId
+      ? await db.specialDate.findFirst({
+          where: { id: body.specialDateId, shop: session.shop },
+        })
+      : null;
+    if (body.specialDateId && !specialDate) {
       return { code: "not-found", errors: [{ message: "Special date not found" }] };
     }
 
@@ -97,8 +101,8 @@ export async function action({ request }: ActionFunctionArgs) {
         db,
         session.shop,
         {
-          dateName: specialDate.name,
-          date: specialDate.date,
+          dateName: specialDate?.name ?? null,
+          date: specialDate?.date ?? null,
           nicheLabel: profile?.nicheLabel ?? "Shopify",
           country: profile?.country ?? null,
         },
@@ -124,7 +128,7 @@ export async function action({ request }: ActionFunctionArgs) {
         await db.seoMetaAction.create({
           data: {
             shop: session.shop,
-            specialDateId: specialDate.id,
+            specialDateId: specialDate?.id ?? null,
             resourceType: item.type,
             resourceId: item.id,
             resourceTitle: item.resourceTitle,

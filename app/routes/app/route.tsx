@@ -59,9 +59,8 @@ export default function App() {
       {/*
         OneApp navigation: Dashboard, then one entry per feature category
         (each opens /app/categories/<key> with a showcase card per feature),
-        then Campaigns (the seasonal control hub, coming soon), the request
-        entry point and billing. App Bridge NavMenu renders flat text links —
-        numbers/icons live on the cards, not here.
+        then the request entry point and billing. App Bridge NavMenu renders
+        flat text links — numbers/icons live on the cards, not here.
       */}
       <NavMenu>
         <Link to="/app" rel="home">
@@ -72,7 +71,6 @@ export default function App() {
             {category.name}
           </Link>
         ))}
-        <Link to="/app/campaigns">Campaigns</Link>
         <Link to="/app/request-feature">Request a Feature</Link>
         <Link to="/app/settings">Plans & billing</Link>
       </NavMenu>

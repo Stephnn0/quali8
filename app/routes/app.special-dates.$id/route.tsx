@@ -31,7 +31,7 @@ import styles from "./components/styles.module.css";
  * Sales Calendar: one date with every seasonal feature on it. Not linked
  * from the nav any more — the Campaigns hub will take over this view — but
  * the route stays reachable and shares its data and mutations with the
- * standalone feature pages under /app/seasonal.
+ * standalone feature pages under /app/features.
  */
 export async function loader({ request, params }: LoaderFunctionArgs) {
   const authAdminContext = await authenticate.admin(request);

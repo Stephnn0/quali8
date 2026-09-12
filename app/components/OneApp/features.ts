@@ -2,16 +2,13 @@ import type { IconSource } from "@shopify/polaris";
 import {
   ChartDonutIcon,
   ChatIcon,
-  ClipboardChecklistIcon,
   ConfettiIcon,
   DeliveryIcon,
   EmailNewsletterIcon,
   ImageIcon,
   MegaphoneIcon,
-  MenuIcon,
   PackageIcon,
   SearchIcon,
-  TargetIcon,
 } from "@shopify/polaris-icons";
 import type { GateKeepCriteria } from "app/services/subscriptions/gatekeep/types";
 
@@ -61,10 +58,9 @@ export type OneAppPlan = "Free" | "Advance";
 
 /**
  * The OneApp feature library. Every entry maps to an existing admin surface —
- * `to` is the route a merchant lands on to use the feature. The seasonal
- * features (06 onwards) each configure one sales date at a time from
- * `/app/seasonal/<key>`; the Campaigns hub (nav tab, coming soon) will
- * control all of them together.
+ * `to` is the route a merchant lands on to use the feature. Features 06–09
+ * are single shop-wide configs edited on one page each at
+ * `/app/features/<key>` (see `app/components/Seasonal/featurePages.ts`).
  *
  * `plan` is the lowest plan that includes the feature and is shown as a
  * banner on every card. `gate` mirrors the server-side gatekeepRoute criteria
@@ -166,10 +162,10 @@ export const ONEAPP_FEATURES: OneAppFeature[] = [
     category: "seasonal-marketing",
     tagline: "Announcement bars timed to your sales dates.",
     description:
-      "Schedule an announcement bar for each sales date so it appears on time and disappears when the moment has passed.",
+      "Schedule an announcement bar for your home page so it appears on the date you choose and disappears when the moment has passed.",
     icon: MegaphoneIcon,
     image: "/features/smart-announcements.svg",
-    to: "/app/seasonal/smart-announcements",
+    to: "/app/features/smart-announcements",
     plan: "Advance",
     gate: { hasAssistant: true },
   },
@@ -177,13 +173,13 @@ export const ONEAPP_FEATURES: OneAppFeature[] = [
     number: "07",
     key: "seo-ai",
     name: "SEO AI",
-    category: "seasonal-marketing",
+    category: "content-seo",
     tagline: "AI SEO for products and collections.",
     description:
-      "Rewrite titles and meta descriptions for products and collections with AI, optimized for a sales date, review the suggestions, and apply them in bulk.",
+      "Rewrite titles and meta descriptions for products and collections with AI, review the suggestions, and apply them in bulk.",
     icon: SearchIcon,
     image: "/features/seo-ai.svg",
-    to: "/app/seasonal/seo-ai",
+    to: "/app/features/seo-ai",
     plan: "Advance",
     gate: { hasAssistant: true },
   },
@@ -194,10 +190,10 @@ export const ONEAPP_FEATURES: OneAppFeature[] = [
     category: "seasonal-marketing",
     tagline: "Subscribe popups that grow your list.",
     description:
-      "Launch a subscribe popup around a sales date with its own headline, offer, and timing, and capture emails before the rush.",
+      "Launch a subscribe popup with its own headline, offer, and timing, and capture emails before the rush.",
     icon: EmailNewsletterIcon,
     image: "/features/subscribe-boost.svg",
-    to: "/app/seasonal/subscribe-boost",
+    to: "/app/features/subscribe-boost",
     plan: "Advance",
     gate: { hasAssistant: true },
   },
@@ -208,52 +204,10 @@ export const ONEAPP_FEATURES: OneAppFeature[] = [
     category: "seasonal-marketing",
     tagline: "Homepage hero sections on a schedule.",
     description:
-      "Schedule a full-width homepage hero with an image, headline, and button for each sales date. It goes live on the start date and comes down on its own.",
+      "Schedule a full-width homepage hero with an image, headline, and button. It goes live on the start date and comes down on its own.",
     icon: ImageIcon,
     image: "/features/seasonal-hero.svg",
-    to: "/app/seasonal/seasonal-hero",
-    plan: "Advance",
-    gate: { hasAssistant: true },
-  },
-  {
-    number: "10",
-    key: "smart-menu",
-    name: "Smart Menu",
-    category: "seasonal-marketing",
-    tagline: "Navigation links that appear on time.",
-    description:
-      "Add a link to a collection or page in your store navigation for a sales date. It is inserted on schedule and removed when the date passes.",
-    icon: MenuIcon,
-    image: "/features/smart-menu.svg",
-    to: "/app/seasonal/smart-menu",
-    plan: "Advance",
-    gate: { hasAssistant: true },
-  },
-  {
-    number: "11",
-    key: "seo-prep-list",
-    name: "SEO Prep List",
-    category: "seasonal-marketing",
-    tagline: "Search-visibility prep for every sales date.",
-    description:
-      "A checklist of SEO tasks your assistant suggests for each sales date, with room for your own, so search traffic is ready before the rush.",
-    icon: ClipboardChecklistIcon,
-    image: "/features/seo-prep-list.svg",
-    to: "/app/seasonal/seo-prep-list",
-    plan: "Advance",
-    gate: { hasAssistant: true },
-  },
-  {
-    number: "12",
-    key: "marketing-playbook",
-    name: "Marketing Playbook",
-    category: "seasonal-marketing",
-    tagline: "Promotion prep: email, social, offers, deadlines.",
-    description:
-      "A marketing to-do list for each sales date, drafted by your assistant: emails to send, posts to schedule, offers to prepare, and when to do it.",
-    icon: TargetIcon,
-    image: "/features/marketing-playbook.svg",
-    to: "/app/seasonal/marketing-playbook",
+    to: "/app/features/seasonal-hero",
     plan: "Advance",
     gate: { hasAssistant: true },
   },

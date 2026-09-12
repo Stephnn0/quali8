@@ -58,7 +58,13 @@ const clamp = (value: string, max: number) =>
 export async function generateSeoSuggestions(
   db: PrismaClient,
   shop: string,
-  context: { dateName: string; date: string; nicheLabel: string; country: string | null },
+  context: {
+    /** Sales date to optimize for; omit for evergreen metadata. */
+    dateName?: string | null;
+    date?: string | null;
+    nicheLabel: string;
+    country: string | null;
+  },
   items: SeoSuggestionInput[],
 ): Promise<SeoSuggestion[] | null> {
   const batch = items.slice(0, SEO_BATCH_LIMIT);
@@ -67,10 +73,16 @@ export async function generateSeoSuggestions(
   const prompt = [
     `You write SEO metadata for a ${context.nicheLabel} Shopify store` +
       (context.country ? ` in ${context.country}` : "") +
-      `, optimizing for ${context.dateName} (${context.date}).`,
+      (context.dateName
+        ? `, optimizing for ${context.dateName} (${context.date}).`
+        : "."),
     "For each item below, write:",
-    "- seoTitle: max 60 characters, item name first, then the occasion naturally. No brackets, no pipes, no ALL CAPS, no keyword stuffing.",
-    "- seoDescription: max 160 characters, one enticing factual sentence that mentions the occasion and invites the click.",
+    context.dateName
+      ? "- seoTitle: max 60 characters, item name first, then the occasion naturally. No brackets, no pipes, no ALL CAPS, no keyword stuffing."
+      : "- seoTitle: max 60 characters, item name first, then its key benefit naturally. No brackets, no pipes, no ALL CAPS, no keyword stuffing.",
+    context.dateName
+      ? "- seoDescription: max 160 characters, one enticing factual sentence that mentions the occasion and invites the click."
+      : "- seoDescription: max 160 characters, one enticing factual sentence that invites the click.",
     "Return every input id exactly once.",
     "",
     "Items:",

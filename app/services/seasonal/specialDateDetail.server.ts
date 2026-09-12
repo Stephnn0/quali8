@@ -1,11 +1,70 @@
 import { z } from "zod";
-import type { PrismaClient } from "@prisma/client";
+import type {
+  AnnouncementBar,
+  PrismaClient,
+  ScheduledHero,
+  SeoMetaAction,
+  SubscribePopup,
+} from "@prisma/client";
 import type { AdminGraphqlClient } from "@shopify/shopify-app-react-router/server";
 import { generateDateTodos } from "app/services/assistant/dateTodos.server";
 import type {
+  AnnouncementBarConfig,
+  HeroConfig,
+  PopupConfig,
+  SeoAppliedAction,
   SpecialDateActionResult,
   SpecialDateDetail,
 } from "app/components/Seasonal/types";
+
+// Row → client config mappers, shared with the shop-wide feature pages.
+
+export const toAnnouncementConfig = (
+  row: AnnouncementBar,
+): AnnouncementBarConfig => ({
+  enabled: row.enabled,
+  message: row.message,
+  backgroundColor: row.backgroundColor,
+  textColor: row.textColor,
+  startDate: row.startDate,
+  endDate: row.endDate,
+});
+
+export const toHeroConfig = (row: ScheduledHero): HeroConfig => ({
+  enabled: row.enabled,
+  imageUrl: row.imageUrl,
+  imageUrl2: row.imageUrl2,
+  imageUrl3: row.imageUrl3,
+  heading: row.heading,
+  description: row.description,
+  buttonLabel: row.buttonLabel,
+  buttonUrl: row.buttonUrl,
+  heightPx: row.heightPx,
+  textColor: row.textColor,
+  buttonBackground: row.buttonBackground,
+  buttonTextColor: row.buttonTextColor,
+  overlayOpacity: row.overlayOpacity,
+  startDate: row.startDate,
+  endDate: row.endDate,
+});
+
+export const toPopupConfig = (row: SubscribePopup): PopupConfig => ({
+  enabled: row.enabled,
+  imageUrl: row.imageUrl,
+  heading: row.heading,
+  description: row.description,
+  discountCode: row.discountCode,
+  startDate: row.startDate,
+  endDate: row.endDate,
+});
+
+export const toSeoAppliedAction = (row: SeoMetaAction): SeoAppliedAction => ({
+  id: row.id,
+  resourceType: row.resourceType,
+  resourceTitle: row.resourceTitle,
+  newSeoTitle: row.newSeoTitle,
+  createdAt: row.createdAt.toISOString(),
+});
 
 /**
  * Everything attached to one special date: its to-dos, applied SEO changes,
@@ -88,53 +147,10 @@ export async function loadSpecialDateDetail(
       source: todo.source,
       done: todo.done,
     })),
-    seoActions: seoActions.map((entry) => ({
-      id: entry.id,
-      resourceType: entry.resourceType,
-      resourceTitle: entry.resourceTitle,
-      newSeoTitle: entry.newSeoTitle,
-      createdAt: entry.createdAt.toISOString(),
-    })),
-    announcementBar: announcementBar
-      ? {
-          enabled: announcementBar.enabled,
-          message: announcementBar.message,
-          backgroundColor: announcementBar.backgroundColor,
-          textColor: announcementBar.textColor,
-          startDate: announcementBar.startDate,
-          endDate: announcementBar.endDate,
-        }
-      : null,
-    hero: hero
-      ? {
-          enabled: hero.enabled,
-          imageUrl: hero.imageUrl,
-          imageUrl2: hero.imageUrl2,
-          imageUrl3: hero.imageUrl3,
-          heading: hero.heading,
-          description: hero.description,
-          buttonLabel: hero.buttonLabel,
-          buttonUrl: hero.buttonUrl,
-          heightPx: hero.heightPx,
-          textColor: hero.textColor,
-          buttonBackground: hero.buttonBackground,
-          buttonTextColor: hero.buttonTextColor,
-          overlayOpacity: hero.overlayOpacity,
-          startDate: hero.startDate,
-          endDate: hero.endDate,
-        }
-      : null,
-    popup: popup
-      ? {
-          enabled: popup.enabled,
-          imageUrl: popup.imageUrl,
-          heading: popup.heading,
-          description: popup.description,
-          discountCode: popup.discountCode,
-          startDate: popup.startDate,
-          endDate: popup.endDate,
-        }
-      : null,
+    seoActions: seoActions.map(toSeoAppliedAction),
+    announcementBar: announcementBar ? toAnnouncementConfig(announcementBar) : null,
+    hero: hero ? toHeroConfig(hero) : null,
+    popup: popup ? toPopupConfig(popup) : null,
     menuItem: menuItem
       ? {
           enabled: menuItem.enabled,
@@ -175,7 +191,7 @@ const deleteTodoSchema = z.object({
   id: z.number().int().positive(),
 });
 
-const saveAnnouncementSchema = z.object({
+export const saveAnnouncementSchema = z.object({
   action: z.literal("save-announcement"),
   enabled: z.boolean(),
   message: z.string().trim().min(1).max(160),
@@ -184,11 +200,11 @@ const saveAnnouncementSchema = z.object({
   startDate: isoDay,
   endDate: isoDay,
 });
-const removeAnnouncementSchema = z.object({
+export const removeAnnouncementSchema = z.object({
   action: z.literal("remove-announcement"),
 });
 
-const saveHeroSchema = z.object({
+export const saveHeroSchema = z.object({
   action: z.literal("save-hero"),
   enabled: z.boolean(),
   imageUrl: httpsUrl,
@@ -206,9 +222,9 @@ const saveHeroSchema = z.object({
   startDate: isoDay,
   endDate: isoDay,
 });
-const removeHeroSchema = z.object({ action: z.literal("remove-hero") });
+export const removeHeroSchema = z.object({ action: z.literal("remove-hero") });
 
-const savePopupSchema = z.object({
+export const savePopupSchema = z.object({
   action: z.literal("save-popup"),
   enabled: z.boolean(),
   imageUrl: httpsUrl,
@@ -218,7 +234,7 @@ const savePopupSchema = z.object({
   startDate: isoDay,
   endDate: isoDay,
 });
-const removePopupSchema = z.object({ action: z.literal("remove-popup") });
+export const removePopupSchema = z.object({ action: z.literal("remove-popup") });
 
 const saveMenuItemSchema = z.object({
   action: z.literal("save-menu-item"),

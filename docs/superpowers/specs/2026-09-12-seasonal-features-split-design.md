@@ -52,3 +52,22 @@ to know to go through the calendar first.
 - The actual Campaigns hub behaviour (activate/deactivate features per date).
 - Changing how dates are created by the assistant brief.
 - The legacy `app.campaings.*` routes and `Campaign` model (untouched).
+
+## Revision (same day)
+
+After review the split was narrowed:
+
+- **Removed as features:** Smart Menu, SEO Prep List, Marketing Playbook.
+  Their cards still exist inside a Sales Calendar date.
+- **SEO AI moved to Content & SEO.**
+- **No date list.** Opening Smart Announcements, Seasonal Hero, Subscribe
+  Boost, or SEO AI lands directly on the editor. Each shop has one of each,
+  stored as a row with `specialDateId: null` (migration
+  `20260912000000_optional_special_date_on_configs` makes the column
+  nullable on `AnnouncementBar`, `ScheduledHero`, `SubscribePopup`, and
+  `SeoMetaAction`). The storefront proxies already pick by shop and date
+  window, so a shop-wide row shows like any other.
+- **Campaigns** is no longer in the sidebar; the coming-soon route remains
+  reachable by URL.
+- Routes are now `app.features.$feature` (`/app/features/<key>`); the
+  `app.seasonal.*` routes and `featureDates.server.ts` are gone.
