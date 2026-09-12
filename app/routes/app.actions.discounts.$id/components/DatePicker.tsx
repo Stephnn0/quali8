@@ -20,7 +20,12 @@ export default function CustomDatePicker({
     year: selectedDate.getFullYear(),
   });
 
-  const formattedValue = selectedDate.toISOString().slice(0, 10);
+  // Local calendar date; toISOString() would shift to the UTC day.
+  const formattedValue = [
+    selectedDate.getFullYear(),
+    String(selectedDate.getMonth() + 1).padStart(2, "0"),
+    String(selectedDate.getDate()).padStart(2, "0"),
+  ].join("-");
 
   // Disable dates before today
   const today = new Date();

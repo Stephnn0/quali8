@@ -1,0 +1,94 @@
+<svg width="800" height="520" viewBox="0 0 800 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Smart Shipping illustration: a checkout shipping-method list where the
+       highlighted option is free for a chosen audience, with a delivery van
+       pulling away. Text-free so it needs no localization. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="800" y2="520" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#F6F3FC"/>
+      <stop offset="1" stop-color="#E6DFF5"/>
+    </linearGradient>
+    <linearGradient id="van" x1="0" y1="0" x2="0" y2="1">
+      <stop stop-color="#3A2A6E"/>
+      <stop offset="1" stop-color="#1D1539"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feGaussianBlur in="SourceAlpha" stdDeviation="10"/>
+      <feOffset dy="8" result="b"/>
+      <feFlood flood-color="#1D1539" flood-opacity="0.14"/>
+      <feComposite in2="b" operator="in"/>
+      <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="800" height="520" rx="24" fill="url(#bg)"/>
+
+  <!-- soft road -->
+  <path d="M0 418 H800" stroke="#CFC4EC" stroke-width="3" stroke-dasharray="26 18"/>
+
+  <!-- checkout card -->
+  <g filter="url(#shadow)">
+    <rect x="96" y="70" width="430" height="300" rx="18" fill="#FFFFFF"/>
+  </g>
+  <rect x="124" y="98" width="150" height="14" rx="7" fill="#1D1539"/>
+  <rect x="124" y="122" width="90" height="8" rx="4" fill="#CFC4EC"/>
+
+  <!-- option 1 -->
+  <rect x="124" y="150" width="374" height="52" rx="12" fill="#FFFFFF" stroke="#E3E3E8" stroke-width="2"/>
+  <circle cx="150" cy="176" r="9" fill="#FFFFFF" stroke="#B9A4D6" stroke-width="2.5"/>
+  <rect x="172" y="167" width="150" height="9" rx="4.5" fill="#CFC4EC"/>
+  <rect x="172" y="182" width="90" height="6" rx="3" fill="#E6DFF5"/>
+  <rect x="430" y="168" width="48" height="12" rx="6" fill="#8A80A8"/>
+
+  <!-- option 2 -->
+  <rect x="124" y="212" width="374" height="52" rx="12" fill="#FFFFFF" stroke="#E3E3E8" stroke-width="2"/>
+  <circle cx="150" cy="238" r="9" fill="#FFFFFF" stroke="#B9A4D6" stroke-width="2.5"/>
+  <rect x="172" y="229" width="120" height="9" rx="4.5" fill="#CFC4EC"/>
+  <rect x="172" y="244" width="70" height="6" rx="3" fill="#E6DFF5"/>
+  <rect x="430" y="230" width="48" height="12" rx="6" fill="#8A80A8"/>
+
+  <!-- option 3: selected, free -->
+  <rect x="124" y="274" width="374" height="60" rx="12" fill="#F3EFFC" stroke="#2C1F58" stroke-width="2.5"/>
+  <circle cx="150" cy="304" r="9" fill="#FFFFFF" stroke="#2C1F58" stroke-width="2.5"/>
+  <circle cx="150" cy="304" r="4.5" fill="#2C1F58"/>
+  <rect x="172" y="294" width="170" height="10" rx="5" fill="#2C1F58"/>
+  <!-- audience chip -->
+  <rect x="172" y="311" width="86" height="14" rx="7" fill="#1D1539"/>
+  <circle cx="183" cy="318" r="4" fill="#F0C46C"/>
+  <rect x="192" y="315" width="56" height="6" rx="3" fill="#F0C46C"/>
+  <!-- struck price + free -->
+  <rect x="392" y="298" width="40" height="10" rx="5" fill="#CFC4EC"/>
+  <path d="M388 303 H436" stroke="#8A80A8" stroke-width="2.5" stroke-linecap="round"/>
+  <rect x="444" y="292" width="42" height="22" rx="11" fill="#DDF2E0"/>
+  <path d="M453 303 l6 6 l12 -12" stroke="#1F7A3E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+
+  <!-- discount tag floating top-right of card -->
+  <g transform="translate(470 40) rotate(12)">
+    <path d="M0 18 L18 0 H78 a10 10 0 0 1 10 10 V44 a10 10 0 0 1 -10 10 H18 L0 36 Z" fill="#F0C46C"/>
+    <circle cx="18" cy="27" r="5" fill="#1D1539"/>
+    <rect x="34" y="19" width="42" height="7" rx="3.5" fill="#1D1539"/>
+    <rect x="34" y="31" width="26" height="6" rx="3" fill="#1D1539" opacity="0.55"/>
+  </g>
+
+  <!-- delivery van -->
+  <g transform="translate(548 300)">
+    <path d="M0 40 a12 12 0 0 1 12 -12 H110 l26 28 H0 Z" fill="url(#van)"/>
+    <rect x="0" y="56" width="136" height="50" rx="10" fill="url(#van)"/>
+    <rect x="12" y="38" width="86" height="34" rx="6" fill="#FFFFFF" opacity="0.14"/>
+    <path d="M136 56 H174 a10 10 0 0 1 10 10 V106 H136 Z" fill="#3A2A6E"/>
+    <path d="M144 62 H172 a6 6 0 0 1 6 6 V84 H144 Z" fill="#CFC4EC"/>
+    <rect x="176" y="90" width="12" height="8" rx="3" fill="#F0C46C"/>
+    <rect x="0" y="100" width="184" height="10" rx="5" fill="#1D1539"/>
+    <circle cx="40" cy="112" r="16" fill="#1D1539"/><circle cx="40" cy="112" r="7" fill="#CFC4EC"/>
+    <circle cx="150" cy="112" r="16" fill="#1D1539"/><circle cx="150" cy="112" r="7" fill="#CFC4EC"/>
+    <!-- package on the van -->
+    <rect x="46" y="70" width="34" height="26" rx="4" fill="#F0C46C"/>
+    <path d="M63 70 V96 M46 83 H80" stroke="#1D1539" stroke-width="2.5" opacity="0.5"/>
+  </g>
+  <!-- speed lines -->
+  <path d="M470 392 H524 M488 406 H534 M506 378 H540" stroke="#B9A4D6" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- sparkles -->
+  <path d="M640 120 l4 12 l12 4 l-12 4 l-4 12 l-4 -12 l-12 -4 l12 -4z" fill="#F0C46C"/>
+  <path d="M700 190 l2.5 7.5 l7.5 2.5 l-7.5 2.5 l-2.5 7.5 l-2.5 -7.5 l-7.5 -2.5 l7.5 -2.5z" fill="#2C1F58"/>
+  <circle cx="60" cy="420" r="6" fill="#B9A4D6"/>
+  <circle cx="740" cy="300" r="4" fill="#B9A4D6"/>
+</svg>

@@ -1,289 +1,339 @@
 import { Link, useFetcher, useLoaderData, useNavigate, useSearchParams } from "react-router";
 import {
-  IndexTable,
-  Page,
-  useIndexResourceState,
-  Card,
+  Badge,
   Button,
   ButtonGroup,
-  TextContainer,
-  Modal,
+  Card,
+  IndexTable,
   Layout,
-  MediaCard,
-  Badge,
-  FooterHelp,
-  EmptyState,
+  Modal,
+  Page,
+  Text,
 } from "@shopify/polaris";
-import { loader } from "./loader";
-
 import { DeleteIcon, EditIcon } from "@shopify/polaris-icons";
 import { useCallback, useState } from "react";
-import image from "app/assets/sds.png";
 import { useAppBridge } from "@shopify/app-bridge-react";
-import quailifierlogo from "app/assets/disco.png";
+import { loader } from "./loader";
 import { FeatureHeader } from "app/components/OneApp";
+import illustration from "app/assets/shipping-card.svg";
+import styles from "../app.actions.discounts/smartShipping.module.css";
+
 export { loader };
+
+const WALKTHROUGH_URL = "https://www.youtube.com/watch?v=JoejVhoby0s";
+
+const shortDate = (value: string | null | undefined) => {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toLocaleDateString("en", { month: "short", day: "numeric" });
+};
 
 export default function AllActions() {
   const loaderData = useLoaderData<typeof loader>();
-
-  // ! refactor in the future since we will have more types of actions
-  const discountActions =
-    loaderData?.payload?.discounts.shippingDiscountActions.map((data) => ({
-      id: data.id,
-      codeOrName: data.codeOrName,
-      type: data.type,
-      discountMethod: data.automaticOrCode,
-      value: data.value,
-      shopifyDiscountId: data.shopifyDiscountId,
-      //
-      automaticOrCode: data.automaticOrCode,
-      //
-      shippingDiscountState: data.shippingDiscountState,
-    })) || [];
-
-  const resourceName = {
-    singular: "Discount Action",
-    plural: "Discount Actions",
-  };
-  const { selectedResources, allResourcesSelected } =
-    useIndexResourceState(discountActions);
-
-  const rowMarkup = discountActions?.map(
-    (
-      {
-        id,
-        codeOrName,
-        type,
-        discountMethod,
-        value,
-        shopifyDiscountId,
-        automaticOrCode,
-        shippingDiscountState,
-      },
-      index,
-    ) => (
-      <IndexTable.Row
-        id={String(id)}
-        key={id}
-        selected={selectedResources.includes(String(id))}
-        position={index}
-      >
-        <IndexTable.Cell>
-          <Badge
-            tone={shippingDiscountState === "ENABLED" ? "success" : "critical"}
-          >
-            {shippingDiscountState}
-          </Badge>
-        </IndexTable.Cell>
-        <IndexTable.Cell>{codeOrName}</IndexTable.Cell>
-        <IndexTable.Cell>{type}</IndexTable.Cell>
-        <IndexTable.Cell>{discountMethod}</IndexTable.Cell>
-        <IndexTable.Cell>
-          {type === "percentage" ? `${value}%` : `$${value}`}
-        </IndexTable.Cell>
-        <IndexTable.Cell>
-          <ButtonGroup>
-            <Link to={`/app/actions/discounts/${id}`}>
-              <Button icon={EditIcon}></Button>
-            </Link>
-            <Button
-              onClick={() =>
-                handleDeleteClick(id, shopifyDiscountId, automaticOrCode)
-              }
-              icon={DeleteIcon}
-            ></Button>
-          </ButtonGroup>
-        </IndexTable.Cell>
-      </IndexTable.Row>
-    ),
-  );
-
-  const [selectedShippingDiscount, setSelectedShippingDiscount] = useState<{
-    id: number;
-    shopifyDiscountId: string;
-    automaticOrCode: string;
-  } | null>(null);
-
-  const [modalActive, setModalActive] = useState(false);
-
-  const handleModalChange = useCallback(
-    () => setModalActive((prev) => !prev),
-    [],
-  );
-
-  const handleDeleteClick = (
-    id: number,
-    shopifyDiscountId: string,
-    automaticOrCode: string,
-  ) => {
-    setSelectedShippingDiscount({
-      id,
-      shopifyDiscountId,
-      automaticOrCode,
-    });
-    setModalActive(true);
-  };
-
+  const navigate = useNavigate();
   const shopify = useAppBridge();
   const fetcher = useFetcher();
 
-  const handleDeleteConfirm = () => {
-    setModalActive(false);
+  const discounts =
+    loaderData?.payload?.discounts.shippingDiscountActions ?? [];
 
-    if (!selectedShippingDiscount) return;
-    try {
-      const body = {
-        shippingDiscountId: selectedShippingDiscount.id,
-        shopifyDiscountId: selectedShippingDiscount.shopifyDiscountId,
-        automaticOrCode: selectedShippingDiscount.automaticOrCode,
-      };
-      fetcher.submit(
-        {
-          body: JSON.stringify(body),
-        },
-        {
-          method: "DELETE",
-          encType: "multipart/form-data",
-          action: `/api/deleteDiscount`,
-        },
-      );
-      shopify.toast.show("Discount deleted");
-    } catch (error) {
-      console.log("Error deleting qualifier", error);
-    }
+  const activeCount = discounts.filter(
+    (d) => d.shippingDiscountState === "ENABLED",
+  ).length;
+  const codeCount = discounts.filter((d) => d.automaticOrCode === "CODE").length;
+
+  // ==================================== delete
+
+  const [pendingDelete, setPendingDelete] = useState<{
+    id: number;
+    shopifyDiscountId: string;
+    automaticOrCode: string;
+    name: string;
+  } | null>(null);
+
+  const closeDelete = useCallback(() => setPendingDelete(null), []);
+
+  const confirmDelete = () => {
+    if (!pendingDelete) return;
+    fetcher.submit(
+      {
+        body: JSON.stringify({
+          shippingDiscountId: pendingDelete.id,
+          shopifyDiscountId: pendingDelete.shopifyDiscountId,
+          automaticOrCode: pendingDelete.automaticOrCode,
+        }),
+      },
+      {
+        method: "DELETE",
+        encType: "multipart/form-data",
+        action: "/api/deleteDiscount",
+      },
+    );
+    shopify.toast.show("Shipping discount deleted");
+    setPendingDelete(null);
   };
-  const navigate = useNavigate();
 
   // ==================================== pagination
 
   const [, setSearchParams] = useSearchParams();
-
-  const currentPage = loaderData?.payload?.page || 1;
-  const totalItems = loaderData?.payload?.total;
-  const itemsPerPage = loaderData?.payload?.itemsPerPage;
-  const hasNext = currentPage * itemsPerPage! < totalItems!;
+  const currentPage = loaderData?.payload?.page ?? 1;
+  const totalItems = loaderData?.payload?.total ?? 0;
+  const itemsPerPage = loaderData?.payload?.itemsPerPage ?? 15;
+  const hasNext = currentPage * itemsPerPage < totalItems;
   const hasPrevious = currentPage > 1;
+  const goToPage = (page: number) => setSearchParams({ page: String(page) });
 
-  const goToPage = (page: number) => {
-    setSearchParams({ page: page.toString() });
-  };
+  // ==================================== rows
+
+  const rowMarkup = discounts.map((discount, index) => {
+    const isCode = discount.automaticOrCode === "CODE";
+    const audiences = discount.appliesToAllCustomers
+      ? "All customers"
+      : `${discount.qualifierIds.length} audience${
+          discount.qualifierIds.length === 1 ? "" : "s"
+        }`;
+    const rates =
+      discount.shippingRateType === "ALL_RATES"
+        ? "All rates"
+        : `${discount.shippingRatesNames.length} selected`;
+    const start = shortDate(discount.startDate);
+    const end = discount.hasEndDate ? shortDate(discount.endDate) : null;
+    const schedule = start
+      ? end
+        ? `${start} → ${end}`
+        : `From ${start}`
+      : "—";
+
+    return (
+      <IndexTable.Row
+        id={String(discount.id)}
+        key={discount.id}
+        position={index}
+      >
+        <IndexTable.Cell>
+          <div className={styles.rowTitle}>
+            <span className={styles.rowName}>{discount.codeOrName}</span>
+            <span className={isCode ? styles.rowCode : styles.rowMeta}>
+              {isCode ? "Discount code" : "Automatic"}
+            </span>
+          </div>
+        </IndexTable.Cell>
+        <IndexTable.Cell>
+          <Text as="span" variant="bodyMd" fontWeight="semibold">
+            {discount.type === "percentage"
+              ? discount.value >= 100
+                ? "Free shipping"
+                : `${discount.value}% off`
+              : `$${discount.value} off`}
+          </Text>
+        </IndexTable.Cell>
+        <IndexTable.Cell>
+          <Text as="span" variant="bodyMd">
+            {audiences}
+          </Text>
+          {discount.isMinimumCartValueEnabled ? (
+            <div className={styles.rowMeta}>
+              Cart over ${discount.minimumCartValue}
+            </div>
+          ) : null}
+        </IndexTable.Cell>
+        <IndexTable.Cell>
+          <Text as="span" variant="bodyMd">
+            {rates}
+          </Text>
+        </IndexTable.Cell>
+        <IndexTable.Cell>
+          <Text as="span" variant="bodyMd">
+            {schedule}
+          </Text>
+        </IndexTable.Cell>
+        <IndexTable.Cell>
+          {discount.shippingDiscountState === "ENABLED" ? (
+            <Badge tone="success">On</Badge>
+          ) : (
+            <Badge>Off</Badge>
+          )}
+        </IndexTable.Cell>
+        <IndexTable.Cell>
+          <ButtonGroup>
+            <Link to={`/app/actions/discounts/${discount.id}`}>
+              <Button icon={EditIcon} accessibilityLabel="Edit" />
+            </Link>
+            <Button
+              icon={DeleteIcon}
+              accessibilityLabel="Delete"
+              onClick={() =>
+                setPendingDelete({
+                  id: discount.id,
+                  shopifyDiscountId: discount.shopifyDiscountId,
+                  automaticOrCode: discount.automaticOrCode,
+                  name: discount.codeOrName,
+                })
+              }
+            />
+          </ButtonGroup>
+        </IndexTable.Cell>
+      </IndexTable.Row>
+    );
+  });
 
   return (
     <Page>
       <FeatureHeader
         featureKey="smart-shipping"
+        tagline="Free or discounted shipping for the customers you choose, applied automatically at checkout."
         actions={
           <Button variant="primary" onClick={() => navigate("new")}>
             Create shipping discount
           </Button>
         }
       />
+
       <Layout>
         <Layout.Section>
-          <MediaCard
-            title="Getting Started with Shipping Discounts?"
-            primaryAction={{
-              content: "Learn about getting started",
-              onAction: () => {
-                window.open(
-                  "https://www.youtube.com/watch?v=JoejVhoby0s",
-                  "_blank",
-                );
-              },
-            }}
-            description="Watch this video to learn how to get started with Shipping Discounts."
-          >
-            <img
-              alt=""
-              width="100%"
-              height="100%"
-              style={{
-                objectFit: "cover",
-                objectPosition: "center",
-              }}
-              src={image}
-            />
-          </MediaCard>
-        </Layout.Section>
-        <Layout.Section>
-          {discountActions.length > 0 ? (
-            <Card padding="0">
-              <IndexTable
-                resourceName={resourceName}
-                itemCount={discountActions!.length}
-                selectedItemsCount={
-                  allResourcesSelected ? "All" : selectedResources.length
-                }
-                // onSelectionChange={handleSelectionChange}
-                selectable={false}
-                headings={[
-                  { title: "Status" },
-                  { title: "Code" },
-                  { title: "Type" },
-                  { title: "Discount Method" },
-                  { title: "Value" },
-                  { title: "Actions" }, // 🔧 New Column
-                ]}
-                pagination={{
-                  hasNext,
-                  hasPrevious,
-                  onNext: () => goToPage(currentPage + 1),
-                  onPrevious: () => goToPage(currentPage - 1),
-                }}
-              >
-                {rowMarkup}
-              </IndexTable>
-            </Card>
+          {discounts.length > 0 ? (
+            <>
+              <div className={styles.stats}>
+                <div className={styles.stat}>
+                  <p className={styles.statLabel}>Live now</p>
+                  <p className={styles.statValue}>{activeCount}</p>
+                  <p className={styles.statHint}>
+                    {activeCount === 1 ? "discount is" : "discounts are"} on
+                  </p>
+                </div>
+                <div className={styles.stat}>
+                  <p className={styles.statLabel}>Turned off</p>
+                  <p className={styles.statValue}>
+                    {discounts.length - activeCount}
+                  </p>
+                  <p className={styles.statHint}>paused, ready to enable</p>
+                </div>
+                <div className={styles.stat}>
+                  <p className={styles.statLabel}>Discount codes</p>
+                  <p className={styles.statValue}>{codeCount}</p>
+                  <p className={styles.statHint}>
+                    {discounts.length - codeCount} automatic
+                  </p>
+                </div>
+              </div>
+
+              <Card padding="0">
+                <IndexTable
+                  resourceName={{
+                    singular: "shipping discount",
+                    plural: "shipping discounts",
+                  }}
+                  itemCount={discounts.length}
+                  selectable={false}
+                  headings={[
+                    { title: "Discount" },
+                    { title: "Value" },
+                    { title: "Who qualifies" },
+                    { title: "Rates" },
+                    { title: "Schedule" },
+                    { title: "Status" },
+                    { title: "Actions" },
+                  ]}
+                  pagination={{
+                    hasNext,
+                    hasPrevious,
+                    onNext: () => goToPage(currentPage + 1),
+                    onPrevious: () => goToPage(currentPage - 1),
+                  }}
+                >
+                  {rowMarkup}
+                </IndexTable>
+              </Card>
+            </>
           ) : (
-            <Card>
-              <EmptyState
-                heading="No shipping discounts yet"
-                image={quailifierlogo}
-                action={{
-                  content: "Create shipping discount",
-                  onAction: () => {
-                    navigate("/app/actions/discounts/new");
-                  },
-                }}
-                fullWidth
-              >
-                <p>
-                  Reward the audiences you choose with discounted shipping —
-                  percentage or fixed, automatic or code-based.
+            <section className={styles.empty}>
+              <img
+                className={styles.emptyArt}
+                src={illustration}
+                alt=""
+                width={800}
+                height={520}
+              />
+              <div>
+                <p className={styles.emptyEyebrow}>Smart Shipping</p>
+                <h2 className={styles.emptyTitle}>
+                  Your first shipping discount takes three steps
+                </h2>
+                <p className={styles.emptyText}>
+                  Reward the customers you choose with cheaper or free
+                  shipping. Shopify applies it at checkout, no code changes
+                  needed.
                 </p>
-              </EmptyState>
-            </Card>
+                <ol className={styles.steps}>
+                  <li className={styles.step}>
+                    <span className={styles.stepNumber}>1</span>
+                    <div>
+                      <p className={styles.stepTitle}>Pick who qualifies</p>
+                      <p className={styles.stepText}>
+                        Everyone, or an audience from Customer Insights such
+                        as VIPs or repeat buyers.
+                      </p>
+                    </div>
+                  </li>
+                  <li className={styles.step}>
+                    <span className={styles.stepNumber}>2</span>
+                    <div>
+                      <p className={styles.stepTitle}>Set the discount</p>
+                      <p className={styles.stepText}>
+                        A percentage or a fixed amount, as a code or applied
+                        automatically.
+                      </p>
+                    </div>
+                  </li>
+                  <li className={styles.step}>
+                    <span className={styles.stepNumber}>3</span>
+                    <div>
+                      <p className={styles.stepTitle}>Choose the rates</p>
+                      <p className={styles.stepText}>
+                        Discount every shipping rate or only the ones you
+                        select, with an optional schedule.
+                      </p>
+                    </div>
+                  </li>
+                </ol>
+                <div className={styles.emptyActions}>
+                  <Button
+                    variant="primary"
+                    onClick={() => navigate("/app/actions/discounts/new")}
+                  >
+                    Create shipping discount
+                  </Button>
+                  <Button
+                    variant="plain"
+                    url={WALKTHROUGH_URL}
+                    target="_blank"
+                  >
+                    Watch the walkthrough
+                  </Button>
+                </div>
+              </div>
+            </section>
           )}
-        </Layout.Section>
-        <Layout.Section>
-          <FooterHelp>© 8Instruments. All rights reserved.</FooterHelp>
         </Layout.Section>
       </Layout>
 
       <Modal
-        open={modalActive}
-        onClose={handleModalChange}
-        title="Are you sure you want to delete this Shipping Discount?"
+        open={pendingDelete !== null}
+        onClose={closeDelete}
+        title={`Delete “${pendingDelete?.name ?? ""}”?`}
         primaryAction={{
-          content: "Delete",
+          content: "Delete discount",
           destructive: true,
-          onAction: handleDeleteConfirm,
+          onAction: confirmDelete,
         }}
-        secondaryActions={[
-          {
-            content: "Cancel",
-            onAction: handleModalChange,
-          },
-        ]}
+        secondaryActions={[{ content: "Cancel", onAction: closeDelete }]}
       >
         <Modal.Section>
-          <TextContainer>
-            <p>
-              This action cannot be undone. Are you sure you want to delete this
-              Shipping Discount?
-            </p>
-          </TextContainer>
+          <p>
+            The discount is removed from Shopify right away and customers
+            stop receiving it at checkout. This cannot be undone.
+          </p>
         </Modal.Section>
       </Modal>
     </Page>

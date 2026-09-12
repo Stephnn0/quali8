@@ -1,10 +1,5 @@
 import { useFetcher, useLoaderData, useNavigate } from "react-router";
-import {
-  lengthMoreThan,
-  notEmpty,
-  useField,
-  useForm,
-} from "@shopify/react-form";
+import { notEmpty, useField, useForm } from "@shopify/react-form";
 import type { loader } from "../loader";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import type {
@@ -15,215 +10,195 @@ import type {
 import { zodApiActionsShippingDiscounts } from "app/routes/api.actions.discounts/zod";
 import { useEffect, useState } from "react";
 import { ZodError } from "zod";
-import action from "../../api.actions.discounts/action/index";
+import type action from "../../api.actions.discounts/action/index";
 
 export type DiscountForm = ReturnType<typeof useDiscountForm>;
+
+/** An audience (Qualifiers row) as the form needs it. */
+export type AudienceOption = {
+  id: number;
+  name: string;
+  customers: Customer[];
+};
+
+/** A shipping rate (delivery method definition) as the form needs it. */
+export type RateOption = { id: string; name: string };
+
+type FieldErrors = {
+  value: string | null;
+  qualifierIds: string | null;
+  minimumCartValue: string | null;
+};
+
+const NO_ERRORS: FieldErrors = {
+  value: null,
+  qualifierIds: null,
+  minimumCartValue: null,
+};
 
 export function useDiscountForm() {
   const loaderData = useLoaderData<typeof loader>();
   const fetcher = useFetcher<typeof action>();
+  const navigate = useNavigate();
+  const shopify = useAppBridge();
 
   const shippingDiscount = loaderData?.payload?.shippingDiscount;
 
+  // The loader includes each audience's customers; the include isn't
+  // reflected in the generic Prisma return type, so narrow it here.
+  const audiences = (loaderData?.payload?.qualifiers?.qualifiers ??
+    []) as unknown as AudienceOption[];
+  const rates: RateOption[] = (loaderData?.payload?.rates ?? []).map(
+    (rate: { id: string; name: string }) => ({ id: rate.id, name: rate.name }),
+  );
 
   const {
     id,
     shopifyDiscountId,
-    //
     automaticOrCode,
     codeOrName,
     type,
     value,
-    //
     shippingRateType,
     shippingRatesNames,
     qualifierIds,
-    //
     appliesToAllCustomers,
     isMinimumCartValueEnabled,
     minimumCartValue,
-    //
     startDate,
     startTime,
     hasEndDate,
     endDate,
     endTime,
-    //
     shippingDiscountState,
     limitUsagePerOneCustomer,
     combinedWithOrderDiscounts,
     combinedWithProductDiscounts,
   } = shippingDiscount || {};
 
-  const navigate = useNavigate();
-  const shopify = useAppBridge();
-
-  // Error states
-  const [valueError, setValueError] = useState<string | null>(null);
-  const [qualifierIdsError, setQualifierIdsError] = useState<string | null>(
-    null,
-  );
+  const [errors, setErrors] = useState<FieldErrors>(NO_ERRORS);
 
   const form = useForm({
     fields: {
-      shippingDiscountState: useField(shippingDiscountState || "ENABLED"),
-      //
+      shippingDiscountState: useField<"ENABLED" | "DISABLED">(
+        shippingDiscountState || "ENABLED",
+      ),
       limitUsagePerOneCustomer: useField(limitUsagePerOneCustomer || false),
       combinedWithOrderDiscounts: useField(combinedWithOrderDiscounts || false),
       combinedWithProductDiscounts: useField(
         combinedWithProductDiscounts || false,
       ),
-      //
       automaticOrCode: useField<"AUTOMATIC" | "CODE">(
         (automaticOrCode as "AUTOMATIC" | "CODE") || "CODE",
       ),
       code: useField({
         value: codeOrName || "",
-        validates: [notEmpty("Code is required")],
+        validates: [notEmpty("Enter a code or name for this discount")],
       }),
-
-      type: useField(type || "percentage"),
-      valueType: useField(value || 0),
-
-      customers: useField<Customer[]>({
-        value: [],
-        validates: [lengthMoreThan(0, "Customers is required")],
-      }),
-      //
+      type: useField<"percentage" | "fixed">(type || "percentage"),
+      valueType: useField<number>(value ?? 100),
       appliesToAllCustomers: useField(appliesToAllCustomers || false),
       isMinimumCartValueEnabled: useField(isMinimumCartValueEnabled || false),
-      minimumCartValue: useField(minimumCartValue || 0),
-      //
-      qualifierIds: useField<string[]>({
-        value: qualifierIds || [],
-        validates: [lengthMoreThan(0, "Qualifiers are required")],
-      }),
-      //
-      shippingRateType: useField(shippingRateType || "ALL_RATES"),
+      minimumCartValue: useField<number>(minimumCartValue || 0),
+      qualifierIds: useField<string[]>(qualifierIds || []),
+      shippingRateType: useField<"ALL_RATES" | "SELECTED_RATES">(
+        shippingRateType || "ALL_RATES",
+      ),
       shippingRatesNames: useField<string[]>(shippingRatesNames || []),
-      //
       startDate: useField(startDate || ""),
       startTime: useField(startTime || ""),
       endDate: useField(endDate || ""),
       endTime: useField(endTime || ""),
       hasEndDate: useField(hasEndDate || false),
     },
-    makeCleanAfterSubmit: false, // ! FIXED THIS: ONLY CLEN ON SUCESSFUL SUBMITIONS
+    makeCleanAfterSubmit: false,
     onSubmit: async (fieldValues) => {
-      setValueError(null);
-      setQualifierIdsError(null);
+      setErrors(NO_ERRORS);
 
+      // The function needs the concrete customer list. Derive it from the
+      // chosen audiences at submit time so an edit that never reopens the
+      // audience picker still carries the right customers.
+      const customers: Customer[] = fieldValues.appliesToAllCustomers
+        ? []
+        : audiences
+            .filter((audience) =>
+              fieldValues.qualifierIds.includes(String(audience.id)),
+            )
+            .flatMap((audience) => audience.customers)
+            .map((customer) => ({
+              id: customer.id,
+              shopifyId: customer.shopifyId,
+            }));
 
+      const shared = {
+        shippingDiscountState: fieldValues.shippingDiscountState,
+        codeOrName: fieldValues.code.trim(),
+        limitUsagePerOneCustomer: fieldValues.limitUsagePerOneCustomer,
+        type: fieldValues.type,
+        value: fieldValues.valueType,
+        combinedWithOrderDiscounts: fieldValues.combinedWithOrderDiscounts,
+        combinedWithProductDiscounts: fieldValues.combinedWithProductDiscounts,
+        automaticOrCode: fieldValues.automaticOrCode,
+        customers,
+        qualifierIds: fieldValues.appliesToAllCustomers
+          ? []
+          : fieldValues.qualifierIds,
+        shippingRateType: fieldValues.shippingRateType,
+        shippingRatesNames:
+          fieldValues.shippingRateType === "SELECTED_RATES"
+            ? fieldValues.shippingRatesNames
+            : [],
+        startDate: fieldValues.startDate,
+        startTime: fieldValues.startTime,
+        hasEndDate: fieldValues.hasEndDate,
+        endDate: fieldValues.endDate,
+        endTime: fieldValues.endTime,
+        appliesToAllCustomers: fieldValues.appliesToAllCustomers,
+        isMinimumCartValueEnabled: fieldValues.isMinimumCartValueEnabled,
+        minimumCartValue: fieldValues.isMinimumCartValueEnabled
+          ? fieldValues.minimumCartValue
+          : 0,
+      };
 
       try {
         if (!shippingDiscount) {
-          console.log("post");
-
-          const body: CreateBody = {
-            action: "create", // (1
-            //
-            shippingDiscountState: fieldValues.shippingDiscountState, // (2 DISABLED, ENABLED
-            codeOrName: fieldValues.code, // (3
-            //
-            limitUsagePerOneCustomer: fieldValues.limitUsagePerOneCustomer, // (4
-            //
-            type: fieldValues.type, // (5 percentage or fixed
-            value: fieldValues.valueType, // (6
-            //
-            combinedWithOrderDiscounts: fieldValues.combinedWithOrderDiscounts, // (7
-            combinedWithProductDiscounts:
-              fieldValues.combinedWithProductDiscounts, // (8
-            //
-            automaticOrCode: fieldValues.automaticOrCode, // (9
-            //
-            customers: fieldValues.customers, // (10
-            qualifierIds: fieldValues.qualifierIds, // (11
-            //
-            shippingRateType: fieldValues.shippingRateType, // (12 ALL_RATES or CUSTOMED_RATES
-            shippingRatesNames: fieldValues.shippingRatesNames, // (13
-            //
-            startDate: fieldValues.startDate, // (14
-            startTime: fieldValues.startTime, // (15
-            hasEndDate: fieldValues.hasEndDate, // (16
-            endDate: fieldValues.endDate, // (17
-            endTime: fieldValues.endTime, // (18
-            //
-            appliesToAllCustomers: fieldValues.appliesToAllCustomers, // (19
-            isMinimumCartValueEnabled: fieldValues.isMinimumCartValueEnabled, // (20
-            minimumCartValue: fieldValues.minimumCartValue, // (21
-          };
-
+          const body: CreateBody = { action: "create", ...shared };
           const bodyParsed = zodApiActionsShippingDiscounts.create.parse(body);
-
           fetcher.submit(bodyParsed as any, {
             method: "POST",
             encType: "application/json",
             action: "/api/actions/discounts",
           });
         } else {
-          console.log("update");
-
           const body: UpdateBody = {
-            action: "update", // (1
-            //
-            id: id!, // (2
-            shopifyDiscountId: shopifyDiscountId!, // (3
-            //
-            shippingDiscountState: fieldValues.shippingDiscountState, // (4
-            codeOrName: fieldValues.code, // (5
-            //
-            limitUsagePerOneCustomer: fieldValues.limitUsagePerOneCustomer, // (5
-            //
-            type: fieldValues.type, // (7
-            value: fieldValues.valueType, // (8
-            //
-            combinedWithOrderDiscounts: fieldValues.combinedWithOrderDiscounts, // (9
-            combinedWithProductDiscounts:
-              fieldValues.combinedWithProductDiscounts, // (10
-            //
-            automaticOrCode: fieldValues.automaticOrCode, // (11
-            //
-            customers: fieldValues.customers, // (12
-            qualifierIds: fieldValues.qualifierIds, // (13
-            //
-            shippingRateType: fieldValues.shippingRateType, // (14
-            shippingRatesNames: fieldValues.shippingRatesNames, // (15
-            //
-            startDate: fieldValues.startDate, // (16
-            startTime: fieldValues.startTime, // (17
-            hasEndDate: fieldValues.hasEndDate, // (18
-            endDate: fieldValues.endDate, // (19
-            endTime: fieldValues.endTime, // (20
-            //
-            appliesToAllCustomers: fieldValues.appliesToAllCustomers, // (21
-            isMinimumCartValueEnabled: fieldValues.isMinimumCartValueEnabled, // (22
-            minimumCartValue: fieldValues.minimumCartValue, // (23
+            action: "update",
+            id: id!,
+            shopifyDiscountId: shopifyDiscountId!,
+            ...shared,
           };
-
           const bodyParsed = zodApiActionsShippingDiscounts.update.parse(body);
-
           fetcher.submit(bodyParsed as any, {
             method: "PUT",
             encType: "application/json",
-            action: `/api/actions/discounts`,
+            action: "/api/actions/discounts",
           });
         }
       } catch (error) {
-        // FRONTEND ERROR HANDLING
-
         if (error instanceof ZodError) {
-          error.errors.forEach((err) => {
-            if (err.path.includes("value")) {
-              setValueError(err.message); // Set the value error
-            } else if (err.path.includes("qualifierIds")) {
-              setQualifierIdsError(err.message); // Set the qualifierIds error
-            }
+          const next: FieldErrors = { ...NO_ERRORS };
+          error.errors.forEach((issue) => {
+            if (issue.path.includes("value")) next.value = issue.message;
+            else if (issue.path.includes("qualifierIds"))
+              next.qualifierIds = issue.message;
+            else if (issue.path.includes("minimumCartValue"))
+              next.minimumCartValue = issue.message;
           });
+          setErrors(next);
+          shopify.toast.show("Fix the highlighted fields to continue");
+          return { status: "fail", errors: [{ message: "Validation failed" }] };
         }
-
-        shopify.toast.show("Some Error Occured");
-
-        return { status: "success", errors: { form: "Some Error Occured" } };
+        shopify.toast.show("Something went wrong");
+        return { status: "fail", errors: [{ message: "Unknown error" }] };
       }
 
       return { status: "success" };
@@ -238,25 +213,28 @@ export function useDiscountForm() {
         fetcher.data.errors.length
       ) {
         shopify.toast.show(
-          `Error: ${fetcher.data.errors[0]?.message}` || "An error occurred",
+          `Error: ${fetcher.data.errors[0]?.message ?? "An error occurred"}`,
         );
       } else {
         const actionCode =
           "code" in fetcher.data ? fetcher.data.code : undefined;
         if (actionCode === "created") {
-          shopify.toast.show("Discount Created");
+          shopify.toast.show("Shipping discount created");
         } else if (actionCode === "updated") {
-          shopify.toast.show("Discount Updated");
+          shopify.toast.show("Shipping discount saved");
         }
-
         navigate("/app/actions/discounts");
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetcher.state, fetcher.data]);
 
   return {
     ...form,
-    valueError,
-    qualifierIdsError,
+    errors,
+    audiences,
+    rates,
+    isNew: !shippingDiscount,
+    submitting: fetcher.state !== "idle",
   };
 }
