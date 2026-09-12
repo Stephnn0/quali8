@@ -1,7 +1,7 @@
 {%- comment -%}
   Quali8 — Delivery checkout (cart page app block).
 
-  A three-step pre-checkout: 1) Who's sending? (sender + recipient, or
+  A three-step pre-checkout: 1) Sender information (sender + recipient, or
   "sending to myself"), 2) Delivery / Pickup (delivery verifies the zip
   against the app's zones, then collects the address; pickup skips it),
   3) Summary with the Checkout button. Steps on the left, the form in the
@@ -82,31 +82,14 @@
     "deliveryLabel": {{ block.settings.order_delivery_label | json }},
     "deliveryPending": {{ block.settings.order_delivery_pending | json }},
     "totalLabel": {{ block.settings.order_total_label | json }},
-    "showDiscount": {{ block.settings.show_discount | json }},
-    "discountPlaceholder": {{ block.settings.discount_placeholder | json }}
+    "discountsLabel": {{ block.settings.order_discounts_label | json }},
+    "removeLabel": {{ block.settings.order_remove_label | json }}
   },
   "hideThemeCheckout": {{ block.settings.hide_theme_checkout | json }},
   "checkoutSelector": {{ block.settings.checkout_selector | json }}
 }
 {%- endcapture -%}
 
-{%- capture q8_dc_cart -%}
-{
-  "count": {{ cart.item_count }},
-  "subtotal": {{ cart.items_subtotal_price | divided_by: 100.0 }},
-  "items": [
-    {%- for item in cart.items -%}
-    {
-      "title": {{ item.product.title | json }},
-      "variant": {{ item.variant.title | json }},
-      "quantity": {{ item.quantity }},
-      "price": {{ item.final_line_price | divided_by: 100.0 }},
-      "image": {% if item.image %}{{ item.image | image_url: width: 160 | json }}{% else %}null{% endif %}
-    }{% unless forloop.last %},{% endunless %}
-    {%- endfor -%}
-  ]
-}
-{%- endcapture -%}
 
 <div
   class="q8-dc q8-dc--{{ block.settings.field_size }}{% if block.settings.serif_headings %} q8-dc--serif{% endif %}"
@@ -131,7 +114,7 @@
 >
   <script type="application/json" data-q8-dc-settings>{{ q8_dc_settings | strip }}</script>
   <script type="application/json" data-q8-dc-attributes>{{ cart.attributes | json }}</script>
-  <script type="application/json" data-q8-dc-cart>{{ q8_dc_cart | strip }}</script>
+  <script type="application/json" data-q8-dc-cart>{{ cart | json }}</script>
 </div>
 
 {% schema %}
@@ -148,16 +131,16 @@
     { "type": "text", "id": "heading", "label": "Page heading", "default": "Checkout" },
     { "type": "range", "id": "heading_size", "label": "Heading size", "min": 24, "max": 64, "step": 2, "unit": "px", "default": 44 },
     { "type": "checkbox", "id": "serif_headings", "label": "Serif headings", "default": true },
-    { "type": "text", "id": "step_sender_label", "label": "Step 1 label", "default": "Who's sending?" },
+    { "type": "text", "id": "step_sender_label", "label": "Step 1 label", "default": "Sender information" },
     { "type": "text", "id": "step_method_label", "label": "Step 2 label", "default": "Delivery / Pickup" },
     { "type": "text", "id": "step_summary_label", "label": "Step 3 label", "default": "Review & Checkout" },
     { "type": "text", "id": "continue_label", "label": "Continue button", "default": "Continue" },
     { "type": "text", "id": "back_label", "label": "Back link", "default": "Back" },
     { "type": "text", "id": "saved_label", "label": "Saved indicator", "default": "Saved" },
 
-    { "type": "header", "content": "Step 1: Who's sending?" },
-    { "type": "text", "id": "sender_title", "label": "Title", "default": "Who's sending?" },
-    { "type": "text", "id": "sender_intro", "label": "Intro", "default": "Tell us who this is from and who it's for." },
+    { "type": "header", "content": "Step 1: Sender information" },
+    { "type": "text", "id": "sender_title", "label": "Title", "default": "Sender information" },
+    { "type": "text", "id": "sender_intro", "label": "Intro", "default": "Who is this from, and who is it for?" },
     { "type": "text", "id": "sender_heading", "label": "Sender heading", "default": "Your details" },
     { "type": "text", "id": "recipient_heading", "label": "Recipient heading", "default": "Recipient" },
     { "type": "text", "id": "self_label", "label": "Sending to myself switch", "default": "I'm sending this to myself" },
@@ -209,8 +192,8 @@
     { "type": "text", "id": "order_delivery_label", "label": "Delivery label", "default": "Delivery" },
     { "type": "text", "id": "order_delivery_pending", "label": "Delivery before it's known", "default": "Calculated at checkout" },
     { "type": "text", "id": "order_total_label", "label": "Total label", "default": "Total" },
-    { "type": "checkbox", "id": "show_discount", "label": "Show a discount code field", "info": "Applied when checkout opens.", "default": true },
-    { "type": "text", "id": "discount_placeholder", "label": "Discount field placeholder", "default": "Have a partner code?" },
+    { "type": "text", "id": "order_discounts_label", "label": "Discounts label", "default": "Discounts" },
+    { "type": "text", "id": "order_remove_label", "label": "Remove item link", "default": "Remove" },
     { "type": "checkbox", "id": "hide_theme_checkout", "label": "Hide the theme's checkout buttons until the summary is complete", "default": true },
     { "type": "text", "id": "checkout_selector", "label": "Checkout button selector", "info": "CSS selector for the theme's checkout and express buttons.", "default": "form[action*=\"/cart\"] [name=\"checkout\"], .shopify-payment-button, .additional-checkout-buttons, [data-shopify=\"dynamic-checkout-cart\"], .cart__dynamic-checkout-buttons" },
 
@@ -224,7 +207,7 @@
     { "type": "color", "id": "button_text_color", "label": "Button text", "default": "#ffffff" },
 
     { "type": "header", "content": "Spacing & shape" },
-    { "type": "select", "id": "field_size", "label": "Field size", "options": [ { "value": "small", "label": "Small" }, { "value": "medium", "label": "Medium" }, { "value": "large", "label": "Large" } ], "default": "medium" },
+    { "type": "select", "id": "field_size", "label": "Field size", "options": [ { "value": "small", "label": "Small" }, { "value": "medium", "label": "Medium" }, { "value": "large", "label": "Large" } ], "default": "large" },
     { "type": "range", "id": "padding", "label": "Inner padding", "min": 0, "max": 48, "step": 4, "unit": "px", "default": 24 },
     { "type": "range", "id": "border_radius", "label": "Card corner radius", "min": 0, "max": 32, "step": 2, "unit": "px", "default": 16 },
     { "type": "range", "id": "input_radius", "label": "Field corner radius", "min": 0, "max": 24, "step": 2, "unit": "px", "default": 10 }

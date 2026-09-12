@@ -85,7 +85,7 @@
 
 .q8-dc__layout {
   display: grid;
-  grid-template-columns: 15rem minmax(0, 1fr) 20rem;
+  grid-template-columns: 15rem minmax(0, 1fr) 24rem;
   gap: 2rem;
   align-items: start;
 }
@@ -260,7 +260,7 @@
 
 .q8-dc__label {
   margin: 0;
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   font-weight: 600;
 }
 
@@ -277,9 +277,9 @@
   background: var(--q8-dc-input-bg, #ffffff);
   color: inherit;
   font: inherit;
-  font-size: 0.9375rem;
+  font-size: 1.0625rem;
   line-height: 1.4;
-  padding: 0.75rem 0.875rem;
+  padding: 1rem 1.125rem;
   transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 
@@ -681,7 +681,7 @@ select.q8-dc__input {
 
 .q8-dc__order-title {
   margin: 0;
-  font-size: 1.375rem;
+  font-size: 1.625rem;
   font-weight: 600;
 }
 
@@ -699,15 +699,21 @@ select.q8-dc__input {
 
 .q8-dc__order-item {
   display: flex;
-  align-items: center;
-  gap: 0.875rem;
-  padding: 0.875rem 1.25rem;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.125rem 1.25rem;
   border-bottom: 1px solid var(--q8-dc-line);
+  transition: opacity 150ms ease;
+}
+
+.q8-dc__order-item--busy {
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .q8-dc__order-thumb {
-  width: 3.5rem;
-  height: 3.5rem;
+  width: 4.75rem;
+  height: 4.75rem;
   border-radius: 8px;
   background: rgba(20, 32, 29, 0.06);
   overflow: hidden;
@@ -730,20 +736,97 @@ select.q8-dc__input {
 }
 
 .q8-dc__order-name {
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 600;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.3;
 }
 
 .q8-dc__order-variant {
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   color: var(--q8-dc-muted);
 }
 
-.q8-dc__order-price {
+.q8-dc__order-discount {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #1f9d55;
+}
+
+.q8-dc__order-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  margin-top: 0.5rem;
+}
+
+.q8-dc__qty {
+  display: inline-flex;
+  align-items: center;
+  border: 1.5px solid var(--q8-dc-line);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.q8-dc__qty-btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 1.125rem;
+  line-height: 1;
+  width: 2rem;
+  height: 2rem;
+  cursor: pointer;
+}
+
+.q8-dc__qty-btn:hover {
+  background: var(--q8-dc-accent-soft);
+}
+
+.q8-dc__qty-value {
+  min-width: 1.75rem;
+  text-align: center;
   font-size: 0.9375rem;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.q8-dc__order-remove {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--q8-dc-muted);
+  font: inherit;
+  font-size: 0.8125rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.q8-dc__order-remove:hover {
+  color: #b42318;
+}
+
+.q8-dc__order-price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.125rem;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.q8-dc__order-was {
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: var(--q8-dc-muted);
+}
+
+.q8-dc__order-line--discount {
+  color: #1f9d55;
 }
 
 .q8-dc__order-totals {
@@ -757,7 +840,7 @@ select.q8-dc__input {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
-  font-size: 0.9375rem;
+  font-size: 1rem;
   color: var(--q8-dc-muted);
 }
 
@@ -766,46 +849,28 @@ select.q8-dc__input {
   padding: 1rem 1.25rem;
   background: var(--q8-dc-accent, #0f3d3e);
   color: #ffffff;
-  font-size: 1.25rem;
+  font-size: 1.375rem;
   font-weight: 700;
-}
-
-.q8-dc__discount {
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
-  margin: 0.75rem;
-  padding: 0.75rem 1rem;
-  border: 1px solid var(--q8-dc-line);
-  border-radius: 12px;
-  color: var(--q8-dc-muted);
-}
-
-.q8-dc__discount-input {
-  appearance: none;
-  border: none;
-  background: transparent;
-  font: inherit;
-  font-size: 0.9375rem;
-  color: var(--q8-dc-text, #14201d);
-  width: 100%;
-  outline: none;
 }
 
 /* --- Sizes ------------------------------------------------------------------- */
 
 .q8-dc--small .q8-dc__input,
 .q8-dc--small .q8-dc__check {
-  font-size: 0.875rem;
-  padding-top: 0.6rem;
-  padding-bottom: 0.6rem;
+  font-size: 0.9375rem;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
 }
 
 .q8-dc--large .q8-dc__input,
 .q8-dc--large .q8-dc__check {
-  font-size: 1.0625rem;
-  padding-top: 0.9375rem;
-  padding-bottom: 0.9375rem;
+  font-size: 1.125rem;
+  padding-top: 1.125rem;
+  padding-bottom: 1.125rem;
+}
+
+.q8-dc--large .q8-dc__label {
+  font-size: 0.9375rem;
 }
 
 @keyframes q8-dc-in {

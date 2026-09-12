@@ -1,7 +1,7 @@
 /*
  * Quali8 — Delivery checkout (cart page): a three-step pre-checkout.
  *
- * 1. Who's sending?  sender (email, name, phone) + recipient (name, phone),
+ * 1. Sender information: sender (email, name, phone) + recipient (name, phone),
  *    or "sending to myself" which reuses the sender.
  * 2. Delivery / Pickup.  Delivery checks the zip against the app's zones,
  *    then collects the address (location type, street, city, state,
@@ -357,7 +357,6 @@
         province: a("province"),
         country: (a("country") || defaultCountry || "US").toUpperCase(),
       },
-      discount: "",
       done: { 1: false, 2: false },
     };
   }
@@ -429,7 +428,7 @@
   function renderSteps() {
     stepsNav.textContent = "";
     var defs = [
-      [1, settings.steps.sender || "Who's sending?", "user"],
+      [1, settings.steps.sender || "Sender information", "user"],
       [2, settings.steps.method || "Delivery / Pickup", state.method === "pickup" ? "store" : "truck"],
       [3, settings.steps.summary || "Review & Checkout", "card"],
     ];
@@ -474,7 +473,7 @@
     var s = settings.sender;
     var labels = s.labels || {};
     var panel = el("section", "q8-dc__panel");
-    panel.appendChild(el("h3", "q8-dc__title", s.title || "Who's sending?"));
+    panel.appendChild(el("h3", "q8-dc__title", s.title || "Sender information"));
     if (s.intro) panel.appendChild(el("p", "q8-dc__intro", s.intro));
 
     var card = el("div", "q8-dc__card");
@@ -845,40 +844,132 @@
       params.set("checkout[shipping_address][country]", a.country);
       params.set("checkout[shipping_address][zip]", state.zip);
     }
-    if (state.discount) params.set("discount", state.discount);
     window.location.href = ROOT + "checkout?" + params.toString();
   }
 
   // --- Render: order summary card ----------------------------------------------
+  // Works on Shopify's cart JSON (the same shape /cart/change.js returns),
+  // so quantity changes and removals re-render from the live response.
+
+  var cartData = null;
+
+  function thumb(url) {
+    if (!url) return null;
+    if (!/^https?:/i.test(url) && url.indexOf("//") !== 0) return url;
+    try {
+      var u = new URL(url, window.location.href);
+      u.searchParams.set("width", "200"); // Shopify CDN resizes on request
+      return u.toString();
+    } catch (e) {
+      return url;
+    }
+  }
+
+  function changeLine(key, quantity) {
+    return fetch(ROOT + "cart/change.js", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ id: key, quantity: quantity }),
+    }).then(function (response) {
+      if (!response.ok) throw new Error("HTTP " + response.status);
+      return response.json();
+    });
+  }
 
   function renderOrder() {
     orderCard.textContent = "";
-    var cart = readJson("[data-q8-dc-cart]") || { items: [], subtotal: 0, count: 0 };
+    if (!cartData) cartData = readJson("[data-q8-dc-cart]") || { items: [], item_count: 0 };
+    var cart = cartData;
     var o = settings.order;
+    var cents = function (value) {
+      return (Number(value) || 0) / 100;
+    };
 
     var head = el("div", "q8-dc__order-head");
     head.appendChild(el("h3", "q8-dc__order-title", o.title || "Order summary"));
-    head.appendChild(el("span", "q8-dc__order-count", fill(o.itemsLabel || "{count} items", { count: cart.count })));
+    head.appendChild(el("span", "q8-dc__order-count", fill(o.itemsLabel, { count: cart.item_count })));
     orderCard.appendChild(head);
 
     var list = el("div", "q8-dc__order-items");
     (cart.items || []).forEach(function (item) {
       var row = el("div", "q8-dc__order-item");
-      var thumb = el("div", "q8-dc__order-thumb");
-      if (item.image) {
+      var media = el("div", "q8-dc__order-thumb");
+      var src = thumb(item.image);
+      if (src) {
         var img = document.createElement("img");
-        img.src = item.image;
-        img.alt = item.title || "";
+        img.src = src;
+        img.alt = item.product_title || "";
         img.loading = "lazy";
-        thumb.appendChild(img);
+        media.appendChild(img);
       }
-      row.appendChild(thumb);
+      row.appendChild(media);
+
       var text = el("div", "q8-dc__order-text");
-      text.appendChild(el("span", "q8-dc__order-name", (item.quantity > 1 ? item.quantity + " × " : "") + item.title));
-      if (item.variant && item.variant !== "Default Title") text.appendChild(el("span", "q8-dc__order-variant", item.variant));
+      text.appendChild(el("span", "q8-dc__order-name", item.product_title || item.title || ""));
+      if (item.variant_title && item.variant_title !== "Default Title") {
+        text.appendChild(el("span", "q8-dc__order-variant", item.variant_title));
+      }
+      (item.line_level_discount_allocations || []).forEach(function (allocation) {
+        var title = allocation.discount_application && allocation.discount_application.title;
+        if (title) text.appendChild(el("span", "q8-dc__order-discount", title + " · −" + formatMoney(cents(allocation.amount), currency)));
+      });
+
+      var controls = el("div", "q8-dc__qty");
+      var minus = el("button", "q8-dc__qty-btn", "−");
+      minus.type = "button";
+      minus.setAttribute("aria-label", "Decrease quantity");
+      var count = el("span", "q8-dc__qty-value", String(item.quantity));
+      var plus = el("button", "q8-dc__qty-btn", "+");
+      plus.type = "button";
+      plus.setAttribute("aria-label", "Increase quantity");
+      controls.appendChild(minus);
+      controls.appendChild(count);
+      controls.appendChild(plus);
+      var remove = el("button", "q8-dc__order-remove", o.removeLabel || "Remove");
+      remove.type = "button";
+      var actions = el("div", "q8-dc__order-actions");
+      actions.appendChild(controls);
+      actions.appendChild(remove);
+      text.appendChild(actions);
       row.appendChild(text);
-      row.appendChild(el("span", "q8-dc__order-price", formatMoney(item.price, currency)));
+
+      var price = el("div", "q8-dc__order-price");
+      if (item.original_line_price > item.final_line_price) {
+        price.appendChild(el("s", "q8-dc__order-was", formatMoney(cents(item.original_line_price), currency)));
+      }
+      price.appendChild(el("span", null, formatMoney(cents(item.final_line_price), currency)));
+      row.appendChild(price);
       list.appendChild(row);
+
+      function update(quantity) {
+        row.classList.add("q8-dc__order-item--busy");
+        changeLine(item.key, quantity)
+          .then(function (next) {
+            cartData = next;
+            if (!next.item_count) {
+              window.location.reload();
+              return;
+            }
+            renderOrder();
+            try {
+              document.dispatchEvent(new CustomEvent("cart:refresh", { bubbles: true, detail: next }));
+            } catch (e) {
+              /* nothing to announce to */
+            }
+          })
+          .catch(function () {
+            row.classList.remove("q8-dc__order-item--busy");
+          });
+      }
+      minus.addEventListener("click", function () {
+        update(Math.max(0, item.quantity - 1));
+      });
+      plus.addEventListener("click", function () {
+        update(item.quantity + 1);
+      });
+      remove.addEventListener("click", function () {
+        update(0);
+      });
     });
     orderCard.appendChild(list);
 
@@ -886,32 +977,35 @@
     var deliveryAmount = state.method === "pickup" ? 0 : deliveryKnown ? state.zone.price : null;
 
     var totals = el("div", "q8-dc__order-totals");
-    function line(label, value, strong) {
-      var r = el("div", "q8-dc__order-line" + (strong ? " q8-dc__order-line--total" : ""));
+    function line(label, value, className) {
+      var r = el("div", "q8-dc__order-line" + (className ? " " + className : ""));
       r.appendChild(el("span", null, label));
       r.appendChild(el("span", null, value));
       return r;
     }
-    totals.appendChild(line(o.subtotalLabel || "Subtotal", formatMoney(cart.subtotal, currency)));
-    totals.appendChild(line(o.deliveryLabel || "Delivery", deliveryAmount === null ? o.deliveryPending || "Calculated at checkout" : deliveryAmount === 0 ? settings.method.freeText || formatMoney(0, currency) : formatMoney(deliveryAmount, currency)));
-    orderCard.appendChild(totals);
-    orderCard.appendChild(line(o.totalLabel || "Total", formatMoney(cart.subtotal + (deliveryAmount || 0), currency), true));
-
-    if (o.showDiscount !== false) {
-      var discount = el("div", "q8-dc__discount");
-      discount.appendChild(icon("tag"));
-      var input = document.createElement("input");
-      input.className = "q8-dc__discount-input";
-      input.type = "text";
-      input.placeholder = o.discountPlaceholder || "Have a discount code?";
-      input.value = state.discount;
-      input.setAttribute("aria-label", o.discountPlaceholder || "Discount code");
-      input.addEventListener("input", function () {
-        state.discount = input.value.trim();
-      });
-      discount.appendChild(input);
-      orderCard.appendChild(discount);
+    totals.appendChild(line(o.subtotalLabel || "Subtotal", formatMoney(cents(cart.original_total_price), currency)));
+    if (cart.total_discount > 0) {
+      var names = (cart.cart_level_discount_applications || [])
+        .map(function (application) {
+          return application.title;
+        })
+        .filter(Boolean);
+      var label = o.discountsLabel || "Discounts";
+      if (names.length) label += " (" + names.join(", ") + ")";
+      totals.appendChild(line(label, "−" + formatMoney(cents(cart.total_discount), currency), "q8-dc__order-line--discount"));
     }
+    totals.appendChild(
+      line(
+        o.deliveryLabel || "Delivery",
+        deliveryAmount === null
+          ? o.deliveryPending || "Calculated at checkout"
+          : deliveryAmount === 0
+            ? settings.method.freeText || formatMoney(0, currency)
+            : formatMoney(deliveryAmount, currency),
+      ),
+    );
+    orderCard.appendChild(totals);
+    orderCard.appendChild(line(o.totalLabel || "Total", formatMoney(cents(cart.total_price) + (deliveryAmount || 0), currency), "q8-dc__order-line--total"));
   }
 
   // --- Boot ------------------------------------------------------------------
@@ -927,7 +1021,7 @@
   settings.steps.current = settings.steps.current || "In progress";
   settings.editLabel = settings.editLabel || "Edit";
   settings.method.checkingLabel = settings.method.checkingLabel || "Checking…";
-  settings.order.itemsLabel = settings.order.itemsLabel || "{count} items";
+  settings.order.itemsLabel = "{count} items";
   settings.method.labels = settings.method.labels || {};
   settings.method.labels.zip = settings.method.labels.zip || settings.method.zipPlaceholder || "ZIP code";
   currency = block.dataset.currency;
