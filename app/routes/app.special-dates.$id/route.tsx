@@ -14,7 +14,6 @@ import db from "app/db.server";
 import { gatekeepRoute } from "app/services/subscriptions/gatekeepRoute";
 import TodoBoard from "app/components/Seasonal/TodoBoard";
 import AnnouncementScheduler from "app/components/Seasonal/AnnouncementScheduler";
-import HeroScheduler from "app/components/Seasonal/HeroScheduler";
 import PopupScheduler from "app/components/Seasonal/PopupScheduler";
 import MenuScheduler from "app/components/Seasonal/MenuScheduler";
 import SeoOptimizer from "app/components/Seasonal/SeoOptimizer";
@@ -76,7 +75,6 @@ type ModalKey =
   | "seo-todos"
   | "marketing-todos"
   | "seo-meta"
-  | "hero"
   | "popup"
   | null;
 
@@ -121,7 +119,6 @@ export default function SpecialDateManage() {
     "seo-todos": "SEO Prep List",
     "marketing-todos": "Marketing Playbook",
     "seo-meta": "AI SEO Optimizer",
-    hero: "Homepage hero section",
     popup: "Subscribe popup",
   };
 
@@ -151,14 +148,6 @@ export default function SpecialDateManage() {
               status={scheduledStatus(data.announcementBar)}
               statusActive={Boolean(data.announcementBar?.enabled)}
               onOpen={() => setOpen("announcement")}
-            />
-            <ActionCard
-              artKey="hero"
-              title="Hero section"
-              description="A full-width homepage hero with an image, headline, and optional button."
-              status={scheduledStatus(data.hero)}
-              statusActive={Boolean(data.hero?.enabled)}
-              onOpen={() => setOpen("hero")}
             />
             <ActionCard
               artKey="menu"
@@ -233,13 +222,6 @@ export default function SpecialDateManage() {
               specialDateName={specialDate.name}
               specialDateDate={specialDate.date}
               announcementBar={data.announcementBar}
-            />
-          ) : null}
-          {open === "hero" ? (
-            <HeroScheduler
-              specialDateName={specialDate.name}
-              specialDateDate={specialDate.date}
-              hero={data.hero}
             />
           ) : null}
           {open === "menu" ? (

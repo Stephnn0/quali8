@@ -5,7 +5,7 @@ import {
   ConfettiIcon,
   DeliveryIcon,
   EmailNewsletterIcon,
-  ImageIcon,
+  MagicIcon,
   MegaphoneIcon,
   PackageIcon,
   SearchIcon,
@@ -58,7 +58,7 @@ export type OneAppPlan = "Free" | "Advance";
 
 /**
  * The OneApp feature library. Every entry maps to an existing admin surface —
- * `to` is the route a merchant lands on to use the feature. Features 06–09
+ * `to` is the route a merchant lands on to use the feature. Features 06–08
  * are single shop-wide configs edited on one page each at
  * `/app/features/<key>` (see `app/components/Seasonal/featurePages.ts`).
  *
@@ -143,14 +143,14 @@ export const ONEAPP_FEATURES: OneAppFeature[] = [
   },
   {
     number: "05",
-    key: "occasion-match",
-    name: "Occasion Match",
+    key: "occasions-gifts",
+    name: "Occasions + Gift Recommendations",
     category: "seasonal-marketing",
-    tagline: "Occasion recommendations with your products.",
+    tagline: "Occasion and gift picks on product pages.",
     description:
-      "Match your catalog to gifting occasions and show the right products on product and cart pages, with a gift-notes block that saves messages and instructions to the order.",
+      "Create occasions, connect products or whole collections to each one, and show shoppers the right gifts for the moment on your product pages.",
     icon: ConfettiIcon,
-    image: "/features/occasion-match.svg",
+    image: "/features/occasions-gifts.svg",
     to: "/app/occasions",
     plan: "Advance",
     gate: { hasRecommendations: true },
@@ -199,17 +199,17 @@ export const ONEAPP_FEATURES: OneAppFeature[] = [
   },
   {
     number: "09",
-    key: "seasonal-hero",
-    name: "Seasonal Hero",
-    category: "seasonal-marketing",
-    tagline: "Homepage hero sections on a schedule.",
+    key: "smart-recommendations",
+    name: "Smart Recommendations",
+    category: "sales-pricing",
+    tagline: "Cart recommendations driven by your rules.",
     description:
-      "Schedule a full-width homepage hero with an image, headline, and button. It goes live on the start date and comes down on its own.",
-    icon: ImageIcon,
-    image: "/features/seasonal-hero.svg",
-    to: "/app/features/seasonal-hero",
+      "Set rules like \"when the cart has a bouquet, suggest vases under $40\" and the cart page shows matching products from your store with one-tap add to cart.",
+    icon: MagicIcon,
+    image: "/features/smart-recommendations.svg",
+    to: "/app/recommendations",
     plan: "Advance",
-    gate: { hasAssistant: true },
+    gate: { hasRecommendations: true },
   },
 ];
 

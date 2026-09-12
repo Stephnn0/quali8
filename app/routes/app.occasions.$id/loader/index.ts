@@ -22,7 +22,10 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
     const occasion = await db.occasion.findFirst({
       where: { id: Number(params.id), shop: session.shop },
-      include: { products: { orderBy: { position: "asc" } } },
+      include: {
+        products: { orderBy: { position: "asc" } },
+        collections: { orderBy: { position: "asc" } },
+      },
     });
 
     if (!occasion) {

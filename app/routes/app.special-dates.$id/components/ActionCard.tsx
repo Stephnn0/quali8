@@ -52,18 +52,6 @@ export const CARD_ART: Record<string, { gradient: string; glyph: ReactNode }> = 
       </svg>
     ),
   },
-  hero: {
-    gradient: "linear-gradient(135deg, #1d3a63, #3e6ea5)",
-    glyph: (
-      <svg viewBox="0 0 40 40" aria-hidden="true">
-        <g {...white} strokeLinecap="round" strokeLinejoin="round">
-          <rect x="8" y="10" width="24" height="20" rx="2.5" />
-          <circle cx="15" cy="17" r="2.5" />
-          <path d="M 10 27 l 7 -7 l 5 5 l 4 -4 l 4 4" />
-        </g>
-      </svg>
-    ),
-  },
   menu: {
     gradient: "linear-gradient(135deg, #14532d, #16a34a)",
     glyph: (

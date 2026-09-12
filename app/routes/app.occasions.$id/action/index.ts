@@ -25,6 +25,14 @@ const saveOccasionSchema = z.object({
       imageUrl: z.string().nullable(),
     }),
   ),
+  collections: z.array(
+    z.object({
+      collectionId: z.string().startsWith("gid://shopify/Collection/"),
+      title: z.string(),
+      handle: z.string().nullable(),
+      imageUrl: z.string().nullable(),
+    }),
+  ),
 });
 
 function slugify(name: string): string {
@@ -82,6 +90,14 @@ export async function action({ request }: ActionFunctionArgs) {
       position: index,
     }));
 
+    const collections = body.collections.map((collection, index) => ({
+      collectionId: collection.collectionId,
+      title: collection.title,
+      handle: collection.handle,
+      imageUrl: collection.imageUrl,
+      position: index,
+    }));
+
     if (body.id === null) {
       // Slug must be unique per shop — suffix on collision
       const base = slugify(body.name);
@@ -96,6 +112,7 @@ export async function action({ request }: ActionFunctionArgs) {
           slug,
           shop: session.shop,
           products: { create: products },
+          collections: { create: collections },
         },
       });
     } else {
@@ -116,6 +133,7 @@ export async function action({ request }: ActionFunctionArgs) {
           ...shared,
           // Replace the product snapshot wholesale (BundleItem pattern)
           products: { deleteMany: {}, create: products },
+          collections: { deleteMany: {}, create: collections },
         },
       });
     }

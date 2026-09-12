@@ -71,3 +71,23 @@ After review the split was narrowed:
   reachable by URL.
 - Routes are now `app.features.$feature` (`/app/features/<key>`); the
   `app.seasonal.*` routes and `featureDates.server.ts` are gone.
+
+## Revision 2026-09-13: recommendations split, hero removed
+
+- **Occasion Match → Occasions + Gift Recommendations** (key
+  `occasions-gifts`). Occasions can connect products *or collections*
+  (`OccasionCollection`; collection products are resolved live). It feeds
+  only the **product-page** block `occasion-gifts` (occasion chips + gift
+  picks; no recipient/budget filters).
+- **New feature 09, Smart Recommendations** (Sales & Pricing, key
+  `smart-recommendations`, `/app/recommendations`). Merchant rules
+  (`RecommendationRule`: trigger, source, price range, limit, position)
+  drive the **cart-page** block `smart-recommendations` through
+  `proxy.smart-recommendations`. First matching rule wins; no rules → newest
+  products.
+- **Seasonal Hero removed** entirely: block, proxy, admin page, scheduler,
+  registry entry, and the `ScheduledHero` table (migration
+  `20260913000000_occasion_collections_recommendation_rules_drop_hero`).
+- The theme block file `smart-recommendations.liquid` is now the cart block
+  (previously the combined product + cart block); merchants re-add
+  "Occasions + Gifts" on the product template.

@@ -16,7 +16,6 @@ import {
   type FeaturePageKey,
 } from "app/components/Seasonal/featurePages";
 import AnnouncementScheduler from "app/components/Seasonal/AnnouncementScheduler";
-import HeroScheduler from "app/components/Seasonal/HeroScheduler";
 import PopupScheduler from "app/components/Seasonal/PopupScheduler";
 import SeoOptimizer from "app/components/Seasonal/SeoOptimizer";
 import {
@@ -28,7 +27,7 @@ import {
 
 /**
  * One feature, one page: the merchant lands straight on the editor for the
- * shop's single announcement bar / hero / popup, or on the SEO optimizer.
+ * shop's single announcement bar or popup, or on the SEO optimizer.
  * The schedulers post their mutations back to this route.
  */
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -82,8 +81,6 @@ function FeatureEditor({
   switch (featureKey) {
     case "smart-announcements":
       return <AnnouncementScheduler announcementBar={config.announcementBar} />;
-    case "seasonal-hero":
-      return <HeroScheduler hero={config.hero} />;
     case "subscribe-boost":
       return <PopupScheduler popup={config.popup} />;
     case "seo-ai":

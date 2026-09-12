@@ -4,6 +4,8 @@ import {
   GRAPHQL_QUERY_PRODUCTS_BY_IDS,
   GRAPHQL_QUERY_PRODUCTS_BY_TAG,
   GRAPHQL_QUERY_PRODUCTS_RECENT,
+  GRAPHQL_QUERY_COLLECTION_PRODUCTS,
+  GRAPHQL_QUERY_PRODUCT_COLLECTIONS,
 } from "../graphql/recommendations";
 
 export type SellableProduct = {
@@ -96,6 +98,53 @@ export async function getRecentProducts(
   return edges
     .map(({ node }) => toSellableProduct(node))
     .filter((product): product is SellableProduct => product !== null);
+}
+
+/** Sellable products of a collection, in the collection's own order. */
+export async function getCollectionProducts(
+  graphql: AdminGraphqlClient,
+  collectionId: string,
+  first = 25,
+): Promise<SellableProduct[]> {
+  const response = await graphql(GRAPHQL_QUERY_COLLECTION_PRODUCTS, {
+    variables: { id: collectionId, first },
+  });
+  const { data } = await response.json();
+
+  const edges = (data?.collection?.products?.edges ?? []) as Array<{
+    node: ProductNode;
+  }>;
+  return edges
+    .map(({ node }) => toSellableProduct(node))
+    .filter((product): product is SellableProduct => product !== null);
+}
+
+/** Collection ids per product id — which collections the cart touches. */
+export async function getProductCollectionIds(
+  graphql: AdminGraphqlClient,
+  ids: string[],
+): Promise<Map<string, string[]>> {
+  const result = new Map<string, string[]>();
+  if (ids.length === 0) return result;
+
+  const response = await graphql(GRAPHQL_QUERY_PRODUCT_COLLECTIONS, {
+    variables: { ids },
+  });
+  const { data } = await response.json();
+
+  type Node = {
+    __typename?: string;
+    id: string;
+    collections?: { edges?: Array<{ node: { id: string } }> | null } | null;
+  };
+  for (const node of (data?.nodes ?? []) as Array<Node | null>) {
+    if (!node || node.__typename !== "Product") continue;
+    result.set(
+      node.id,
+      (node.collections?.edges ?? []).map((edge) => edge.node.id),
+    );
+  }
+  return result;
 }
 
 /**

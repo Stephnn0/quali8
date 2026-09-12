@@ -7,7 +7,6 @@
  */
 export const FEATURE_PAGE_KEYS = [
   "smart-announcements",
-  "seasonal-hero",
   "subscribe-boost",
   "seo-ai",
 ] as const;
@@ -28,12 +27,6 @@ export const FEATURE_PAGES: Record<FeaturePageKey, FeaturePage> = {
     configTitle: "Announcement bar",
     configHelp:
       "A banner across your home page with your message and colors, shown between the dates you choose.",
-  },
-  "seasonal-hero": {
-    key: "seasonal-hero",
-    configTitle: "Hero section",
-    configHelp:
-      "A full-width homepage hero with an image, headline, and optional button, shown between the dates you choose.",
   },
   "subscribe-boost": {
     key: "subscribe-boost",

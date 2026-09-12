@@ -2,7 +2,6 @@ import { z } from "zod";
 import type {
   AnnouncementBar,
   PrismaClient,
-  ScheduledHero,
   SeoMetaAction,
   SubscribePopup,
 } from "@prisma/client";
@@ -10,7 +9,6 @@ import type { AdminGraphqlClient } from "@shopify/shopify-app-react-router/serve
 import { generateDateTodos } from "app/services/assistant/dateTodos.server";
 import type {
   AnnouncementBarConfig,
-  HeroConfig,
   PopupConfig,
   SeoAppliedAction,
   SpecialDateActionResult,
@@ -26,24 +24,6 @@ export const toAnnouncementConfig = (
   message: row.message,
   backgroundColor: row.backgroundColor,
   textColor: row.textColor,
-  startDate: row.startDate,
-  endDate: row.endDate,
-});
-
-export const toHeroConfig = (row: ScheduledHero): HeroConfig => ({
-  enabled: row.enabled,
-  imageUrl: row.imageUrl,
-  imageUrl2: row.imageUrl2,
-  imageUrl3: row.imageUrl3,
-  heading: row.heading,
-  description: row.description,
-  buttonLabel: row.buttonLabel,
-  buttonUrl: row.buttonUrl,
-  heightPx: row.heightPx,
-  textColor: row.textColor,
-  buttonBackground: row.buttonBackground,
-  buttonTextColor: row.buttonTextColor,
-  overlayOpacity: row.overlayOpacity,
   startDate: row.startDate,
   endDate: row.endDate,
 });
@@ -68,7 +48,7 @@ export const toSeoAppliedAction = (row: SeoMetaAction): SeoAppliedAction => ({
 
 /**
  * Everything attached to one special date: its to-dos, applied SEO changes,
- * and the four scheduled theme configs. Shared by the Sales Calendar manage
+ * and the scheduled theme configs. Shared by the Sales Calendar manage
  * page and every standalone seasonal feature page, so the per-date data and
  * mutations have a single home.
  *
@@ -106,7 +86,7 @@ export async function loadSpecialDateDetail(
     );
   }
 
-  const [todos, seoActions, announcementBar, hero, popup, menuItem] =
+  const [todos, seoActions, announcementBar, popup, menuItem] =
     await Promise.all([
       db.specialDateTodo.findMany({
         where: { specialDateId: specialDate.id },
@@ -118,9 +98,6 @@ export async function loadSpecialDateDetail(
         take: 20,
       }),
       db.announcementBar.findUnique({
-        where: { specialDateId: specialDate.id },
-      }),
-      db.scheduledHero.findUnique({
         where: { specialDateId: specialDate.id },
       }),
       db.subscribePopup.findUnique({
@@ -149,7 +126,6 @@ export async function loadSpecialDateDetail(
     })),
     seoActions: seoActions.map(toSeoAppliedAction),
     announcementBar: announcementBar ? toAnnouncementConfig(announcementBar) : null,
-    hero: hero ? toHeroConfig(hero) : null,
     popup: popup ? toPopupConfig(popup) : null,
     menuItem: menuItem
       ? {
@@ -204,26 +180,6 @@ export const removeAnnouncementSchema = z.object({
   action: z.literal("remove-announcement"),
 });
 
-export const saveHeroSchema = z.object({
-  action: z.literal("save-hero"),
-  enabled: z.boolean(),
-  imageUrl: httpsUrl,
-  imageUrl2: httpsUrl.optional(),
-  imageUrl3: httpsUrl.optional(),
-  heading: z.string().trim().min(1).max(80),
-  description: z.string().trim().max(200).optional(),
-  buttonLabel: z.string().trim().max(40).optional(),
-  buttonUrl: z.string().trim().max(400).optional(),
-  heightPx: z.number().int().min(200).max(900),
-  textColor: hexColor,
-  buttonBackground: hexColor,
-  buttonTextColor: hexColor,
-  overlayOpacity: z.number().int().min(0).max(80),
-  startDate: isoDay,
-  endDate: isoDay,
-});
-export const removeHeroSchema = z.object({ action: z.literal("remove-hero") });
-
 export const savePopupSchema = z.object({
   action: z.literal("save-popup"),
   enabled: z.boolean(),
@@ -259,8 +215,6 @@ export const specialDateActionSchema = z.discriminatedUnion("action", [
   deleteTodoSchema,
   saveAnnouncementSchema,
   removeAnnouncementSchema,
-  saveHeroSchema,
-  removeHeroSchema,
   savePopupSchema,
   removePopupSchema,
   saveMenuItemSchema,
@@ -351,38 +305,6 @@ export async function runSpecialDateAction(input: {
         where: { specialDateId: specialDate.id },
       });
       return { code: "announcement-removed", errors: null };
-
-    case "save-hero": {
-      const data = {
-        enabled: body.enabled,
-        imageUrl: body.imageUrl,
-        imageUrl2: body.imageUrl2 ?? null,
-        imageUrl3: body.imageUrl3 ?? null,
-        heading: body.heading,
-        description: body.description ?? null,
-        buttonLabel: body.buttonLabel ?? null,
-        buttonUrl: body.buttonUrl ?? null,
-        heightPx: body.heightPx,
-        textColor: body.textColor,
-        buttonBackground: body.buttonBackground,
-        buttonTextColor: body.buttonTextColor,
-        overlayOpacity: body.overlayOpacity,
-        startDate: body.startDate,
-        endDate: body.endDate,
-      };
-      await db.scheduledHero.upsert({
-        where: { specialDateId: specialDate.id },
-        create: { shop, specialDateId: specialDate.id, ...data },
-        update: data,
-      });
-      return { code: "hero-saved", errors: null };
-    }
-
-    case "remove-hero":
-      await db.scheduledHero.deleteMany({
-        where: { specialDateId: specialDate.id },
-      });
-      return { code: "hero-removed", errors: null };
 
     case "save-popup": {
       const data = {

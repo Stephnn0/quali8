@@ -16,6 +16,7 @@ export type OccasionRow = {
   endMonth: number | null;
   endDay: number | null;
   productCount: number;
+  collectionCount: number;
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -50,7 +51,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     const occasions = await db.occasion.findMany({
       where: { shop: session.shop },
       orderBy: [{ position: "asc" }, { id: "asc" }],
-      include: { _count: { select: { products: true } } },
+      include: { _count: { select: { products: true, collections: true } } },
     });
 
     return handleApiSuccess<{ occasions: OccasionRow[] }>({
@@ -65,6 +66,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
           endMonth: occasion.endMonth,
           endDay: occasion.endDay,
           productCount: occasion._count.products,
+          collectionCount: occasion._count.collections,
         })),
       },
       code: "success",

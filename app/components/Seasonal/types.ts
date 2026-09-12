@@ -39,24 +39,6 @@ export type AnnouncementBarConfig = {
   endDate: string;
 };
 
-export type HeroConfig = {
-  enabled: boolean;
-  imageUrl: string;
-  imageUrl2: string | null;
-  imageUrl3: string | null;
-  heading: string;
-  description: string | null;
-  buttonLabel: string | null;
-  buttonUrl: string | null;
-  heightPx: number;
-  textColor: string;
-  buttonBackground: string;
-  buttonTextColor: string;
-  overlayOpacity: number;
-  startDate: string;
-  endDate: string;
-};
-
 export type PopupConfig = {
   enabled: boolean;
   imageUrl: string;
@@ -87,7 +69,6 @@ export type SpecialDateDetail = {
   todos: SpecialDateTodoItem[];
   seoActions: SeoAppliedAction[];
   announcementBar: AnnouncementBarConfig | null;
-  hero: HeroConfig | null;
   popup: PopupConfig | null;
   menuItem: MenuItemConfig | null;
 };

@@ -21,7 +21,7 @@ import {
   TextField,
   Thumbnail,
 } from "@shopify/polaris";
-import { DeleteIcon } from "@shopify/polaris-icons";
+import { CollectionIcon, DeleteIcon } from "@shopify/polaris-icons";
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { loader } from "./loader";
 import { action } from "./action";
@@ -30,6 +30,7 @@ import { FeatureEyebrow } from "app/components/OneApp";
 export { loader, action };
 
 const MAX_PRODUCTS = 12;
+const MAX_COLLECTIONS = 6;
 
 const MONTH_OPTIONS = [
   { label: "—", value: "" },
@@ -55,11 +56,25 @@ type ProductState = {
   imageUrl: string | null;
 };
 
+type CollectionState = {
+  collectionId: string;
+  title: string;
+  handle: string | null;
+  imageUrl: string | null;
+};
+
 type PickedProduct = {
   id: string;
   title?: string;
   images?: Array<{ originalSrc?: string; src?: string }>;
   variants?: Array<{ id?: string; title?: string; price?: string }>;
+};
+
+type PickedCollection = {
+  id: string;
+  title?: string;
+  handle?: string;
+  image?: { originalSrc?: string; src?: string } | null;
 };
 
 export default function OccasionEditor() {
@@ -96,6 +111,14 @@ export default function OccasionEditor() {
       title: product.title,
       price: product.price,
       imageUrl: product.imageUrl,
+    })) ?? [],
+  );
+  const [collections, setCollections] = useState<CollectionState[]>(
+    occasion?.collections.map((collection) => ({
+      collectionId: collection.collectionId,
+      title: collection.title,
+      handle: collection.handle,
+      imageUrl: collection.imageUrl,
     })) ?? [],
   );
 
@@ -138,6 +161,27 @@ export default function OccasionEditor() {
     setProducts(next.slice(0, MAX_PRODUCTS));
   };
 
+  const pickCollections = async () => {
+    const selected = (await shopify.resourcePicker({
+      type: "collection",
+      multiple: MAX_COLLECTIONS,
+      selectionIds: collections.map((collection) => ({
+        id: collection.collectionId,
+      })),
+    })) as PickedCollection[] | undefined;
+
+    if (!selected) return;
+
+    setCollections(
+      selected.slice(0, MAX_COLLECTIONS).map((collection) => ({
+        collectionId: collection.id,
+        title: collection.title || "Untitled collection",
+        handle: collection.handle ?? null,
+        imageUrl: collection.image?.originalSrc || collection.image?.src || null,
+      })),
+    );
+  };
+
   const save = () => {
     fetcher.submit(
       {
@@ -150,6 +194,7 @@ export default function OccasionEditor() {
           endMonth: endMonth ? Number(endMonth) : null,
           endDay: endDay ? Number(endDay) : null,
           products,
+          collections,
         }),
       },
       { method: "POST", encType: "multipart/form-data" },
@@ -170,7 +215,7 @@ export default function OccasionEditor() {
   return (
     <Page
       title={isNew ? "Create occasion" : (occasion?.name ?? "Occasion")}
-      titleMetadata={<FeatureEyebrow featureKey="occasion-match" />}
+      titleMetadata={<FeatureEyebrow featureKey="occasions-gifts" />}
       backAction={{ onAction: () => navigate("/app/occasions") }}
     >
       <Layout>
@@ -215,9 +260,9 @@ export default function OccasionEditor() {
                     Season window
                   </Text>
                   <Text as="p" tone="subdued" variant="bodySm">
-                    The occasion is suggested to shoppers during this window
-                    each year. Leave empty for occasions that are always
-                    relevant, like birthdays.
+                    The occasion is suggested first during this window each
+                    year. Leave empty for occasions that are always relevant,
+                    like birthdays.
                   </Text>
                 </BlockStack>
                 <InlineGrid columns={{ xs: 2, sm: 4 }} gap="400">
@@ -262,10 +307,71 @@ export default function OccasionEditor() {
                 <InlineStack align="space-between" blockAlign="center">
                   <BlockStack gap="100">
                     <Text as="h2" variant="headingMd">
-                      Curated products
+                      Collections
                     </Text>
                     <Text as="p" tone="subdued" variant="bodySm">
-                      Recommended first for this occasion. Products tagged
+                      Every product in a connected collection is a gift pick
+                      for this occasion, kept in sync with the collection.
+                    </Text>
+                  </BlockStack>
+                  <Button onClick={pickCollections} icon={CollectionIcon}>
+                    {collections.length ? "Edit collections" : "Add collections"}
+                  </Button>
+                </InlineStack>
+
+                {collections.length === 0 ? (
+                  <Text as="p" tone="subdued">
+                    No collections connected. Connect up to {MAX_COLLECTIONS}.
+                  </Text>
+                ) : (
+                  <BlockStack gap="200">
+                    {collections.map((collection) => (
+                      <InlineStack
+                        key={collection.collectionId}
+                        align="space-between"
+                        blockAlign="center"
+                        gap="200"
+                        wrap={false}
+                      >
+                        <InlineStack gap="300" blockAlign="center" wrap={false}>
+                          <Thumbnail
+                            source={collection.imageUrl ?? ""}
+                            alt={collection.title}
+                            size="small"
+                          />
+                          <Text as="span" variant="bodyMd">
+                            {collection.title}
+                          </Text>
+                        </InlineStack>
+                        <Button
+                          icon={DeleteIcon}
+                          variant="tertiary"
+                          accessibilityLabel="Remove collection"
+                          onClick={() =>
+                            setCollections((current) =>
+                              current.filter(
+                                (item) =>
+                                  item.collectionId !== collection.collectionId,
+                              ),
+                            )
+                          }
+                        />
+                      </InlineStack>
+                    ))}
+                  </BlockStack>
+                )}
+              </BlockStack>
+            </Card>
+
+            <Card>
+              <BlockStack gap="400">
+                <InlineStack align="space-between" blockAlign="center">
+                  <BlockStack gap="100">
+                    <Text as="h2" variant="headingMd">
+                      Hand-picked products
+                    </Text>
+                    <Text as="p" tone="subdued" variant="bodySm">
+                      Shown first for this occasion. Products tagged
                       q8:occasion:{occasion?.slug ?? "…"} are included
                       automatically.
                     </Text>
@@ -277,7 +383,7 @@ export default function OccasionEditor() {
 
                 {products.length === 0 ? (
                   <EmptyState
-                    heading="No products curated yet"
+                    heading="No products picked yet"
                     action={{ content: "Add products", onAction: pickProducts }}
                     image=""
                   >

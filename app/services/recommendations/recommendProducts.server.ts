@@ -1,6 +1,7 @@
 import type { PrismaClient } from "@prisma/client";
 import type { AdminGraphqlClient } from "@shopify/shopify-app-react-router/server";
 import {
+  getCollectionProducts,
   getCustomerPurchases,
   getProductsByIds,
   getProductsByQuery,
@@ -87,7 +88,10 @@ export async function recommendProducts(
   const occasions = await db.occasion.findMany({
     where: { shop: request.shop, status: "ACTIVE" },
     orderBy: [{ position: "asc" }, { id: "asc" }],
-    include: { products: { orderBy: { position: "asc" } } },
+    include: {
+      products: { orderBy: { position: "asc" } },
+      collections: { orderBy: { position: "asc" } },
+    },
   });
 
   const selected =
@@ -141,6 +145,20 @@ export async function recommendProducts(
           productType: null,
           curatedForOccasion: true,
         });
+      }
+    }
+  }
+
+  // Connected collections: every sellable product in them counts as curated
+  if (selected && selected.collections.length > 0) {
+    for (const entry of selected.collections) {
+      try {
+        const products = await getCollectionProducts(graphql, entry.collectionId, 20);
+        for (const product of products) {
+          candidates.push({ ...toCandidate(product), curatedForOccasion: true });
+        }
+      } catch (error) {
+        console.error("Occasion collection fetch failed:", entry.collectionId, error);
       }
     }
   }

@@ -80,8 +80,11 @@ export default function OccasionsIndex() {
         </Text>
       </IndexTable.Cell>
       <IndexTable.Cell>
-        <Text as="span" numeric>
-          {occasion.productCount}
+        <Text as="span" variant="bodySm">
+          {occasion.productCount} {occasion.productCount === 1 ? "product" : "products"}
+          {occasion.collectionCount
+            ? ` · ${occasion.collectionCount} ${occasion.collectionCount === 1 ? "collection" : "collections"}`
+            : ""}
         </Text>
       </IndexTable.Cell>
       <IndexTable.Cell>
@@ -116,8 +119,8 @@ export default function OccasionsIndex() {
   return (
     <Page>
       <FeatureHeader
-        featureKey="occasion-match"
-        tagline="Curate the products shoppers see for each occasion — shown by the Occasion Match block on product and cart pages."
+        featureKey="occasions-gifts"
+        tagline="Create occasions and connect products or whole collections to each one. The Occasions + Gifts block shows them on your product pages."
         actions={
           <Button variant="primary" onClick={() => navigate("/app/occasions/new")}>
             Create occasion
@@ -135,7 +138,7 @@ export default function OccasionsIndex() {
                 headings={[
                   { title: "Occasion" },
                   { title: "Window" },
-                  { title: "Products" },
+                  { title: "Connected" },
                   { title: "Status" },
                   { title: "Actions" },
                 ]}
@@ -169,8 +172,9 @@ export default function OccasionsIndex() {
                 Show it on your storefront
               </Text>
               <Text as="p" tone="subdued">
-                Occasions power the Occasion Match app block. Here is
-                what shoppers see and how to enable it in your theme.
+                Occasions power the Occasions + Gifts app block on product
+                pages. Cart-page suggestions come from Smart Recommendations
+                instead.
               </Text>
             </BlockStack>
             <InlineGrid columns={{ xs: 1, md: 2 }} gap="400">
@@ -178,7 +182,7 @@ export default function OccasionsIndex() {
                 <Box background="bg-surface-secondary" padding="400">
                   <img
                     src={storefrontShowcaseImage}
-                    alt="Occasion Match block on a product page, with occasion, recipient, and budget filters above four recommended products"
+                    alt="Occasions + Gifts block on a product page, with occasion chips above recommended products"
                     style={{
                       display: "block",
                       width: "100%",
@@ -191,13 +195,13 @@ export default function OccasionsIndex() {
                 <Box padding="400">
                   <BlockStack gap="200">
                     <Text as="h3" variant="headingSm">
-                      Recommendations on product and cart pages
+                      Gift picks on product pages
                     </Text>
                     <Text as="p" tone="subdued">
-                      The Occasion Match block shows the products you
-                      curate for each occasion, with occasion, recipient, and
-                      budget filters and one-tap add to cart. You can place it
-                      on the product page, the cart page, or both.
+                      The Occasions + Gifts block shows the products and
+                      collections you connect to each occasion, with occasion
+                      chips and one-tap add to cart. Occasions are optional:
+                      with none in season, shoppers still see gift picks.
                     </Text>
                   </BlockStack>
                 </Box>
@@ -206,7 +210,7 @@ export default function OccasionsIndex() {
                 <Box background="bg-surface-secondary" padding="400">
                   <img
                     src={themeEditorSettingsImage}
-                    alt="Theme editor settings panel for the Occasion Match block, showing heading, labels, after-add behavior, and color options"
+                    alt="Theme editor settings panel for the Occasions + Gifts block, showing heading, labels, after-add behavior, and color options"
                     style={{
                       display: "block",
                       width: "100%",
@@ -227,13 +231,12 @@ export default function OccasionsIndex() {
                         &rarr; Customize.
                       </List.Item>
                       <List.Item>
-                        Open the Product or Cart template, then choose Add
-                        block &rarr; Apps &rarr; Occasion Match.
+                        Open the Product template, then choose Add block
+                        &rarr; Apps &rarr; Occasions + Gifts.
                       </List.Item>
                       <List.Item>
-                        Use the block settings to edit the heading, button
-                        labels, after-add behavior, filters, and colors — all
-                        Liquid config, no code needed.
+                        Use the block settings to edit the heading, occasion
+                        chips, layout, button, and colors — no code needed.
                       </List.Item>
                     </List>
                   </BlockStack>

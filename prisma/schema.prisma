@@ -50,6 +50,7 @@ model ShopifyStore {
   campaigns Campaign[]
   bundles   Bundle[]
   occasions Occasion[]
+  recommendationRules RecommendationRule[]
 
   storeProfile   StoreProfile?
   dashboardBrief DashboardBrief?
@@ -581,6 +582,7 @@ model Occasion {
   position   Int               @default(0)
   //
   products   OccasionProduct[]
+  collections OccasionCollection[]
   //
   shop         String
   shopifyStore ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
@@ -613,6 +615,79 @@ model OccasionProduct {
   @@index([occasionId])
 }
 
+
+/// A collection connected to an occasion: every sellable product in it is a
+/// candidate for that occasion (resolved live from Shopify at request time).
+model OccasionCollection {
+  id           Int      @id @default(autoincrement())
+  //
+  collectionId String /// Shopify GID (`gid://shopify/Collection/123`)
+  title        String
+  handle       String?
+  imageUrl     String?
+  position     Int      @default(0)
+  //
+  occasionId   Int
+  occasion     Occasion @relation(fields: [occasionId], references: [id], onDelete: Cascade)
+
+  @@index([occasionId])
+}
+
+/// Smart Recommendations: a merchant rule for the cart page block. Rules are
+/// evaluated in `position` order against the cart; the first whose trigger
+/// matches decides which products to show and how many.
+model RecommendationRule {
+  id                     Int                   @id @default(autoincrement())
+  createdAt              DateTime              @default(now())
+  updatedAt              DateTime              @default(now()) @updatedAt
+  //
+  name                   String
+  heading                String? /// Storefront heading override
+  status                 RecommendationStatus  @default(ACTIVE)
+  position               Int                   @default(0)
+  //
+  trigger                RecommendationTrigger @default(ALWAYS)
+  triggerCollectionId    String? /// CART_HAS_COLLECTION
+  triggerCollectionTitle String?
+  triggerProductId       String? /// CART_HAS_PRODUCT
+  triggerProductTitle    String?
+  triggerMinTotal        Float? /// CART_TOTAL_MIN, shop currency
+  //
+  source                 RecommendationSource  @default(COLLECTION)
+  sourceCollectionId     String?
+  sourceCollectionTitle  String?
+  sourceTag              String?
+  /// PRODUCTS source: [{ productId, title, imageUrl }] picked in the admin
+  sourceProducts         Json?
+  minPrice               Float?
+  maxPrice               Float?
+  limit                  Int                   @default(4)
+  excludeCartItems       Boolean               @default(true)
+  //
+  shop                   String
+  shopifyStore           ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([shop, status, position])
+}
+
+enum RecommendationStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum RecommendationTrigger {
+  ALWAYS
+  CART_HAS_COLLECTION
+  CART_HAS_PRODUCT
+  CART_TOTAL_MIN
+}
+
+enum RecommendationSource {
+  COLLECTION
+  TAG
+  NEWEST
+  PRODUCTS
+}
 
 /// The merchant's business profile powering the AI assistant dashboard.
 /// Collected in a single confirmation step (niche inferred from products,
@@ -674,7 +749,6 @@ model SpecialDate {
   todos            SpecialDateTodo[]
   seoActions       SeoMetaAction[]
   announcementBar  AnnouncementBar?
-  scheduledHero    ScheduledHero?
   subscribePopup   SubscribePopup?
   scheduledMenuItem ScheduledMenuItem?
   //
@@ -807,38 +881,6 @@ model CollectionFaq {
   @@index([shop, collectionId])
 }
 
-
-/// A scheduled homepage hero section tied to a special date. Served via the
-/// app proxy while today is inside the window.
-model ScheduledHero {
-  id            Int      @id @default(autoincrement())
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @default(now()) @updatedAt
-  //
-  enabled          Boolean  @default(true)
-  imageUrl         String
-  imageUrl2        String? /// Optional second slide
-  imageUrl3        String? /// Optional third slide
-  heading          String
-  description      String?
-  buttonLabel      String?
-  buttonUrl        String?
-  heightPx         Int      @default(480) /// Desktop height in pixels
-  textColor        String   @default("#ffffff")
-  buttonBackground String   @default("#ffffff")
-  buttonTextColor  String   @default("#1a1a1a")
-  overlayOpacity   Int      @default(35) /// Scrim darkness 0-80 (%)
-  startDate        String /// ISO yyyy-mm-dd, inclusive
-  endDate          String /// ISO yyyy-mm-dd, inclusive
-  //
-  /// Null for the shop-wide config edited from its feature page; set when
-  /// scheduled from a Sales Calendar date.
-  specialDateId Int?         @unique
-  specialDate   SpecialDate? @relation(fields: [specialDateId], references: [id], onDelete: Cascade)
-  shop          String
-
-  @@index([shop, startDate, endDate])
-}
 
 /// A scheduled first-time-subscriber popup tied to a special date. Shown on
 /// the home page while inside the window, suppressed for shoppers who are
