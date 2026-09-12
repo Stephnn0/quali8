@@ -4,6 +4,8 @@ import {
   getCustomerPurchases,
   getProductsByIds,
   getProductsByQuery,
+  getRecentProducts,
+  type SellableProduct,
 } from "app/models/shopify.server/recommendations";
 import {
   BUDGET_BANDS,
@@ -30,10 +32,17 @@ export type RecommendationRequest = {
   /** Numeric id from the app proxy's logged_in_customer_id, if present. */
   customerId: string | null;
   limit?: number;
+  /**
+   * Top up with general picks (recently updated sellable products) when the
+   * occasion/tag pool comes up short. Default true — occasions are optional.
+   */
+  fallback?: boolean;
 };
 
 export type RecommendationResponse = {
   products: RecommendedProduct[];
+  /** True when some products came from the general pool, not a match. */
+  fallbackUsed: boolean;
   /** Picker data: the shop's active occasions, with the in-season default. */
   occasions: Array<{ slug: string; name: string; inSeason: boolean }>;
   recipients: Array<{ slug: string; label: string }>;
@@ -43,8 +52,32 @@ export type RecommendationResponse = {
 /**
  * The Smart Recommendations engine: curated occasion products + tag-matched
  * products from Shopify, personalized by past purchases when the shopper is
- * logged in, ranked by the pure scorer.
+ * logged in, ranked by the pure scorer. Occasions are optional: with no
+ * match (or no occasions at all) the list is topped up from a general pool
+ * so the storefront block always has something to show.
  */
+
+const toCandidate = (product: SellableProduct): Candidate => ({
+  productId: product.id,
+  variantId: product.variantId,
+  title: product.title,
+  price: product.price,
+  imageUrl: product.imageUrl,
+  handle: product.handle,
+  tags: product.tags,
+  productType: product.productType,
+  curatedForOccasion: false,
+});
+
+/** Fisher–Yates, so the general pool varies between visits. */
+function shuffle<T>(items: T[]): T[] {
+  const copy = [...items];
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
 export async function recommendProducts(
   db: PrismaClient,
   graphql: AdminGraphqlClient,
@@ -163,23 +196,42 @@ export async function recommendProducts(
 
   // ---- Rank ---------------------------------------------------------------
 
-  const products = rankCandidates(
-    candidates,
-    {
-      occasionSlug: selected?.slug ?? null,
-      occasionName: selected?.name ?? null,
-      recipient: request.recipient,
-      budget: request.budget,
-      season: seasonForDate(now),
-      excludeProductIds: request.excludeProductIds,
-      purchasedProductTypes,
-      purchasedProductIds,
-    },
-    request.limit ?? 4,
-  );
+  const limit = request.limit ?? 4;
+  const context = {
+    occasionSlug: selected?.slug ?? null,
+    occasionName: selected?.name ?? null,
+    recipient: request.recipient,
+    budget: request.budget,
+    season: seasonForDate(now),
+    excludeProductIds: request.excludeProductIds,
+    purchasedProductTypes,
+    purchasedProductIds,
+  };
+
+  const products = rankCandidates(candidates, context, limit);
+
+  // ---- Fallback: general picks --------------------------------------------
+
+  let fallbackUsed = false;
+  if (request.fallback !== false && products.length < limit) {
+    try {
+      const chosen = new Set(products.map((product) => product.productId));
+      const pool = shuffle(await getRecentProducts(graphql, 40))
+        .filter((product) => !chosen.has(product.id))
+        .map(toCandidate);
+      const extra = rankCandidates(pool, context, limit - products.length);
+      if (extra.length > 0) {
+        fallbackUsed = true;
+        products.push(...extra);
+      }
+    } catch (error) {
+      console.error("General recommendation pool fetch failed:", error);
+    }
+  }
 
   return {
     products,
+    fallbackUsed,
     occasions: occasions.map((occasion) => ({
       slug: occasion.slug,
       name: occasion.name,

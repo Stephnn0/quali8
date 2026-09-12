@@ -3,6 +3,7 @@ import {
   GRAPHQL_QUERY_CUSTOMER_PURCHASES,
   GRAPHQL_QUERY_PRODUCTS_BY_IDS,
   GRAPHQL_QUERY_PRODUCTS_BY_TAG,
+  GRAPHQL_QUERY_PRODUCTS_RECENT,
 } from "../graphql/recommendations";
 
 export type SellableProduct = {
@@ -69,6 +70,25 @@ export async function getProductsByQuery(
 ): Promise<SellableProduct[]> {
   const response = await graphql(GRAPHQL_QUERY_PRODUCTS_BY_TAG, {
     variables: { first, query },
+  });
+  const { data } = await response.json();
+
+  const edges = (data?.products.edges ?? []) as Array<{ node: ProductNode }>;
+  return edges
+    .map(({ node }) => toSellableProduct(node))
+    .filter((product): product is SellableProduct => product !== null);
+}
+
+/**
+ * Recently updated sellable products, for general recommendations when no
+ * occasion, tag, or curated candidates match.
+ */
+export async function getRecentProducts(
+  graphql: AdminGraphqlClient,
+  first = 40,
+): Promise<SellableProduct[]> {
+  const response = await graphql(GRAPHQL_QUERY_PRODUCTS_RECENT, {
+    variables: { first },
   });
   const { data } = await response.json();
 

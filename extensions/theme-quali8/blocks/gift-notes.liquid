@@ -1,0 +1,369 @@
+{%- comment -%}
+  Quali8 — Occasion Match: Gift notes & messages (product + cart app block).
+
+  A small form the shopper fills in before checkout: a gift toggle, a gift
+  message, special instructions, a preferred date, and up to two custom
+  fields the merchant names. Every field is saved to the cart as it is
+  typed (debounced) via /cart/update.js — as cart attributes, which Shopify
+  carries onto the order as "Additional details", or, for special
+  instructions, as the order note. Existing values are pre-filled from the
+  cart so a shopper can come back and edit.
+{%- endcomment -%}
+
+{%- capture q8_notes_settings -%}
+{
+  "heading": {{ block.settings.heading | json }},
+  "description": {{ block.settings.description | json }},
+  "savingLabel": {{ block.settings.saving_label | json }},
+  "savedLabel": {{ block.settings.saved_label | json }},
+  "errorLabel": {{ block.settings.error_label | json }},
+  "fields": [
+    {
+      "kind": "toggle",
+      "enabled": {{ block.settings.show_gift_toggle | json }},
+      "label": {{ block.settings.gift_toggle_label | json }},
+      "attribute": {{ block.settings.gift_toggle_attribute | json }},
+      "value": {{ block.settings.gift_toggle_value | json }}
+    },
+    {
+      "kind": "textarea",
+      "enabled": {{ block.settings.show_gift_message | json }},
+      "label": {{ block.settings.gift_message_label | json }},
+      "placeholder": {{ block.settings.gift_message_placeholder | json }},
+      "attribute": {{ block.settings.gift_message_label | json }},
+      "maxLength": {{ block.settings.gift_message_max | json }}
+    },
+    {
+      "kind": "textarea",
+      "enabled": {{ block.settings.show_instructions | json }},
+      "label": {{ block.settings.instructions_label | json }},
+      "placeholder": {{ block.settings.instructions_placeholder | json }},
+      "attribute": {{ block.settings.instructions_label | json }},
+      "target": {{ block.settings.instructions_target | json }},
+      "maxLength": 500
+    },
+    {
+      "kind": "date",
+      "enabled": {{ block.settings.show_date | json }},
+      "label": {{ block.settings.date_label | json }},
+      "attribute": {{ block.settings.date_label | json }},
+      "minDays": {{ block.settings.date_min_days | json }}
+    },
+    {
+      "kind": "text",
+      "enabled": {{ block.settings.show_custom_1 | json }},
+      "label": {{ block.settings.custom_1_label | json }},
+      "placeholder": {{ block.settings.custom_1_placeholder | json }},
+      "attribute": {{ block.settings.custom_1_label | json }},
+      "maxLength": 120
+    },
+    {
+      "kind": "text",
+      "enabled": {{ block.settings.show_custom_2 | json }},
+      "label": {{ block.settings.custom_2_label | json }},
+      "placeholder": {{ block.settings.custom_2_placeholder | json }},
+      "attribute": {{ block.settings.custom_2_label | json }},
+      "maxLength": 120
+    }
+  ]
+}
+{%- endcapture -%}
+
+<div
+  class="q8-notes q8-notes--{{ block.settings.field_size }}"
+  data-quali8-notes
+  data-cart-note="{{ cart.note | escape }}"
+  style="
+    --q8-notes-bg: {{ block.settings.background_color }};
+    --q8-notes-text: {{ block.settings.text_color }};
+    --q8-notes-accent: {{ block.settings.accent_color }};
+    --q8-notes-input-bg: {{ block.settings.input_background }};
+    --q8-notes-heading-size: {{ block.settings.heading_size }}px;
+    --q8-notes-radius: {{ block.settings.border_radius }}px;
+    --q8-notes-input-radius: {{ block.settings.input_radius }}px;
+    --q8-notes-padding: {{ block.settings.padding }}px;
+    --q8-notes-border: {% if block.settings.show_border %}1px solid rgba(0, 0, 0, 0.08){% else %}none{% endif %};
+  "
+>
+  <script type="application/json" data-q8-notes-settings>{{ q8_notes_settings | strip }}</script>
+  <script type="application/json" data-q8-notes-attributes>{{ cart.attributes | json }}</script>
+</div>
+
+{% schema %}
+{
+  "name": "Gift notes & messages",
+  "target": "section",
+  "javascript": "gift-notes.js",
+  "stylesheet": "gift-notes.css",
+  "enabled_on": {
+    "templates": ["product", "cart"]
+  },
+  "settings": [
+    { "type": "header", "content": "Content" },
+    {
+      "type": "text",
+      "id": "heading",
+      "label": "Heading",
+      "default": "Add a personal touch"
+    },
+    {
+      "type": "text",
+      "id": "description",
+      "label": "Description",
+      "default": "Anything you add here is saved with your order."
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "label": "Heading size",
+      "min": 14,
+      "max": 40,
+      "step": 2,
+      "unit": "px",
+      "default": 22
+    },
+
+    { "type": "header", "content": "Gift toggle" },
+    {
+      "type": "checkbox",
+      "id": "show_gift_toggle",
+      "label": "Show \"this is a gift\" switch",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "gift_toggle_label",
+      "label": "Label",
+      "default": "This order is a gift"
+    },
+    {
+      "type": "text",
+      "id": "gift_toggle_attribute",
+      "label": "Saved as",
+      "info": "The name that appears on the order.",
+      "default": "Gift"
+    },
+    {
+      "type": "text",
+      "id": "gift_toggle_value",
+      "label": "Value when on",
+      "default": "Yes"
+    },
+
+    { "type": "header", "content": "Gift message" },
+    {
+      "type": "checkbox",
+      "id": "show_gift_message",
+      "label": "Show gift message",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "gift_message_label",
+      "label": "Label",
+      "info": "Also the name that appears on the order.",
+      "default": "Gift message"
+    },
+    {
+      "type": "text",
+      "id": "gift_message_placeholder",
+      "label": "Placeholder",
+      "default": "Write a message to include with the gift…"
+    },
+    {
+      "type": "range",
+      "id": "gift_message_max",
+      "label": "Maximum length",
+      "min": 50,
+      "max": 500,
+      "step": 10,
+      "default": 200
+    },
+
+    { "type": "header", "content": "Special instructions" },
+    {
+      "type": "checkbox",
+      "id": "show_instructions",
+      "label": "Show special instructions",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "instructions_label",
+      "label": "Label",
+      "default": "Special instructions"
+    },
+    {
+      "type": "text",
+      "id": "instructions_placeholder",
+      "label": "Placeholder",
+      "default": "Delivery notes, allergies, anything we should know…"
+    },
+    {
+      "type": "select",
+      "id": "instructions_target",
+      "label": "Save as",
+      "options": [
+        { "value": "note", "label": "Order note" },
+        { "value": "attribute", "label": "Additional detail (attribute)" }
+      ],
+      "default": "note"
+    },
+
+    { "type": "header", "content": "Preferred date" },
+    {
+      "type": "checkbox",
+      "id": "show_date",
+      "label": "Show date picker",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "date_label",
+      "label": "Label",
+      "default": "Preferred delivery date"
+    },
+    {
+      "type": "range",
+      "id": "date_min_days",
+      "label": "Earliest date (days from today)",
+      "min": 0,
+      "max": 14,
+      "step": 1,
+      "default": 1
+    },
+
+    { "type": "header", "content": "Custom field 1" },
+    {
+      "type": "checkbox",
+      "id": "show_custom_1",
+      "label": "Show custom field 1",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "custom_1_label",
+      "label": "Label",
+      "default": "Recipient name"
+    },
+    {
+      "type": "text",
+      "id": "custom_1_placeholder",
+      "label": "Placeholder"
+    },
+
+    { "type": "header", "content": "Custom field 2" },
+    {
+      "type": "checkbox",
+      "id": "show_custom_2",
+      "label": "Show custom field 2",
+      "default": false
+    },
+    {
+      "type": "text",
+      "id": "custom_2_label",
+      "label": "Label",
+      "default": "Occasion"
+    },
+    {
+      "type": "text",
+      "id": "custom_2_placeholder",
+      "label": "Placeholder"
+    },
+
+    { "type": "header", "content": "Status labels" },
+    {
+      "type": "text",
+      "id": "saving_label",
+      "label": "Saving",
+      "default": "Saving…"
+    },
+    {
+      "type": "text",
+      "id": "saved_label",
+      "label": "Saved",
+      "default": "Saved to your order"
+    },
+    {
+      "type": "text",
+      "id": "error_label",
+      "label": "Error",
+      "default": "Couldn't save. Please try again."
+    },
+
+    { "type": "header", "content": "Style" },
+    {
+      "type": "select",
+      "id": "field_size",
+      "label": "Field size",
+      "options": [
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "input_background",
+      "label": "Field background",
+      "default": "#f7f7f9"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#1a1a1a"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent",
+      "info": "Switch, focus rings, and the saved indicator.",
+      "default": "#5c3d99"
+    },
+    {
+      "type": "range",
+      "id": "padding",
+      "label": "Inner padding",
+      "min": 0,
+      "max": 48,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "Block corner radius",
+      "min": 0,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "input_radius",
+      "label": "Field corner radius",
+      "min": 0,
+      "max": 24,
+      "step": 2,
+      "unit": "px",
+      "default": 10
+    },
+    {
+      "type": "checkbox",
+      "id": "show_border",
+      "label": "Show block border",
+      "default": true
+    }
+  ]
+}
+{% endschema %}

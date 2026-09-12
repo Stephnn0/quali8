@@ -1,11 +1,12 @@
 /*
- * Quali8 — Smart Recommendations.
+ * Quali8 — Occasion Match storefront block.
  *
- * Fetches occasion/recipient/budget-aware product picks from the app proxy
- * and renders rounded filter dropdowns above a scroll-snap product
- * carousel. Selections persist in sessionStorage so the cart block
- * continues where the product page left off. All DOM is built with
- * createElement/textContent — never innerHTML with remote data.
+ * Reads its settings from the JSON blob the Liquid block renders, fetches
+ * occasion / recipient / budget-aware picks from the app proxy, and renders
+ * chip filters above a product carousel or grid. Filter choices persist in
+ * sessionStorage so the cart block continues where the product page left
+ * off. All DOM is built with createElement/textContent — never innerHTML
+ * with remote data.
  *
  * Add-to-cart posts form-encoded to the Ajax Cart API; when a variant is
  * rejected (stale id, sold out) and the product handle is known, it
@@ -20,6 +21,17 @@
 
   var blocks = document.querySelectorAll("[data-quali8-recs]");
   if (!blocks.length) return;
+
+  // --- Utilities -----------------------------------------------------------
+
+  function readSettings(block) {
+    var node = block.querySelector("[data-q8-settings]");
+    try {
+      return JSON.parse((node && node.textContent) || "{}") || {};
+    } catch (e) {
+      return {};
+    }
+  }
 
   function formatMoney(amount, currency) {
     try {
@@ -47,11 +59,17 @@
     path.setAttribute("d", pathD);
     path.setAttribute("fill", "none");
     path.setAttribute("stroke", "currentColor");
-    path.setAttribute("stroke-width", "1.8");
+    path.setAttribute("stroke-width", "2");
     path.setAttribute("stroke-linecap", "round");
     path.setAttribute("stroke-linejoin", "round");
     svg.appendChild(path);
     return svg;
+  }
+
+  function spinner() {
+    var wrap = el("span", "q8-om__spinner");
+    wrap.setAttribute("aria-hidden", "true");
+    return wrap;
   }
 
   function readSelection() {
@@ -74,11 +92,15 @@
     return String(gid || "").split("/").pop();
   }
 
-  function fetchRecommendations(block, selection) {
+  // --- Data ----------------------------------------------------------------
+
+  function fetchRecommendations(block, settings, selection) {
     var params = new URLSearchParams();
     if (selection.occasion) params.set("occasion", selection.occasion);
     if (selection.recipient) params.set("recipient", selection.recipient);
     if (selection.budget) params.set("budget", selection.budget);
+    params.set("limit", String(settings.limit || 4));
+    if (settings.fallback === "hide") params.set("fallback", "0");
 
     var exclude = [];
     if (block.dataset.productId) exclude.push(block.dataset.productId);
@@ -141,8 +163,6 @@
     var firstId = numericId(product.variantId);
     return postToCart(firstId).catch(function (originalError) {
       if (!product.handle) throw originalError;
-      // The recommended variant may have gone stale — ask the storefront
-      // itself which variant is available and retry once.
       return resolveAvailableVariant(product.handle).then(function (liveId) {
         if (!liveId || String(liveId) === firstId) throw originalError;
         return postToCart(liveId);
@@ -150,87 +170,62 @@
     });
   }
 
-  // --- Filter dropdowns ----------------------------------------------------
-
-  var openMenu = null;
-
-  function closeOpenMenu() {
-    if (!openMenu) return;
-    openMenu.menu.hidden = true;
-    openMenu.button.setAttribute("aria-expanded", "false");
-    openMenu = null;
+  /** Let themes with an Ajax cart drawer refresh themselves. */
+  function announceCartChange(payload) {
+    try {
+      document.dispatchEvent(
+        new CustomEvent("cart:refresh", { bubbles: true, detail: payload }),
+      );
+      document.dispatchEvent(
+        new CustomEvent("quali8:cart:added", { bubbles: true, detail: payload }),
+      );
+    } catch (e) {
+      /* old browsers — nothing to announce to */
+    }
   }
 
-  document.addEventListener("click", function (event) {
-    if (openMenu && !openMenu.wrap.contains(event.target)) closeOpenMenu();
-  });
-  document.addEventListener("keydown", function (event) {
-    if (event.key === "Escape") closeOpenMenu();
-  });
+  // --- Filter chips --------------------------------------------------------
 
   /**
-   * Rounded pill dropdown: a button that opens a floating options card.
-   * `allLabel` is the cleared state ("Any occasion").
+   * One filter: a small label and a row of chips. `options` items are
+   * { slug, label, badge? }; the first chip clears the filter.
    */
-  function filterDropdown(allLabel, options, selectedSlug, onPick) {
-    var wrap = el("div", "q8-recs__dd");
-    var selected = options.filter(function (option) {
-      return option.slug === selectedSlug;
-    })[0];
-
-    var button = el("button", "q8-recs__dd-btn");
-    button.type = "button";
-    button.setAttribute("aria-haspopup", "listbox");
-    button.setAttribute("aria-expanded", "false");
-    if (selected) button.classList.add("q8-recs__dd-btn--active");
-    button.appendChild(
-      el("span", "q8-recs__dd-label", selected ? selected.label : allLabel),
-    );
-    button.appendChild(svgIcon("M 4 6.5 L 8 10.5 L 12 6.5"));
-
-    var menu = el("div", "q8-recs__dd-menu");
-    menu.setAttribute("role", "listbox");
-    menu.hidden = true;
-
-    function option(label, slug, isSelected) {
-      var item = el("button", "q8-recs__dd-option", label);
-      item.type = "button";
-      item.setAttribute("role", "option");
-      item.setAttribute("aria-selected", isSelected ? "true" : "false");
-      if (isSelected) {
-        item.classList.add("q8-recs__dd-option--selected");
-        item.appendChild(svgIcon("M 3.5 8.5 L 6.5 11.5 L 12.5 4.5"));
-      }
-      item.addEventListener("click", function () {
-        closeOpenMenu();
-        onPick(slug);
-      });
-      return item;
+  function chipGroup(label, allLabel, options, selectedSlug, onPick) {
+    var group = el("div", "q8-om__group");
+    group.setAttribute("role", "group");
+    if (label) {
+      group.setAttribute("aria-label", label);
+      group.appendChild(el("span", "q8-om__group-label", label));
     }
 
-    menu.appendChild(option(allLabel, null, !selected));
-    options.forEach(function (item) {
-      menu.appendChild(option(item.label, item.slug, item.slug === selectedSlug));
+    var row = el("div", "q8-om__chips");
+
+    function chip(text, slug, badge) {
+      var isSelected = slug === (selectedSlug || null);
+      var button = el("button", "q8-om__chip");
+      button.type = "button";
+      button.setAttribute("aria-pressed", isSelected ? "true" : "false");
+      if (isSelected) button.classList.add("q8-om__chip--on");
+      button.appendChild(el("span", "q8-om__chip-text", text));
+      if (badge) button.appendChild(el("span", "q8-om__chip-badge", badge));
+      button.addEventListener("click", function () {
+        if (isSelected && slug !== null) onPick(null);
+        else onPick(slug);
+      });
+      return button;
+    }
+
+    row.appendChild(chip(allLabel, null, null));
+    options.forEach(function (option) {
+      row.appendChild(chip(option.label, option.slug, option.badge));
     });
 
-    button.addEventListener("click", function (event) {
-      event.stopPropagation();
-      var isOpen = openMenu && openMenu.menu === menu;
-      closeOpenMenu();
-      if (!isOpen) {
-        menu.hidden = false;
-        button.setAttribute("aria-expanded", "true");
-        openMenu = { wrap: wrap, menu: menu, button: button };
-      }
-    });
-
-    wrap.appendChild(button);
-    wrap.appendChild(menu);
-    return wrap;
+    group.appendChild(row);
+    return group;
   }
 
   function arrowButton(direction) {
-    var button = el("button", "q8-recs__arrow q8-recs__arrow--" + direction);
+    var button = el("button", "q8-om__arrow q8-om__arrow--" + direction);
     button.type = "button";
     button.setAttribute(
       "aria-label",
@@ -242,85 +237,141 @@
     return button;
   }
 
-  // --- Render ---------------------------------------------------------------
+  // --- Render --------------------------------------------------------------
 
-  function render(block, data, selection) {
-    closeOpenMenu();
-    block.textContent = "";
+  function render(block, settings, data, selection) {
+    // Keep the settings node; rebuild everything else.
+    Array.prototype.slice.call(block.children).forEach(function (child) {
+      if (!child.hasAttribute("data-q8-settings")) block.removeChild(child);
+    });
 
-    if (!data.products.length && !selection.touched) {
+    var hasSelection = Boolean(
+      selection.occasion || selection.recipient || selection.budget,
+    );
+
+    if (!data.products.length && !hasSelection && !selection.touched) {
       // Nothing to show and the shopper hasn't interacted — stay hidden.
       block.hidden = true;
       return;
     }
     block.hidden = false;
 
-    var header = el("div", "q8-recs__header");
-    var heading = block.dataset.heading;
-    if (heading) header.appendChild(el("h2", "q8-recs__heading", heading));
+    // Header: heading, subheading, carousel arrows
+    var header = el("div", "q8-om__header");
+    var titles = el("div", "q8-om__titles");
+    if (settings.heading) {
+      titles.appendChild(el("h2", "q8-om__heading", settings.heading));
+    }
+    if (settings.subheading) {
+      titles.appendChild(el("p", "q8-om__subheading", settings.subheading));
+    }
+    header.appendChild(titles);
 
     var prev = arrowButton("prev");
     var next = arrowButton("next");
-    var arrows = el("div", "q8-recs__arrows");
+    var arrows = el("div", "q8-om__arrows");
     arrows.appendChild(prev);
     arrows.appendChild(next);
-    header.appendChild(arrows);
+    arrows.hidden = true;
+    if (settings.layout !== "grid") header.appendChild(arrows);
     block.appendChild(header);
 
-    if (block.dataset.showPicker === "true") {
-      var filters = el("div", "q8-recs__filters");
-      if (data.occasions.length) {
+    // Filters
+    var showOccasion =
+      settings.showOccasionFilter !== false && data.occasions.length > 0;
+    if (
+      settings.showFilters !== false &&
+      (showOccasion ||
+        settings.showRecipientFilter !== false ||
+        settings.showBudgetFilter !== false)
+    ) {
+      var filters = el("div", "q8-om__filters");
+
+      if (showOccasion) {
         filters.appendChild(
-          filterDropdown(
-            "Any occasion",
+          chipGroup(
+            settings.occasionLabel,
+            settings.anyOccasionLabel || "Any occasion",
             data.occasions.map(function (occasion) {
               return {
                 slug: occasion.slug,
-                label: occasion.name + (occasion.inSeason ? " · now" : ""),
+                label: occasion.name,
+                badge: occasion.inSeason ? settings.nowLabel || "Now" : null,
               };
             }),
             selection.occasion,
             function (slug) {
-              update(block, { occasion: slug });
+              update(block, settings, { occasion: slug });
             },
           ),
         );
       }
-      filters.appendChild(
-        filterDropdown("Anyone", data.recipients, selection.recipient, function (slug) {
-          update(block, { recipient: slug });
-        }),
-      );
-      filters.appendChild(
-        filterDropdown("Any budget", data.budgets, selection.budget, function (slug) {
-          update(block, { budget: slug });
-        }),
-      );
+      if (settings.showRecipientFilter !== false) {
+        filters.appendChild(
+          chipGroup(
+            settings.recipientLabel,
+            settings.anyRecipientLabel || "Anyone",
+            data.recipients,
+            selection.recipient,
+            function (slug) {
+              update(block, settings, { recipient: slug });
+            },
+          ),
+        );
+      }
+      if (settings.showBudgetFilter !== false) {
+        filters.appendChild(
+          chipGroup(
+            settings.budgetLabel,
+            settings.anyBudgetLabel || "Any budget",
+            data.budgets,
+            selection.budget,
+            function (slug) {
+              update(block, settings, { budget: slug });
+            },
+          ),
+        );
+      }
+
+      if (hasSelection) {
+        var clear = el("button", "q8-om__clear", settings.clearLabel || "Clear");
+        clear.type = "button";
+        clear.addEventListener("click", function () {
+          update(block, settings, { occasion: null, recipient: null, budget: null });
+        });
+        filters.appendChild(clear);
+      }
+
       block.appendChild(filters);
     }
 
+    // Products
     if (!data.products.length) {
       block.appendChild(
         el(
           "p",
-          "q8-recs__empty",
-          "No matches for these filters — try a different budget or occasion.",
+          "q8-om__empty",
+          settings.emptyText || "No matches for these filters yet.",
         ),
       );
-      arrows.hidden = true;
       return;
     }
 
-    var track = el("div", "q8-recs__track");
+    var track = el(
+      "div",
+      settings.layout === "grid" ? "q8-om__grid" : "q8-om__track",
+    );
     data.products.forEach(function (product) {
-      track.appendChild(productCard(block, product));
+      track.appendChild(productCard(block, settings, product));
     });
     block.appendChild(track);
 
-    var errorLine = el("p", "q8-recs__error");
+    var errorLine = el("p", "q8-om__error");
     errorLine.hidden = true;
     block.appendChild(errorLine);
     block.q8ErrorLine = errorLine;
+
+    if (settings.layout === "grid") return;
 
     function syncArrows() {
       var overflow = track.scrollWidth > track.clientWidth + 4;
@@ -331,79 +382,103 @@
         track.scrollLeft + track.clientWidth >= track.scrollWidth - 4;
     }
     prev.addEventListener("click", function () {
-      track.scrollBy({ left: -track.clientWidth, behavior: "smooth" });
+      track.scrollBy({ left: -track.clientWidth * 0.9, behavior: "smooth" });
     });
     next.addEventListener("click", function () {
-      track.scrollBy({ left: track.clientWidth, behavior: "smooth" });
+      track.scrollBy({ left: track.clientWidth * 0.9, behavior: "smooth" });
     });
     track.addEventListener("scroll", syncArrows, { passive: true });
     window.addEventListener("resize", syncArrows, { passive: true });
     requestAnimationFrame(syncArrows);
   }
 
-  function productCard(block, product) {
-    var card = el("article", "q8-recs__card");
+  function productCard(block, settings, product) {
+    var card = el("article", "q8-om__card");
+    var productUrl = product.handle ? ROOT + "products/" + product.handle : null;
 
-    var media = el("div", "q8-recs__media");
+    // Media (with the reason tag overlaid)
+    var media = el("div", "q8-om__media");
     if (product.imageUrl) {
       var img = document.createElement("img");
       img.src = product.imageUrl;
       img.alt = product.title;
       img.loading = "lazy";
       media.appendChild(img);
+    } else {
+      media.appendChild(el("span", "q8-om__media-placeholder"));
     }
-    if (product.handle) {
-      var link = document.createElement("a");
-      link.className = "q8-recs__media-link";
-      link.href = ROOT + "products/" + product.handle;
-      link.appendChild(media);
-      card.appendChild(link);
+    if (settings.showReason !== false && product.reason) {
+      media.appendChild(el("span", "q8-om__reason", product.reason));
+    }
+    if (productUrl) {
+      var mediaLink = document.createElement("a");
+      mediaLink.className = "q8-om__media-link";
+      mediaLink.href = productUrl;
+      mediaLink.setAttribute("aria-label", product.title);
+      mediaLink.appendChild(media);
+      card.appendChild(mediaLink);
     } else {
       card.appendChild(media);
     }
 
-    if (product.reason) {
-      card.appendChild(el("span", "q8-recs__reason", product.reason));
+    // Body
+    var body = el("div", "q8-om__body");
+    var title = el("h3", "q8-om__title");
+    if (productUrl) {
+      var titleLink = document.createElement("a");
+      titleLink.href = productUrl;
+      titleLink.textContent = product.title;
+      title.appendChild(titleLink);
+    } else {
+      title.textContent = product.title;
     }
-    card.appendChild(el("h3", "q8-recs__title", product.title));
-    card.appendChild(
-      el(
-        "p",
-        "q8-recs__price",
-        formatMoney(product.price, block.dataset.currency),
-      ),
+    body.appendChild(title);
+    body.appendChild(
+      el("p", "q8-om__price", formatMoney(product.price, block.dataset.currency)),
     );
 
     if (product.variantId) {
-      var button = el(
-        "button",
-        "q8-recs__add",
-        block.dataset.buttonLabel || "Add to cart",
-      );
+      var button = el("button", "q8-om__add");
       button.type = "button";
+      var label = el("span", "q8-om__add-label", settings.buttonLabel || "Add to cart");
+      button.appendChild(label);
+
+      function setState(state, text) {
+        button.classList.remove("q8-om__add--busy", "q8-om__add--done");
+        var old = button.querySelector(".q8-om__spinner");
+        if (old) button.removeChild(old);
+        if (state === "busy") {
+          button.classList.add("q8-om__add--busy");
+          button.insertBefore(spinner(), label);
+        }
+        if (state === "done") button.classList.add("q8-om__add--done");
+        label.textContent = text;
+      }
+
       button.addEventListener("click", function () {
         button.disabled = true;
+        setState("busy", settings.addingLabel || "Adding…");
         if (block.q8ErrorLine) block.q8ErrorLine.hidden = true;
 
         addToCart(product)
-          .then(function () {
+          .then(function (payload) {
+            announceCartChange(payload);
             if (
-              block.dataset.afterAdd === "cart" ||
+              settings.afterAdd === "cart" ||
               block.dataset.context === "cart"
             ) {
               window.location.href = ROOT + "cart";
               return;
             }
-            button.textContent = block.dataset.addedLabel || "Added ✓";
-            button.classList.add("q8-recs__add--added");
+            setState("done", settings.addedLabel || "Added ✓");
             setTimeout(function () {
               button.disabled = false;
-              button.classList.remove("q8-recs__add--added");
-              button.textContent = block.dataset.buttonLabel || "Add to cart";
+              setState("idle", settings.buttonLabel || "Add to cart");
             }, 2500);
           })
           .catch(function (error) {
             button.disabled = false;
+            setState("idle", settings.buttonLabel || "Add to cart");
             if (block.q8ErrorLine) {
               block.q8ErrorLine.textContent =
                 "Couldn't add to cart: " +
@@ -411,38 +486,44 @@
               block.q8ErrorLine.hidden = false;
             }
             if (window.console && console.error) {
-              console.error("Quali8 recommendations add-to-cart failed:", error);
+              console.error("Quali8 Occasion Match add-to-cart failed:", error);
             }
           });
       });
-      card.appendChild(button);
+      body.appendChild(button);
     }
 
+    card.appendChild(body);
     return card;
   }
 
-  function update(block, patch) {
+  // --- State ---------------------------------------------------------------
+
+  function update(block, settings, patch) {
     var selection = readSelection();
     Object.keys(patch).forEach(function (key) {
       selection[key] = patch[key];
     });
     selection.touched = true;
     writeSelection(selection);
-    load(block, selection);
+    block.classList.add("q8-om--loading");
+    load(block, settings, selection);
   }
 
-  function load(block, selection) {
-    fetchRecommendations(block, selection)
+  function load(block, settings, selection) {
+    fetchRecommendations(block, settings, selection)
       .then(function (data) {
-        render(block, data, selection);
+        block.classList.remove("q8-om--loading");
+        render(block, settings, data, selection);
       })
       .catch(function () {
         // Never break the storefront — leave the block hidden.
+        block.classList.remove("q8-om--loading");
         block.hidden = true;
       });
   }
 
   blocks.forEach(function (block) {
-    load(block, readSelection());
+    load(block, readSettings(block), readSelection());
   });
 })();

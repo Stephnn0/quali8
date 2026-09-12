@@ -1,0 +1,253 @@
+/*
+ * Quali8 — Gift notes & messages block.
+ * Sizes, colours, and radii come from CSS variables the Liquid block sets
+ * from theme-editor settings.
+ */
+
+.q8-notes [hidden] {
+  display: none !important;
+}
+
+.q8-notes {
+  --q8-notes-line: rgba(0, 0, 0, 0.1);
+  --q8-notes-muted: color-mix(in srgb, var(--q8-notes-text, #1a1a1a) 62%, transparent);
+  --q8-notes-accent-soft: color-mix(in srgb, var(--q8-notes-accent, #5c3d99) 14%, transparent);
+
+  box-sizing: border-box;
+  background: var(--q8-notes-bg, #ffffff);
+  color: var(--q8-notes-text, #1a1a1a);
+  border: var(--q8-notes-border, 1px solid rgba(0, 0, 0, 0.08));
+  border-radius: var(--q8-notes-radius, 16px);
+  padding: var(--q8-notes-padding, 24px);
+  margin: 1.5rem 0;
+  font-family: inherit;
+}
+
+.q8-notes *,
+.q8-notes *::before,
+.q8-notes *::after {
+  box-sizing: border-box;
+}
+
+/* --- Header ---------------------------------------------------------------- */
+
+.q8-notes__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.125rem;
+}
+
+.q8-notes__heading {
+  margin: 0;
+  font-size: var(--q8-notes-heading-size, 22px);
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.q8-notes__description {
+  margin: 0.375rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--q8-notes-muted);
+}
+
+.q8-notes__status {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  background: var(--q8-notes-accent-soft);
+  color: var(--q8-notes-accent, #5c3d99);
+  white-space: nowrap;
+}
+
+.q8-notes__status--saved::before {
+  content: "";
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.q8-notes__status--saving {
+  opacity: 0.75;
+}
+
+.q8-notes__status--error {
+  background: rgba(180, 35, 24, 0.1);
+  color: #b42318;
+}
+
+/* --- Fields ---------------------------------------------------------------- */
+
+.q8-notes__fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.q8-notes__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.q8-notes__label-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.q8-notes__label {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.q8-notes__counter {
+  font-size: 0.75rem;
+  color: var(--q8-notes-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.q8-notes__input {
+  appearance: none;
+  width: 100%;
+  border: 1.5px solid var(--q8-notes-line);
+  border-radius: var(--q8-notes-input-radius, 10px);
+  background: var(--q8-notes-input-bg, #f7f7f9);
+  color: inherit;
+  font: inherit;
+  font-size: 0.9375rem;
+  line-height: 1.45;
+  padding: 0.8125rem 0.9375rem;
+  transition: border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+
+.q8-notes__input::placeholder {
+  color: var(--q8-notes-muted);
+  opacity: 1;
+}
+
+.q8-notes__input:hover {
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+.q8-notes__input:focus {
+  outline: none;
+  border-color: var(--q8-notes-accent, #5c3d99);
+  box-shadow: 0 0 0 3px var(--q8-notes-accent-soft);
+  background: #ffffff;
+}
+
+textarea.q8-notes__input {
+  resize: vertical;
+  min-height: 5.5rem;
+}
+
+/* --- Switch ---------------------------------------------------------------- */
+
+.q8-notes__switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.q8-notes__switch-input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+  pointer-events: none;
+}
+
+.q8-notes__switch-track {
+  position: relative;
+  flex: 0 0 auto;
+  width: 2.75rem;
+  height: 1.625rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.18);
+  transition: background 160ms ease;
+}
+
+.q8-notes__switch-thumb {
+  position: absolute;
+  top: 0.1875rem;
+  left: 0.1875rem;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  transition: transform 160ms ease;
+}
+
+.q8-notes__switch-input:checked + .q8-notes__switch-track {
+  background: var(--q8-notes-accent, #5c3d99);
+}
+
+.q8-notes__switch-input:checked + .q8-notes__switch-track .q8-notes__switch-thumb {
+  transform: translateX(1.125rem);
+}
+
+.q8-notes__switch-input:focus-visible + .q8-notes__switch-track {
+  box-shadow: 0 0 0 3px var(--q8-notes-accent-soft);
+}
+
+.q8-notes__switch-label {
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+/* --- Size modifiers ---------------------------------------------------------- */
+
+.q8-notes--small .q8-notes__input {
+  font-size: 0.875rem;
+  padding: 0.625rem 0.8125rem;
+}
+
+.q8-notes--small .q8-notes__label,
+.q8-notes--small .q8-notes__switch-label {
+  font-size: 0.8125rem;
+}
+
+.q8-notes--large .q8-notes__input {
+  font-size: 1.0625rem;
+  padding: 1rem 1.125rem;
+}
+
+.q8-notes--large .q8-notes__label,
+.q8-notes--large .q8-notes__switch-label {
+  font-size: 1rem;
+}
+
+/* --- Responsive -------------------------------------------------------------- */
+
+@media (max-width: 749px) {
+  .q8-notes {
+    padding: calc(var(--q8-notes-padding, 24px) * 0.75);
+  }
+
+  .q8-notes__header {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .q8-notes__input,
+  .q8-notes__switch-track,
+  .q8-notes__switch-thumb {
+    transition: none;
+  }
+}

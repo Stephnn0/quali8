@@ -14,13 +14,29 @@ import {
  * App Proxy endpoint for the storefront Smart Recommendations blocks.
  *
  * Reached at `/apps/quali8/recommendations?occasion=<slug>&recipient=<slug>
- * &budget=<slug>&exclude=<id,id>` (see [app_proxy] in shopify.app.toml).
+ * &budget=<slug>&exclude=<id,id>&limit=<1-12>&fallback=<0|1>` (see
+ * [app_proxy] in shopify.app.toml). `fallback=0` disables the general pool
+ * that tops up the list when nothing matches.
  * Shopify validates the signature and appends `shop` and, when the shopper
  * is signed in, `logged_in_customer_id` — which powers the past-purchases
  * signal.
  */
 
-const EMPTY = { products: [], occasions: [], recipients: [], budgets: [] };
+const EMPTY = {
+  products: [],
+  fallbackUsed: false,
+  occasions: [],
+  recipients: [],
+  budgets: [],
+};
+
+const MAX_LIMIT = 12;
+
+const asLimit = (value: string | null): number => {
+  const parsed = Number.parseInt(value ?? "", 10);
+  if (!Number.isInteger(parsed)) return 4;
+  return Math.min(MAX_LIMIT, Math.max(1, parsed));
+};
 
 const asRecipient = (value: string | null): RecipientSlug | null =>
   RECIPIENTS.some((recipient) => recipient.slug === value)
@@ -69,6 +85,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       budget: asBudget(url.searchParams.get("budget")),
       excludeProductIds,
       customerId,
+      limit: asLimit(url.searchParams.get("limit")),
+      fallback: url.searchParams.get("fallback") !== "0",
     });
 
     return Response.json(payload, { headers });

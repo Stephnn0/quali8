@@ -148,7 +148,7 @@ export const ONEAPP_FEATURES: OneAppFeature[] = [
     category: "seasonal-marketing",
     tagline: "Occasion recommendations with your products.",
     description:
-      "Match your catalog to gifting occasions and show the right products for each one on your storefront.",
+      "Match your catalog to gifting occasions and show the right products on product and cart pages, with a gift-notes block that saves messages and instructions to the order.",
     icon: ConfettiIcon,
     image: "/features/occasion-match.svg",
     to: "/app/occasions",

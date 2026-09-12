@@ -37,6 +37,20 @@ export const GRAPHQL_QUERY_PRODUCTS_BY_TAG = `#graphql
   }
 `;
 
+/** Newest active products first — the general pool when nothing matches. */
+export const GRAPHQL_QUERY_PRODUCTS_RECENT = `#graphql
+  ${PRODUCT_FIELDS}
+  query productsRecent($first: Int!) {
+    products(first: $first, query: "status:active", sortKey: UPDATED_AT, reverse: true) {
+      edges {
+        node {
+          ...RecommendationProductFields
+        }
+      }
+    }
+  }
+`;
+
 export const GRAPHQL_QUERY_PRODUCTS_BY_IDS = `#graphql
   ${PRODUCT_FIELDS}
   query productsByIds($ids: [ID!]!) {

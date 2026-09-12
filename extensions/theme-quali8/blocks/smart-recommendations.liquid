@@ -1,31 +1,78 @@
 {%- comment -%}
-  Quali8 — Smart Recommendations (product + cart app block).
-  Fetches occasion/recipient/budget-aware product picks from the app proxy
-  (/apps/quali8/recommendations) and renders a subtle filter row above a
-  scroll-snap product carousel. Renders compact on product pages (the block
-  sits inside product information). Stays hidden (zero layout shift) until
-  recommendations are found.
+  Quali8 — Occasion Match (product + cart app block).
+
+  Fetches occasion / recipient / budget-aware product picks from the app
+  proxy (/apps/quali8/recommendations) and renders chip filters above a
+  product carousel or grid. Occasions are optional: with none set, or when
+  nothing matches, the engine tops the list up with general picks (unless
+  "When nothing matches" is set to hide). Stays hidden (zero layout shift)
+  until products are loaded.
+
+  All settings are passed to the script as one JSON blob so the theme
+  editor can customise sizes, layout, copy, and colours without touching
+  the JS.
 {%- endcomment -%}
 
+{%- capture q8_settings_json -%}
+{
+  "heading": {{ block.settings.heading | json }},
+  "subheading": {{ block.settings.subheading | json }},
+  "emptyText": {{ block.settings.empty_text | json }},
+  "showFilters": {{ block.settings.show_filters | json }},
+  "showOccasionFilter": {{ block.settings.show_occasion_filter | json }},
+  "showRecipientFilter": {{ block.settings.show_recipient_filter | json }},
+  "showBudgetFilter": {{ block.settings.show_budget_filter | json }},
+  "occasionLabel": {{ block.settings.occasion_label | json }},
+  "recipientLabel": {{ block.settings.recipient_label | json }},
+  "budgetLabel": {{ block.settings.budget_label | json }},
+  "anyOccasionLabel": {{ block.settings.any_occasion_label | json }},
+  "anyRecipientLabel": {{ block.settings.any_recipient_label | json }},
+  "anyBudgetLabel": {{ block.settings.any_budget_label | json }},
+  "clearLabel": {{ block.settings.clear_label | json }},
+  "nowLabel": {{ block.settings.now_label | json }},
+  "limit": {{ block.settings.products_limit | json }},
+  "layout": {{ block.settings.layout | json }},
+  "fallback": {{ block.settings.fallback | json }},
+  "showReason": {{ block.settings.show_reason | json }},
+  "buttonLabel": {{ block.settings.button_label | json }},
+  "addingLabel": {{ block.settings.adding_label | json }},
+  "addedLabel": {{ block.settings.added_label | json }},
+  "afterAdd": {{ block.settings.after_add | json }}
+}
+{%- endcapture -%}
+
 <div
-  class="q8-recs"
+  class="q8-om q8-om--{{ block.settings.layout }} q8-om--filters-{{ block.settings.filter_size }} q8-om--btn-{{ block.settings.button_size }} q8-om--btn-{{ block.settings.button_style }} q8-om--cards-{{ block.settings.card_style }} q8-om--align-{{ block.settings.text_align }}"
   data-quali8-recs
   data-context="{{ request.page_type }}"
   {%- if product %} data-product-id="{{ product.id }}"{% endif -%}
   {%- if request.page_type == 'cart' %} data-cart-product-ids="{{ cart.items | map: 'product_id' | join: ',' }}"{% endif -%}
   data-currency="{{ cart.currency.iso_code | default: shop.currency }}"
-  data-heading="{{ block.settings.heading | escape }}"
-  data-show-picker="{{ block.settings.show_picker }}"
-  data-button-label="{{ block.settings.button_label | escape }}"
-  data-added-label="{{ block.settings.added_label | escape }}"
-  data-after-add="{{ block.settings.after_add }}"
-  style="--q8-recs-bg: {{ block.settings.background_color }}; --q8-recs-text: {{ block.settings.text_color }}; --q8-recs-accent: {{ block.settings.accent_color }};"
+  style="
+    --q8-om-bg: {{ block.settings.background_color }};
+    --q8-om-text: {{ block.settings.text_color }};
+    --q8-om-accent: {{ block.settings.accent_color }};
+    --q8-om-btn-bg: {{ block.settings.button_background }};
+    --q8-om-btn-text: {{ block.settings.button_text_color }};
+    --q8-om-card-bg: {{ block.settings.card_background }};
+    --q8-om-heading-size: {{ block.settings.heading_size }}px;
+    --q8-om-heading-size-mobile: {{ block.settings.heading_size | times: 0.8 | round }}px;
+    --q8-om-radius: {{ block.settings.border_radius }}px;
+    --q8-om-card-radius: {{ block.settings.card_radius }}px;
+    --q8-om-padding: {{ block.settings.padding }}px;
+    --q8-om-border: {% if block.settings.show_border %}1px solid rgba(0, 0, 0, 0.08){% else %}none{% endif %};
+    --q8-om-columns: {{ block.settings.columns_desktop }};
+    --q8-om-columns-mobile: {{ block.settings.columns_mobile }};
+    --q8-om-image-ratio: {% case block.settings.image_ratio %}{% when 'portrait' %}4 / 5{% when 'landscape' %}4 / 3{% else %}1 / 1{% endcase %};
+  "
   hidden
-></div>
+>
+  <script type="application/json" data-q8-settings>{{ q8_settings_json | strip }}</script>
+</div>
 
 {% schema %}
 {
-  "name": "Smart Recommendations",
+  "name": "Occasion Match",
   "target": "section",
   "javascript": "smart-recommendations.js",
   "stylesheet": "smart-recommendations.css",
@@ -33,6 +80,7 @@
     "templates": ["product", "cart"]
   },
   "settings": [
+    { "type": "header", "content": "Content" },
     {
       "type": "text",
       "id": "heading",
@@ -40,22 +88,243 @@
       "default": "Find the perfect gift"
     },
     {
-      "type": "checkbox",
-      "id": "show_picker",
-      "label": "Show occasion, recipient, and budget filters",
-      "default": true
+      "type": "text",
+      "id": "subheading",
+      "label": "Subheading",
+      "info": "Optional line under the heading."
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "label": "Heading size",
+      "min": 16,
+      "max": 48,
+      "step": 2,
+      "unit": "px",
+      "default": 26
+    },
+    {
+      "type": "select",
+      "id": "text_align",
+      "label": "Heading alignment",
+      "options": [
+        { "value": "left", "label": "Left" },
+        { "value": "center", "label": "Center" }
+      ],
+      "default": "left"
     },
     {
       "type": "text",
+      "id": "empty_text",
+      "label": "Text when nothing matches",
+      "default": "No matches for these filters yet. Try another occasion or budget."
+    },
+
+    { "type": "header", "content": "Filters" },
+    {
+      "type": "checkbox",
+      "id": "show_filters",
+      "label": "Show filters",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_occasion_filter",
+      "label": "Occasion filter",
+      "info": "Only shows when at least one occasion is active in the app.",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_recipient_filter",
+      "label": "Recipient filter",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_budget_filter",
+      "label": "Budget filter",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "filter_size",
+      "label": "Filter size",
+      "options": [
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "text",
+      "id": "occasion_label",
+      "label": "Occasion label",
+      "default": "Occasion"
+    },
+    {
+      "type": "text",
+      "id": "any_occasion_label",
+      "label": "Occasion \"all\" chip",
+      "default": "Any occasion"
+    },
+    {
+      "type": "text",
+      "id": "recipient_label",
+      "label": "Recipient label",
+      "default": "For"
+    },
+    {
+      "type": "text",
+      "id": "any_recipient_label",
+      "label": "Recipient \"all\" chip",
+      "default": "Anyone"
+    },
+    {
+      "type": "text",
+      "id": "budget_label",
+      "label": "Budget label",
+      "default": "Budget"
+    },
+    {
+      "type": "text",
+      "id": "any_budget_label",
+      "label": "Budget \"all\" chip",
+      "default": "Any budget"
+    },
+    {
+      "type": "text",
+      "id": "now_label",
+      "label": "In-season tag",
+      "info": "Shown on occasions whose dates include today.",
+      "default": "Now"
+    },
+    {
+      "type": "text",
+      "id": "clear_label",
+      "label": "Clear filters link",
+      "default": "Clear"
+    },
+
+    { "type": "header", "content": "Products" },
+    {
+      "type": "range",
+      "id": "products_limit",
+      "label": "Number of products",
+      "min": 2,
+      "max": 12,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout",
+      "options": [
+        { "value": "carousel", "label": "Carousel" },
+        { "value": "grid", "label": "Grid" }
+      ],
+      "default": "carousel"
+    },
+    {
+      "type": "range",
+      "id": "columns_desktop",
+      "label": "Columns on desktop",
+      "info": "Grid layout, and the card width in the carousel.",
+      "min": 2,
+      "max": 5,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "select",
+      "id": "columns_mobile",
+      "label": "Columns on mobile",
+      "options": [
+        { "value": "1", "label": "1" },
+        { "value": "2", "label": "2" }
+      ],
+      "default": "2"
+    },
+    {
+      "type": "select",
+      "id": "image_ratio",
+      "label": "Image ratio",
+      "options": [
+        { "value": "square", "label": "Square" },
+        { "value": "portrait", "label": "Portrait" },
+        { "value": "landscape", "label": "Landscape" }
+      ],
+      "default": "square"
+    },
+    {
+      "type": "select",
+      "id": "card_style",
+      "label": "Card style",
+      "options": [
+        { "value": "minimal", "label": "Minimal" },
+        { "value": "boxed", "label": "Boxed" }
+      ],
+      "default": "boxed"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_reason",
+      "label": "Show \"why this pick\" tags",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "fallback",
+      "label": "When nothing matches",
+      "info": "Occasions are optional. \"Show other picks\" fills the block with products from your catalog so it never sits empty.",
+      "options": [
+        { "value": "general", "label": "Show other picks" },
+        { "value": "hide", "label": "Hide the block" }
+      ],
+      "default": "general"
+    },
+
+    { "type": "header", "content": "Add to cart button" },
+    {
+      "type": "text",
       "id": "button_label",
-      "label": "Add button label",
+      "label": "Label",
       "default": "Add to cart"
     },
     {
       "type": "text",
+      "id": "adding_label",
+      "label": "While adding",
+      "default": "Adding…"
+    },
+    {
+      "type": "text",
       "id": "added_label",
-      "label": "Added confirmation label",
+      "label": "After adding",
       "default": "Added ✓"
+    },
+    {
+      "type": "select",
+      "id": "button_size",
+      "label": "Size",
+      "options": [
+        { "value": "small", "label": "Small" },
+        { "value": "medium", "label": "Medium" },
+        { "value": "large", "label": "Large" }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "Style",
+      "options": [
+        { "value": "solid", "label": "Solid" },
+        { "value": "outline", "label": "Outline" }
+      ],
+      "default": "solid"
     },
     {
       "type": "select",
@@ -67,10 +336,18 @@
       ],
       "default": "stay"
     },
+
+    { "type": "header", "content": "Colors" },
     {
       "type": "color",
       "id": "background_color",
       "label": "Background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "card_background",
+      "label": "Card background",
       "default": "#ffffff"
     },
     {
@@ -83,7 +360,58 @@
       "type": "color",
       "id": "accent_color",
       "label": "Accent",
+      "info": "Selected filters, tags, and focus rings.",
       "default": "#5c3d99"
+    },
+    {
+      "type": "color",
+      "id": "button_background",
+      "label": "Button",
+      "default": "#5c3d99"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text",
+      "default": "#ffffff"
+    },
+
+    { "type": "header", "content": "Spacing & shape" },
+    {
+      "type": "range",
+      "id": "padding",
+      "label": "Inner padding",
+      "min": 0,
+      "max": 48,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "Block corner radius",
+      "min": 0,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "card_radius",
+      "label": "Card corner radius",
+      "min": 0,
+      "max": 24,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "checkbox",
+      "id": "show_border",
+      "label": "Show block border",
+      "default": true
     }
   ]
 }

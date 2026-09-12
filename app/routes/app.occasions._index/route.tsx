@@ -117,7 +117,7 @@ export default function OccasionsIndex() {
     <Page>
       <FeatureHeader
         featureKey="occasion-match"
-        tagline="Curate the products shoppers see for each occasion — shown by the Smart Recommendations block on product and cart pages."
+        tagline="Curate the products shoppers see for each occasion — shown by the Occasion Match block on product and cart pages."
         actions={
           <Button variant="primary" onClick={() => navigate("/app/occasions/new")}>
             Create occasion
@@ -169,7 +169,7 @@ export default function OccasionsIndex() {
                 Show it on your storefront
               </Text>
               <Text as="p" tone="subdued">
-                Occasions power the Smart Recommendations app block. Here is
+                Occasions power the Occasion Match app block. Here is
                 what shoppers see and how to enable it in your theme.
               </Text>
             </BlockStack>
@@ -178,7 +178,7 @@ export default function OccasionsIndex() {
                 <Box background="bg-surface-secondary" padding="400">
                   <img
                     src={storefrontShowcaseImage}
-                    alt="Smart Recommendations block on a product page, with occasion, recipient, and budget filters above four recommended products"
+                    alt="Occasion Match block on a product page, with occasion, recipient, and budget filters above four recommended products"
                     style={{
                       display: "block",
                       width: "100%",
@@ -194,7 +194,7 @@ export default function OccasionsIndex() {
                       Recommendations on product and cart pages
                     </Text>
                     <Text as="p" tone="subdued">
-                      The Smart Recommendations block shows the products you
+                      The Occasion Match block shows the products you
                       curate for each occasion, with occasion, recipient, and
                       budget filters and one-tap add to cart. You can place it
                       on the product page, the cart page, or both.
@@ -206,7 +206,7 @@ export default function OccasionsIndex() {
                 <Box background="bg-surface-secondary" padding="400">
                   <img
                     src={themeEditorSettingsImage}
-                    alt="Theme editor settings panel for the Smart Recommendations block, showing heading, labels, after-add behavior, and color options"
+                    alt="Theme editor settings panel for the Occasion Match block, showing heading, labels, after-add behavior, and color options"
                     style={{
                       display: "block",
                       width: "100%",
@@ -228,7 +228,7 @@ export default function OccasionsIndex() {
                       </List.Item>
                       <List.Item>
                         Open the Product or Cart template, then choose Add
-                        block &rarr; Apps &rarr; Smart Recommendations.
+                        block &rarr; Apps &rarr; Occasion Match.
                       </List.Item>
                       <List.Item>
                         Use the block settings to edit the heading, button
