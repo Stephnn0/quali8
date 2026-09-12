@@ -19,7 +19,8 @@ The nav labels do **not** match the model/route names — keep this straight:
 | Promotions | `app.actions.discounts.*` | `ShippingDiscountAction` |
 | Bundles | `app.bundles.*` | `Bundle` |
 | Subscriptions | `app.settings._index` | `ShopifySubscription` |
-| Campaigns (WIP, nav link hidden) | `app.campaings.*` | `Campaign` |
+| Campaigns (nav tab, coming-soon hub) | `app.campaigns._index` | — |
+| Legacy campaigns (WIP, unlinked) | `app.campaings.*` | `Campaign` |
 
 > Note: "campaing"/"campaings" is a misspelling that is baked into route folders, the `api.campaing` route, model dir `app/models/app.server/campaings`, and components. Match existing spelling when editing those paths; don't silently "fix" it in one place and break imports.
 
@@ -34,7 +35,7 @@ The app is presented to merchants as **OneApp**: a library of numbered features,
 - **Images:** one SVG per feature in `public/features/<key>.svg` (640×400, referenced as `/features/<key>.svg`). Replace a file at the same path to swap in a real screenshot.
 - **Feature pages** open with `FeatureHeader featureKey="..."` (index pages) or `FeatureEyebrow` (detail pages) so the numbering stays consistent.
 
-Current categories: **Sales & Pricing** (Smart Shipping, Bundle Builder), **Customers** (Customer Insights, Subscribe Boost), **Content & SEO** (FAQ Collections, SEO AI), **Seasonal Marketing** (Occasion Match, Smart Announcements, Sales Calendar). To add a feature: add the registry entry, drop its image in `public/features/`, and gate its route; to add a category: add it to `ONEAPP_CATEGORIES` and the `OneAppCategoryKey` union.
+Current categories: **Sales & Pricing** (Smart Shipping, Bundle Builder), **Customers** (Customer Insights), **Content & SEO** (FAQ Collections), **Seasonal Marketing** (Occasion Match, Smart Announcements, SEO AI, Subscribe Boost, Seasonal Hero, Smart Menu, SEO Prep List, Marketing Playbook). The seven seasonal features after Occasion Match each configure one sales date at a time from the generic `app.seasonal.$feature.*` routes (`/app/seasonal/<key>` lists dates, `/app/seasonal/<key>/<dateId>` edits that date); their config copy lives in `app/components/Seasonal/seasonalFeatures.ts` and their data/mutations in `app/services/seasonal/`. **Campaigns** (`/app/campaigns`, nav tab after the categories) is the coming-soon hub that will switch those features on and off per date; the old Sales Calendar routes (`app.special-dates.*`) stay reachable by URL but are no longer in the nav or the registry. To add a feature: add the registry entry, drop its image in `public/features/`, and gate its route; to add a category: add it to `ONEAPP_CATEGORIES` and the `OneAppCategoryKey` union.
 
 ## Stack
 
