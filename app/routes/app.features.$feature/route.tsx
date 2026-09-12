@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type {
   ActionFunctionArgs,
   HeadersFunction,
@@ -18,6 +19,7 @@ import {
 import AnnouncementScheduler from "app/components/Seasonal/AnnouncementScheduler";
 import PopupScheduler from "app/components/Seasonal/PopupScheduler";
 import SeoOptimizer from "app/components/Seasonal/SeoOptimizer";
+import DeliveryZonesEditor from "app/components/Delivery/DeliveryZonesEditor";
 import {
   loadShopFeatureConfig,
   runShopFeatureAction,
@@ -71,47 +73,70 @@ export async function action({ request, params }: ActionFunctionArgs) {
   }
 }
 
-function FeatureEditor({
-  featureKey,
-  config,
-}: {
-  featureKey: FeaturePageKey;
-  config: ShopFeatureConfig;
-}) {
+type Section = { title: string; help: string; node: ReactNode };
+
+/** The cards on a feature page: the primary editor, plus extras. */
+function sectionsFor(featureKey: FeaturePageKey, config: ShopFeatureConfig): Section[] {
+  const feature = FEATURE_PAGES[featureKey];
   switch (featureKey) {
     case "smart-announcements":
-      return <AnnouncementScheduler announcementBar={config.announcementBar} />;
+      return [
+        {
+          title: feature.configTitle,
+          help: feature.configHelp,
+          node: <AnnouncementScheduler announcementBar={config.announcementBar} />,
+        },
+        {
+          title: "Zip code delivery check",
+          help:
+            "Shoppers type their zip or postal code into the bar and see whether you deliver there and for how much. Zones are matched top to bottom.",
+          node: <DeliveryZonesEditor {...config.delivery} />,
+        },
+      ];
     case "subscribe-boost":
-      return <PopupScheduler popup={config.popup} />;
+      return [
+        {
+          title: feature.configTitle,
+          help: feature.configHelp,
+          node: <PopupScheduler popup={config.popup} />,
+        },
+      ];
     case "seo-ai":
-      return (
-        <SeoOptimizer specialDateId={null} appliedActions={config.seoActions} />
-      );
+      return [
+        {
+          title: feature.configTitle,
+          help: feature.configHelp,
+          node: <SeoOptimizer specialDateId={null} appliedActions={config.seoActions} />,
+        },
+      ];
   }
 }
 
 export default function FeaturePage() {
   const { featureKey, config } = useLoaderData<typeof loader>();
-  const feature = FEATURE_PAGES[featureKey];
 
   return (
     <Page>
       <FeatureHeader featureKey={featureKey} />
       <Layout>
         <Layout.Section>
-          <Card>
-            <BlockStack gap="400">
-              <BlockStack gap="100">
-                <Text as="h2" variant="headingMd">
-                  {feature.configTitle}
-                </Text>
-                <Text as="p" tone="subdued">
-                  {feature.configHelp}
-                </Text>
-              </BlockStack>
-              <FeatureEditor featureKey={featureKey} config={config} />
-            </BlockStack>
-          </Card>
+          <BlockStack gap="400">
+            {sectionsFor(featureKey, config).map((section) => (
+              <Card key={section.title}>
+                <BlockStack gap="400">
+                  <BlockStack gap="100">
+                    <Text as="h2" variant="headingMd">
+                      {section.title}
+                    </Text>
+                    <Text as="p" tone="subdued">
+                      {section.help}
+                    </Text>
+                  </BlockStack>
+                  {section.node}
+                </BlockStack>
+              </Card>
+            ))}
+          </BlockStack>
         </Layout.Section>
       </Layout>
     </Page>

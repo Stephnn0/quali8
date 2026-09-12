@@ -1,12 +1,15 @@
 {%- comment -%}
-  Quali8 — Smart Announcements bar (app block, any template).
+  Quali8 — Announcement & delivery bar (app embed, every page).
 
-  The message, colours, and show window are scheduled in the app (Smart
-  Announcements, or a Sales Calendar date); the bar asks the app proxy
-  (/apps/quali8/announcement) whether one is live today. Everything about
-  how it looks and behaves — size, position, link, countdown, dismiss,
-  motion — is set here in the theme editor. Renders nothing (zero layout
-  shift) when no bar is scheduled.
+  A bar above the header on every page. Two jobs:
+  1. Announcements: message, colours, and show window are scheduled in the
+     app (Announcements + Delivery Check, or a Sales Calendar date); the bar
+     asks the app proxy (/apps/quali8/announcement) whether one is live.
+  2. Zip code delivery check: shoppers type a zip or postal code and the
+     bar tells them whether you deliver there and for how much, from the
+     zones set in the app (/apps/quali8/delivery-check).
+  How it looks and behaves is set here in the theme editor. Renders nothing
+  (zero layout shift) when neither an announcement nor the checker is on.
 {%- endcomment -%}
 
 {%- capture q8_bar_settings -%}
@@ -24,13 +27,25 @@
   "dismissible": {{ block.settings.dismissible | json }},
   "dismissDays": {{ block.settings.dismiss_days | json }},
   "animation": {{ block.settings.animation | json }},
-  "marquee": {{ block.settings.marquee | json }}
+  "marquee": {{ block.settings.marquee | json }},
+  "showDeliveryCheck": {{ block.settings.show_delivery_check | json }},
+  "deliveryPrompt": {{ block.settings.delivery_prompt | json }},
+  "zipPlaceholder": {{ block.settings.zip_placeholder | json }},
+  "checkLabel": {{ block.settings.check_label | json }},
+  "checkingLabel": {{ block.settings.checking_label | json }},
+  "successText": {{ block.settings.success_text | json }},
+  "priceText": {{ block.settings.price_text | json }},
+  "freeText": {{ block.settings.free_text | json }},
+  "failText": {{ block.settings.fail_text | json }},
+  "changeLabel": {{ block.settings.change_label | json }},
+  "rememberZip": {{ block.settings.remember_zip | json }}
 }
 {%- endcapture -%}
 
 <div
-  class="q8-bar q8-bar--{{ block.settings.position }} q8-bar--align-{{ block.settings.alignment }} q8-bar--weight-{{ block.settings.font_weight }}{% if block.settings.full_bleed %} q8-bar--bleed{% endif %}{% if block.settings.uppercase %} q8-bar--upper{% endif %}{% if block.settings.sheen %} q8-bar--sheen{% endif %}{% if block.settings.gradient %} q8-bar--gradient{% endif %}{% if block.settings.marquee %} q8-bar--marquee{% endif %}"
+  class="q8-bar q8-bar--{{ block.settings.position }} q8-bar--align-{{ block.settings.alignment }} q8-bar--weight-{{ block.settings.font_weight }} q8-bar--check-{{ block.settings.check_placement }}{% if block.settings.full_bleed %} q8-bar--bleed{% endif %}{% if block.settings.uppercase %} q8-bar--upper{% endif %}{% if block.settings.sheen %} q8-bar--sheen{% endif %}{% if block.settings.gradient %} q8-bar--gradient{% endif %}{% if block.settings.marquee %} q8-bar--marquee{% endif %}"
   data-quali8-announcement
+  data-currency="{{ cart.currency.iso_code | default: shop.currency }}"
   style="
     --q8-bar-size: {{ block.settings.text_size }}px;
     --q8-bar-size-mobile: {{ block.settings.text_size | times: 0.9 | round }}px;
@@ -45,17 +60,14 @@
 
 {% schema %}
 {
-  "name": "Announcement bar",
-  "target": "section",
+  "name": "Announcement & delivery bar",
+  "target": "body",
   "javascript": "announcement-bar.js",
   "stylesheet": "announcement-bar.css",
-  "enabled_on": {
-    "templates": ["*"]
-  },
   "settings": [
-    { "type": "paragraph", "content": "The message, colours, and dates come from Smart Announcements in the app. Style it here." },
+    { "type": "paragraph", "content": "Announcements and delivery zones are set in the app (Announcements + Delivery Check). This embed shows the bar above your header on every page; style it here." },
 
-    { "type": "header", "content": "Content" },
+    { "type": "header", "content": "Announcement" },
     {
       "type": "text",
       "id": "prefix",
@@ -97,16 +109,99 @@
       "default": "Ends in"
     },
 
-    { "type": "header", "content": "Layout" },
+    { "type": "header", "content": "Zip code delivery check" },
+    {
+      "type": "checkbox",
+      "id": "show_delivery_check",
+      "label": "Show the checker",
+      "info": "Also needs the switch and at least one zone in the app.",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "check_placement",
+      "label": "Placement",
+      "options": [
+        { "value": "inline", "label": "Beside the message" },
+        { "value": "below", "label": "Under the message" }
+      ],
+      "default": "inline"
+    },
+    {
+      "type": "text",
+      "id": "delivery_prompt",
+      "label": "Prompt",
+      "default": "Do we deliver to you?"
+    },
+    {
+      "type": "text",
+      "id": "zip_placeholder",
+      "label": "Input placeholder",
+      "default": "ZIP code"
+    },
+    {
+      "type": "text",
+      "id": "check_label",
+      "label": "Button",
+      "default": "Check"
+    },
+    {
+      "type": "text",
+      "id": "checking_label",
+      "label": "Button while checking",
+      "default": "…"
+    },
+    {
+      "type": "text",
+      "id": "success_text",
+      "label": "We deliver",
+      "info": "Use {zip} for the code.",
+      "default": "Yes, we deliver to {zip}!"
+    },
+    {
+      "type": "text",
+      "id": "price_text",
+      "label": "Price line",
+      "info": "Use {price}. Shown when the zone has a price.",
+      "default": "Delivery {price}"
+    },
+    {
+      "type": "text",
+      "id": "free_text",
+      "label": "Free delivery line",
+      "default": "Free delivery"
+    },
+    {
+      "type": "text",
+      "id": "fail_text",
+      "label": "We don't deliver",
+      "default": "Sorry, we don't deliver to {zip} yet."
+    },
+    {
+      "type": "text",
+      "id": "change_label",
+      "label": "Change link",
+      "default": "Change"
+    },
+    {
+      "type": "checkbox",
+      "id": "remember_zip",
+      "label": "Remember the shopper's code",
+      "info": "Shows their result on later pages without asking again.",
+      "default": true
+    },
+
+    { "type": "header", "content": "Layout & text" },
     {
       "type": "select",
       "id": "position",
       "label": "Position",
       "options": [
-        { "value": "inline", "label": "In place" },
-        { "value": "sticky", "label": "Sticky at the top" }
+        { "value": "top", "label": "Top of the page" },
+        { "value": "sticky", "label": "Sticky at the top" },
+        { "value": "bottom", "label": "Fixed at the bottom" }
       ],
-      "default": "inline"
+      "default": "top"
     },
     {
       "type": "checkbox",
@@ -139,15 +234,13 @@
       "type": "range",
       "id": "border_radius",
       "label": "Corner radius",
-      "info": "Only when not full width.",
+      "info": "Only when not full width, or at the bottom.",
       "min": 0,
       "max": 24,
       "step": 2,
       "unit": "px",
       "default": 12
     },
-
-    { "type": "header", "content": "Typography" },
     {
       "type": "range",
       "id": "text_size",
@@ -191,6 +284,7 @@
       "type": "checkbox",
       "id": "use_app_colors",
       "label": "Use the colours set in the app",
+      "info": "When only the checker shows, the colours below are used.",
       "default": true
     },
     {
@@ -250,7 +344,7 @@
       "type": "checkbox",
       "id": "marquee",
       "label": "Scrolling ticker",
-      "info": "Scrolls the message continuously. Off under reduced-motion.",
+      "info": "Scrolls the announcement continuously. Off under reduced-motion and when the checker is shown.",
       "default": false
     }
   ]

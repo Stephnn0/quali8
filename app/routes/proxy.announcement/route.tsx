@@ -1,13 +1,16 @@
 import type { LoaderFunctionArgs } from "react-router";
 import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
+import { deliveryCheckAvailable } from "app/services/delivery/deliveryZones.server";
 
 /**
  * App Proxy endpoint for the homepage announcement bar theme block.
  * Reached at `/apps/quali8/announcement`. Returns the scheduled bar whose
  * window contains today (the soonest-ending one when windows overlap), or
- * `{ bar: null }`. Advance-plan entitlement is implied by the bar's
- * existence — bars are only creatable from the gated manage page.
+ * `{ bar: null }`, plus whether the zip code delivery checker is on so
+ * the bar can render the checker even with no announcement scheduled.
+ * Advance-plan entitlement is implied by the bar's existence — bars are
+ * only creatable from the gated manage page.
  */
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   // Validates the Shopify HMAC signature; throws a 4xx Response if invalid.
@@ -20,12 +23,13 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const headers = { "Cache-Control": "public, max-age=60" };
 
   if (!shop) {
-    return Response.json({ bar: null }, { headers });
+    return Response.json({ bar: null, deliveryCheck: { enabled: false } }, { headers });
   }
 
   try {
     const today = new Date().toISOString().slice(0, 10);
-    const bar = await db.announcementBar.findFirst({
+    const [bar, deliveryEnabled] = await Promise.all([
+      db.announcementBar.findFirst({
       where: {
         shop,
         enabled: true,
@@ -39,12 +43,17 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         textColor: true,
         endDate: true, // lets the theme block show a countdown
       },
-    });
+      }),
+      deliveryCheckAvailable(db, shop),
+    ]);
 
-    return Response.json({ bar }, { headers });
+    return Response.json(
+      { bar, deliveryCheck: { enabled: deliveryEnabled } },
+      { headers },
+    );
   } catch (error) {
     console.error("Error in /proxy/announcement:", error); // eslint-disable-line no-console
     // Never surface an error to the storefront — just render nothing.
-    return Response.json({ bar: null }, { headers });
+    return Response.json({ bar: null, deliveryCheck: { enabled: false } }, { headers });
   }
 };

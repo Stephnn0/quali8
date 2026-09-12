@@ -1,17 +1,20 @@
 /*
- * Quali8 — Announcement bar.
+ * Quali8 — Announcement & delivery bar (app embed).
  *
- * Asks the app proxy whether a bar is scheduled for today and renders it
- * with the theme-editor presentation settings: prefix, link, countdown to
- * the end date, close button (remembered in localStorage), and a marquee
- * option. Stays hidden (zero layout shift) otherwise. DOM built with
- * createElement/textContent only.
+ * Asks the app proxy for today's announcement and whether the zip code
+ * delivery checker is on, then renders the bar above the header (moved to
+ * the top of <body>, or fixed at the bottom) with the theme-editor
+ * presentation settings: prefix, link, countdown, close button, marquee,
+ * and the checker itself. The checker posts the shopper's code to the
+ * proxy and shows the zone's answer and price; the code can be remembered
+ * in localStorage. DOM built with createElement/textContent only.
  */
 (function () {
   var ROOT =
     (window.Shopify && window.Shopify.routes && window.Shopify.routes.root) ||
     "/";
   var DISMISS_KEY = "q8-bar-dismissed";
+  var ZIP_KEY = "q8-bar-zip";
 
   var blocks = document.querySelectorAll("[data-quali8-announcement]");
   if (!blocks.length) return;
@@ -32,23 +35,37 @@
     return node;
   }
 
-  function dismissedUntil() {
+  function storageGet(key) {
     try {
-      return Number(localStorage.getItem(DISMISS_KEY) || 0);
+      return localStorage.getItem(key);
     } catch (e) {
-      return 0;
+      return null;
+    }
+  }
+  function storageSet(key, value) {
+    try {
+      if (value === null) localStorage.removeItem(key);
+      else localStorage.setItem(key, value);
+    } catch (e) {
+      /* private browsing */
     }
   }
 
-  function rememberDismiss(days) {
+  function formatMoney(amount, currency) {
     try {
-      localStorage.setItem(
-        DISMISS_KEY,
-        String(Date.now() + Math.max(1, days || 1) * 86400000),
-      );
+      return new Intl.NumberFormat(document.documentElement.lang || "en", {
+        style: "currency",
+        currency: currency || "USD",
+      }).format(amount);
     } catch (e) {
-      /* private browsing — the bar will just come back */
+      return "$" + Number(amount).toFixed(2);
     }
+  }
+
+  function fill(template, values) {
+    return String(template || "").replace(/\{(\w+)\}/g, function (_, key) {
+      return values[key] != null ? values[key] : "";
+    });
   }
 
   /** "2d 04h 12m" until the end of the end date (local midnight). */
@@ -67,11 +84,11 @@
     return parts.join(" ");
   }
 
+  // --- Announcement message ----------------------------------------------------
+
   function messageNode(settings, bar) {
     var wrap = el("span", "q8-bar__message");
-    if (settings.prefix) {
-      wrap.appendChild(el("span", "q8-bar__prefix", settings.prefix));
-    }
+    if (settings.prefix) wrap.appendChild(el("span", "q8-bar__prefix", settings.prefix));
     wrap.appendChild(el("span", "q8-bar__text", bar.message));
 
     if (settings.showCountdown && bar.endDate) {
@@ -79,16 +96,13 @@
       if (text) {
         var countdown = el("span", "q8-bar__countdown");
         if (settings.countdownLabel) {
-          countdown.appendChild(
-            el("span", "q8-bar__countdown-label", settings.countdownLabel),
-          );
+          countdown.appendChild(el("span", "q8-bar__countdown-label", settings.countdownLabel));
         }
         var value = el("span", "q8-bar__countdown-value", text);
         countdown.appendChild(value);
         wrap.appendChild(countdown);
         setInterval(function () {
-          var next = countdownText(bar.endDate);
-          value.textContent = next || "0h 00m";
+          value.textContent = countdownText(bar.endDate) || "0h 00m";
         }, 30000);
       }
     }
@@ -96,8 +110,7 @@
     if (settings.linkUrl && settings.linkLabel) {
       var link = document.createElement("a");
       link.className =
-        "q8-bar__link" +
-        (settings.linkStyle === "button" ? " q8-bar__link--button" : "");
+        "q8-bar__link" + (settings.linkStyle === "button" ? " q8-bar__link--button" : "");
       link.href = settings.linkUrl;
       link.textContent = settings.linkLabel;
       wrap.appendChild(link);
@@ -105,33 +118,154 @@
     return wrap;
   }
 
-  function render(block, settings, bar) {
+  // --- Zip code delivery check -------------------------------------------------
+
+  function checkZip(zip) {
+    return fetch(ROOT + "apps/quali8/delivery-check?zip=" + encodeURIComponent(zip), {
+      headers: { Accept: "application/json" },
+    }).then(function (response) {
+      if (!response.ok) throw new Error("HTTP " + response.status);
+      return response.json();
+    });
+  }
+
+  function checkerNode(block, settings) {
+    var wrap = el("span", "q8-bar__check");
+    var currency = block.dataset.currency;
+
+    function showForm(initialZip) {
+      wrap.textContent = "";
+      if (settings.deliveryPrompt) {
+        wrap.appendChild(el("span", "q8-bar__check-prompt", settings.deliveryPrompt));
+      }
+      var form = el("form", "q8-bar__check-form");
+      form.setAttribute("novalidate", "");
+      var input = document.createElement("input");
+      input.className = "q8-bar__check-input";
+      input.type = "text";
+      input.inputMode = "text";
+      input.autocomplete = "postal-code";
+      input.maxLength = 12;
+      input.placeholder = settings.zipPlaceholder || "ZIP code";
+      input.setAttribute("aria-label", settings.zipPlaceholder || "ZIP code");
+      if (initialZip) input.value = initialZip;
+      var button = el("button", "q8-bar__check-button", settings.checkLabel || "Check");
+      button.type = "submit";
+      form.appendChild(input);
+      form.appendChild(button);
+      wrap.appendChild(form);
+
+      form.addEventListener("submit", function (event) {
+        event.preventDefault();
+        var zip = input.value.trim();
+        if (!zip) {
+          input.focus();
+          return;
+        }
+        button.disabled = true;
+        button.textContent = settings.checkingLabel || "…";
+        checkZip(zip)
+          .then(function (result) {
+            if (settings.rememberZip !== false) storageSet(ZIP_KEY, zip);
+            showResult(zip, result);
+          })
+          .catch(function () {
+            button.disabled = false;
+            button.textContent = settings.checkLabel || "Check";
+          });
+      });
+    }
+
+    function showResult(zip, result) {
+      wrap.textContent = "";
+      var yes = Boolean(result && result.deliverable);
+      var pill = el("span", "q8-bar__check-result" + (yes ? "" : " q8-bar__check-result--no"));
+      pill.setAttribute("role", "status");
+      var values = { zip: (result && result.zip) || zip };
+      if (yes) {
+        pill.appendChild(el("span", null, fill(settings.successText || "Yes, we deliver to {zip}!", values)));
+        var zone = result.zone || {};
+        if (zone.price === 0 && settings.freeText) {
+          pill.appendChild(el("span", "q8-bar__check-note", settings.freeText));
+        } else if (typeof zone.price === "number" && zone.price > 0 && settings.priceText) {
+          pill.appendChild(
+            el("span", "q8-bar__check-note", fill(settings.priceText, { price: formatMoney(zone.price, currency) })),
+          );
+        }
+        if (zone.message) pill.appendChild(el("span", "q8-bar__check-note", zone.message));
+      } else {
+        pill.appendChild(el("span", null, fill(settings.failText || "Sorry, we don't deliver to {zip} yet.", values)));
+      }
+      wrap.appendChild(pill);
+
+      var change = el("button", "q8-bar__check-change", settings.changeLabel || "Change");
+      change.type = "button";
+      change.addEventListener("click", function () {
+        storageSet(ZIP_KEY, null);
+        showForm(zip);
+      });
+      wrap.appendChild(change);
+    }
+
+    var remembered = settings.rememberZip !== false ? storageGet(ZIP_KEY) : null;
+    if (remembered) {
+      showForm(remembered);
+      checkZip(remembered)
+        .then(function (result) {
+          showResult(remembered, result);
+        })
+        .catch(function () {
+          /* leave the form */
+        });
+    } else {
+      showForm("");
+    }
+    return wrap;
+  }
+
+  // --- Render --------------------------------------------------------------------
+
+  function place(block, settings) {
+    var position = settings.position || "top";
+    if (position === "bottom") return; // fixed via CSS, stays where Liquid put it
+    if (document.body.firstChild !== block) {
+      document.body.insertBefore(block, document.body.firstChild);
+    }
+  }
+
+  function render(block, settings, bar, deliveryOn) {
     Array.prototype.slice.call(block.children).forEach(function (child) {
       if (!child.hasAttribute("data-q8-bar-settings")) block.removeChild(child);
     });
 
-    var bg = settings.useAppColors !== false
-      ? bar.backgroundColor || settings.backgroundColor
-      : settings.backgroundColor || bar.backgroundColor;
-    var fg = settings.useAppColors !== false
-      ? bar.textColor || settings.textColor
-      : settings.textColor || bar.textColor;
-    block.style.setProperty("--q8-bar-bg", bg || "#2c1f58");
-    block.style.setProperty("--q8-bar-text", fg || "#ffffff");
+    var useApp = settings.useAppColors !== false && bar;
+    block.style.setProperty(
+      "--q8-bar-bg",
+      (useApp ? bar.backgroundColor : settings.backgroundColor) || settings.backgroundColor || "#2c1f58",
+    );
+    block.style.setProperty(
+      "--q8-bar-text",
+      (useApp ? bar.textColor : settings.textColor) || settings.textColor || "#ffffff",
+    );
 
     var inner = el("div", "q8-bar__inner");
+    var marquee = settings.marquee && bar && !deliveryOn;
 
-    if (settings.marquee) {
-      var track = el("div", "q8-bar__track");
-      // Two copies make the loop seamless
-      track.appendChild(messageNode(settings, bar));
-      var copy = messageNode(settings, bar);
-      copy.setAttribute("aria-hidden", "true");
-      track.appendChild(copy);
-      inner.appendChild(track);
-    } else {
-      inner.appendChild(messageNode(settings, bar));
+    if (bar) {
+      if (marquee) {
+        var track = el("div", "q8-bar__track");
+        track.appendChild(messageNode(settings, bar));
+        var copy = messageNode(settings, bar);
+        copy.setAttribute("aria-hidden", "true");
+        track.appendChild(copy);
+        inner.appendChild(track);
+      } else {
+        inner.appendChild(messageNode(settings, bar));
+      }
     }
+    if (!marquee) block.classList.remove("q8-bar--marquee");
+
+    if (deliveryOn) inner.appendChild(checkerNode(block, settings));
 
     if (settings.dismissible !== false) {
       var close = el("button", "q8-bar__close");
@@ -149,7 +283,7 @@
       svg.appendChild(path);
       close.appendChild(svg);
       close.addEventListener("click", function () {
-        rememberDismiss(settings.dismissDays);
+        storageSet(DISMISS_KEY, String(Date.now() + Math.max(1, settings.dismissDays || 1) * 86400000));
         block.classList.add("q8-bar--closing");
         setTimeout(function () {
           block.hidden = true;
@@ -160,23 +294,25 @@
 
     block.appendChild(inner);
     block.classList.add("q8-bar--anim-" + (settings.animation || "slide"));
+    place(block, settings);
     block.hidden = false;
   }
 
-  if (dismissedUntil() > Date.now()) return;
+  if (Number(storageGet(DISMISS_KEY) || 0) > Date.now()) return;
 
-  fetch(ROOT + "apps/quali8/announcement", {
-    headers: { Accept: "application/json" },
-  })
+  fetch(ROOT + "apps/quali8/announcement", { headers: { Accept: "application/json" } })
     .then(function (response) {
       if (!response.ok) throw new Error("HTTP " + response.status);
       return response.json();
     })
     .then(function (data) {
-      var bar = data && data.bar;
-      if (!bar || !bar.message) return;
+      var bar = data && data.bar && data.bar.message ? data.bar : null;
+      var deliveryOn = Boolean(data && data.deliveryCheck && data.deliveryCheck.enabled);
       blocks.forEach(function (block) {
-        render(block, readSettings(block), bar);
+        var settings = readSettings(block);
+        var showChecker = deliveryOn && settings.showDeliveryCheck !== false;
+        if (!bar && !showChecker) return;
+        render(block, settings, bar, showChecker);
       });
     })
     .catch(function () {

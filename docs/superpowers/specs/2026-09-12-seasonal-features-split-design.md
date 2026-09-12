@@ -91,3 +91,21 @@ After review the split was narrowed:
 - The theme block file `smart-recommendations.liquid` is now the cart block
   (previously the combined product + cart block); merchants re-add
   "Occasions + Gifts" on the product template.
+
+## Revision 2026-09-13: Announcements + Delivery Check
+
+- Smart Announcements is re-marketed as **Announcements + Delivery Check**
+  (key unchanged). Its page gains a **zip code delivery checker**: a master
+  switch (`ShopifyStore.deliveryCheckEnabled`) and **delivery zones**
+  (`DeliveryZone`: name, zip/postal codes with `*` prefixes, optional
+  price where 0 = free, optional message, active, position). Migration
+  `20260913120000_delivery_zones`.
+- New proxy `/apps/quali8/delivery-check?zip=` answers deliverable +
+  zone; `/apps/quali8/announcement` now also returns
+  `deliveryCheck.enabled`.
+- The theme block becomes an **app embed** (`target: body`) so it appears
+  on every page; the script moves it above the header (or fixes it to the
+  bottom). It renders the checker inline or under the message, with all
+  copy ({zip}/{price} templates) editable, and can remember the shopper's
+  code. Merchants enable it under Theme settings → App embeds; the old
+  section block instance is gone.

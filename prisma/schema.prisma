@@ -38,6 +38,8 @@ model ShopifyStore {
   /// GID of the shop's single automatic app discount backing all active
   /// bundles (extensions/bundle-discounts). Null until a bundle is activated.
   bundleDiscountId     String?
+  /// Storefront zip code delivery checker (Announcements + Delivery Check)
+  deliveryCheckEnabled Boolean                  @default(false)
   //
   qualifiers           Qualifiers[]
   customers            Customers[]
@@ -51,6 +53,7 @@ model ShopifyStore {
   bundles   Bundle[]
   occasions Occasion[]
   recommendationRules RecommendationRule[]
+  deliveryZones       DeliveryZone[]
 
   storeProfile   StoreProfile?
   dashboardBrief DashboardBrief?
@@ -688,6 +691,27 @@ enum RecommendationSource {
   TAG
   NEWEST
   PRODUCTS
+}
+
+/// A delivery zone for the storefront zip code checker: a list of codes
+/// (exact, or prefixes ending in "*"), an optional delivery price, and an
+/// optional message. Zones are matched in `position` order.
+model DeliveryZone {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  //
+  name      String
+  zipCodes  String[] /// Normalised: uppercase, no spaces; "331*" is a prefix
+  price     Float? /// Delivery price in the shop currency; 0 = free; null = not shown
+  message   String? /// Extra line shown with the result
+  active    Boolean  @default(true)
+  position  Int      @default(0)
+  //
+  shop         String
+  shopifyStore ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([shop, active, position])
 }
 
 /// The merchant's business profile powering the AI assistant dashboard.

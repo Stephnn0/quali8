@@ -43,6 +43,25 @@
   z-index: 50;
 }
 
+.q8-bar--bottom {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 50;
+  margin: 0;
+  width: auto;
+  max-width: none;
+  border-radius: var(--q8-bar-radius, 12px) var(--q8-bar-radius, 12px) 0 0;
+  box-shadow: 0 -4px 16px -8px rgba(0, 0, 0, 0.35);
+}
+
+/* As an app embed the bar is moved to the top of <body>; keep it in flow. */
+.q8-bar--top,
+.q8-bar--sticky {
+  margin: 0;
+}
+
 .q8-bar--gradient {
   background: linear-gradient(
     100deg,
@@ -201,6 +220,126 @@
   height: 0.75rem;
 }
 
+/* --- Zip code delivery check ----------------------------------------------------- */
+
+.q8-bar__check {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 0;
+}
+
+.q8-bar--check-below .q8-bar__inner {
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.q8-bar__check-prompt {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.q8-bar__check-form {
+  display: inline-flex;
+  align-items: stretch;
+  margin: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  overflow: hidden;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.q8-bar__check-form:focus-within {
+  border-color: var(--q8-bar-text-on);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.q8-bar__check-input {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.9em;
+  padding: 0.45em 0.9em;
+  width: 8.5em;
+  min-width: 0;
+  outline: none;
+}
+
+.q8-bar__check-input::placeholder {
+  color: inherit;
+  opacity: 0.7;
+}
+
+.q8-bar__check-button {
+  appearance: none;
+  border: none;
+  background: var(--q8-bar-text-on);
+  color: var(--q8-bar-bg, #2c1f58);
+  font: inherit;
+  font-size: 0.85em;
+  font-weight: 700;
+  padding: 0 1em;
+  cursor: pointer;
+  transition: filter 120ms ease;
+}
+
+.q8-bar__check-button:hover:not(:disabled) {
+  filter: brightness(0.95);
+}
+
+.q8-bar__check-button:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.q8-bar__check-result {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-size: 0.9em;
+  font-weight: 600;
+  padding: 0.3em 0.8em;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  animation: q8-bar-fade 240ms ease both;
+}
+
+.q8-bar__check-result::before {
+  content: "";
+  width: 0.5em;
+  height: 0.5em;
+  border-radius: 50%;
+  background: #7ee2a0;
+  flex: 0 0 auto;
+}
+
+.q8-bar__check-result--no::before {
+  background: #ff8a80;
+}
+
+.q8-bar__check-note {
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+.q8-bar__check-change {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.8em;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+  padding: 0;
+  opacity: 0.85;
+}
+
 /* --- Marquee ------------------------------------------------------------------- */
 
 .q8-bar--marquee .q8-bar__inner {
@@ -279,6 +418,14 @@
 
   .q8-bar--align-between .q8-bar__message {
     justify-content: center;
+  }
+
+  .q8-bar__check {
+    justify-content: center;
+  }
+
+  .q8-bar__check-input {
+    width: 7em;
   }
 }
 

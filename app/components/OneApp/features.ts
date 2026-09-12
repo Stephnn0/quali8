@@ -158,11 +158,11 @@ export const ONEAPP_FEATURES: OneAppFeature[] = [
   {
     number: "06",
     key: "smart-announcements",
-    name: "Smart Announcements",
+    name: "Announcements + Delivery Check",
     category: "theme-extensions",
-    tagline: "Announcement bars timed to your sales dates.",
+    tagline: "A header bar for announcements and a zip code delivery checker.",
     description:
-      "Schedule an announcement bar for your home page so it appears on the date you choose and disappears when the moment has passed.",
+      "One bar above your header on every page: schedule announcements that appear and disappear on their own, and let shoppers enter a zip code to see whether you deliver there and for how much.",
     icon: MegaphoneIcon,
     image: "/features/smart-announcements.svg",
     to: "/app/features/smart-announcements",

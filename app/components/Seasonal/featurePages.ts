@@ -24,9 +24,9 @@ export type FeaturePage = {
 export const FEATURE_PAGES: Record<FeaturePageKey, FeaturePage> = {
   "smart-announcements": {
     key: "smart-announcements",
-    configTitle: "Announcement bar",
+    configTitle: "Announcement",
     configHelp:
-      "A banner across your home page with your message and colors, shown between the dates you choose.",
+      "A message across the top of every page with your colors, shown between the dates you choose.",
   },
   "subscribe-boost": {
     key: "subscribe-boost",
