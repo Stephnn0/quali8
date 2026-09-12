@@ -1,6 +1,5 @@
-
 client_id = "34da8696cbfc709d9fdc83cb99b19030"
-name = "Quali8"
+name = "OneApp - Your Features"
 handle = "quali8"
 application_url = "https://quali8-production-1000301086677.us-central1.run.app"
 embedded = true
