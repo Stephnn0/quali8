@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 400" width="640" height="400" role="img">
+<defs>
+  <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3effc"/><stop offset="1" stop-color="#e3dcf5"/></linearGradient>
+  <filter id="sh" x="-10%" y="-10%" width="120%" height="130%"><feGaussianBlur in="SourceAlpha" stdDeviation="8"/><feOffset dy="6" result="b"/><feFlood flood-color="#1d1539" flood-opacity="0.12"/><feComposite in2="b" operator="in"/><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect width="640" height="400" fill="url(#bg)"/>
+<g filter="url(#sh)">
+  <rect x="80" y="48" width="480" height="320" rx="14" fill="#ffffff"/>
+  <rect x="80" y="48" width="480" height="32" rx="14" fill="#1d1539"/>
+  <rect x="80" y="66" width="480" height="14" fill="#1d1539"/>
+  <circle cx="102" cy="64" r="4.5" fill="#f0c46c"/><circle cx="116" cy="64" r="4.5" fill="#cfc4ec"/><circle cx="130" cy="64" r="4.5" fill="#cfc4ec"/>
+</g>
+<text x="108" y="112" font-family="Inter, -apple-system, Segoe UI, sans-serif" font-size="15" font-weight="800" fill="#1d1539">Shipping method</text>
+<rect x="108" y="128" width="424" height="56" rx="10" fill="#f3effc" stroke="#5c3d99" stroke-width="1.5"/>
+<circle cx="132" cy="156" r="8" fill="#5c3d99"/><circle cx="132" cy="156" r="3.5" fill="#ffffff"/>
+<text x="150" y="152" font-family="Inter, -apple-system, Segoe UI, sans-serif" font-size="13" font-weight="700" fill="#1d1539">Local delivery</text>
+<text x="150" y="170" font-family="Inter, -apple-system, Segoe UI, sans-serif" font-size="11" fill="#8a80a8">Same-day before 2pm · Zone: Downtown</text>
+<text x="516" y="160" font-family="Inter, -apple-system, Segoe UI, sans-serif" font-size="14" font-weight="800" fill="#1d1539" text-anchor="end">$8.50</text>
+<rect x="108" y="196" width="424" height="56" rx="10" fill="#ffffff" stroke="#e3e3e8"/>
+<circle cx="132" cy="224" r="8" fill="#ffffff" stroke="#cfc4ec" stroke-width="2"/>
+<rect x="150" y="215" width="120" height="9" rx="4" fill="#e3e3e8"/><rect x="150" y="232" width="180" height="8" rx="4" fill="#efeff3"/>
+<rect x="470" y="218" width="46" height="10" rx="4" fill="#e3e3e8"/>
+<rect x="108" y="270" width="424" height="1" fill="#e3e3e8"/>
+<text x="108" y="296" font-family="Inter, -apple-system, Segoe UI, sans-serif" font-size="9" font-weight="700" fill="#8a80a8" letter-spacing="1.2">ZONE MATCH</text>
+<rect x="108" y="306" width="84" height="22" rx="11" fill="#2c1f58"/><text x="150" y="321" font-family="Inter, -apple-system, Segoe UI, sans-serif" font-size="11" font-weight="700" fill="#f0c46c" text-anchor="middle">331* → $8.50</text>
+<rect x="200" y="306" width="96" height="22" rx="11" fill="#e5f5ec"/><text x="248" y="321" font-family="Inter, -apple-system, Segoe UI, sans-serif" font-size="11" font-weight="700" fill="#0f5132" text-anchor="middle">332* → Free</text>
+<rect x="304" y="306" width="120" height="22" rx="11" fill="#fbeaea"/><text x="364" y="321" font-family="Inter, -apple-system, Segoe UI, sans-serif" font-size="11" font-weight="700" fill="#b42318" text-anchor="middle">No match → none</text>
+</svg>

@@ -40,6 +40,8 @@ model ShopifyStore {
   bundleDiscountId     String?
   /// Storefront zip code delivery checker (Announcements + Delivery Check)
   deliveryCheckEnabled Boolean                  @default(false)
+  /// GID of the app's carrier service once registered (Delivery Rates)
+  carrierServiceId     String?
   //
   qualifiers           Qualifiers[]
   customers            Customers[]
@@ -54,6 +56,7 @@ model ShopifyStore {
   occasions Occasion[]
   recommendationRules RecommendationRule[]
   deliveryZones       DeliveryZone[]
+  carrierRate         CarrierRate?
 
   storeProfile   StoreProfile?
   dashboardBrief DashboardBrief?
@@ -712,6 +715,22 @@ model DeliveryZone {
   shopifyStore ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
 
   @@index([shop, active, position])
+}
+
+/// Delivery Rates: the single shipping rate the app's carrier service
+/// returns at checkout, priced by the matching DeliveryZone. One per shop.
+model CarrierRate {
+  id            Int      @id @default(autoincrement())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
+  //
+  enabled       Boolean  @default(true)
+  title         String   @default("Local delivery") /// Shown as the shipping method at checkout
+  /// Price when no zone matches; null = no rate (checkout blocks the address)
+  fallbackPrice Float?
+  //
+  shop          String       @unique
+  shopifyStore  ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
 }
 
 /// The merchant's business profile powering the AI assistant dashboard.

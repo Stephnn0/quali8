@@ -211,6 +211,20 @@ export const ONEAPP_FEATURES: OneAppFeature[] = [
     plan: "Advance",
     gate: { hasRecommendations: true },
   },
+  {
+    number: "10",
+    key: "delivery-rates",
+    name: "Delivery Rates",
+    category: "sales-pricing",
+    tagline: "Checkout delivery rates priced by zip code.",
+    description:
+      "Register the app as a carrier service so checkout shows a delivery rate priced by your zip code zones, and gate the cart so shoppers confirm delivery and their address before checkout.",
+    icon: DeliveryIcon,
+    image: "/features/delivery-rates.svg",
+    to: "/app/carrier",
+    plan: "Advance",
+    gate: { hasShippingDiscounts: true },
+  },
 ];
 
 /** The next open slot in the library — the "Request a feature" number. */

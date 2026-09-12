@@ -1,6 +1,6 @@
 # Plan: Delivery Checkout block + Carrier Service
 
-Date: 2026-09-13. Status: proposed, not started.
+Date: 2026-09-13. Status: implemented 2026-09-13 (both parts); see the owner actions below before it works on a store.
 
 ## Goal
 
