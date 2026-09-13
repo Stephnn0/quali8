@@ -20,7 +20,7 @@ export type SellableProduct = {
   price: number;
 };
 
-type ProductNode = {
+export type ProductNode = {
   __typename?: string;
   id: string;
   title: string;
@@ -29,6 +29,7 @@ type ProductNode = {
   productType?: string | null;
   status?: string | null;
   onlineStoreUrl?: string | null;
+  publishedAt?: string | null;
   featuredImage?: { url?: string | null } | null;
   variants?: {
     edges?: Array<{
@@ -42,10 +43,14 @@ type ProductNode = {
  * the storefront cart would reject it: the Admin API returns products that
  * are archived/draft, not published to the Online Store, or fully sold out —
  * adding those yields "Cannot find variant or is already sold out".
+ *
+ * Published-to-Online-Store is read from `onlineStoreUrl` or `publishedAt`:
+ * the URL is null on a password-protected store (a shop before launch, or
+ * a development store), while the publish date stays set.
  */
-function toSellableProduct(node: ProductNode): SellableProduct | null {
+export function toSellableProduct(node: ProductNode): SellableProduct | null {
   if (node.status && node.status !== "ACTIVE") return null;
-  if (!node.onlineStoreUrl) return null;
+  if (!node.onlineStoreUrl && !node.publishedAt) return null;
 
   const available = (node.variants?.edges ?? []).find(
     (edge) => edge.node.availableForSale,

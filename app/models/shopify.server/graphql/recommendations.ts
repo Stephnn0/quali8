@@ -7,8 +7,10 @@ const PRODUCT_FIELDS = `#graphql
     productType
     status
     # Null when the product is not published to the Online Store — such
-    # products cannot be added to the storefront cart.
+    # products cannot be added to the storefront cart. Also null while the
+    # store is password-protected, so publishedAt is the second witness.
     onlineStoreUrl
+    publishedAt
     featuredImage {
       url
     }
