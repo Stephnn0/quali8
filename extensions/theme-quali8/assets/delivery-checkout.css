@@ -1150,14 +1150,30 @@ textarea.q8-dc__input {
   gap: 0.75em;
   margin-top: 1em;
 }
+/* One row that scrolls sideways, so a long list never stacks below the form */
 .q8-dc__recs-track {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(9.5em, 1fr));
+  display: flex;
   gap: 0.75em;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  padding-bottom: 0.5em;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(20, 32, 29, 0.25) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+.q8-dc__recs-track::-webkit-scrollbar {
+  height: 6px;
+}
+.q8-dc__recs-track::-webkit-scrollbar-thumb {
+  background: rgba(20, 32, 29, 0.25);
+  border-radius: 999px;
 }
 .q8-dc__rec {
   display: flex;
   flex-direction: column;
+  flex: 0 0 10em;
+  scroll-snap-align: start;
   background: var(--q8-dc-bg, #fff);
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: var(--q8-dc-radius, 16px);
