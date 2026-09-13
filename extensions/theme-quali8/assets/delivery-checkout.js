@@ -29,6 +29,7 @@
     (window.Shopify && window.Shopify.routes && window.Shopify.routes.root) ||
     "/";
   var ZIP_KEY = "q8-bar-zip"; // shared with the header bar's checker
+  var OCCASION_KEY = "q8-occasion"; // set by the product page's Occasions + Gifts block
   var SAVE_DELAY = 600;
   var BLOCKED_CLASS = "q8-dc-blocked";
 
@@ -1412,6 +1413,17 @@
           select.appendChild(option);
         });
         occasionField.wrap.hidden = false;
+        // The product page's Occasions + Gifts block remembers the shopper's occasion.
+        if (!op.occasion) {
+          var remembered = null;
+          try { remembered = JSON.parse(storageGet(OCCASION_KEY) || "null"); } catch (e) { /* ignore */ }
+          var name = remembered && remembered.name;
+          if (name && slugByName[name]) {
+            op.occasion = name;
+            select.value = name;
+            save(patchFor());
+          }
+        }
         showOccasionProducts();
       })
       .catch(function () { /* no occasions, no field */ });

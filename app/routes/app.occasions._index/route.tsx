@@ -23,6 +23,8 @@ import storefrontShowcaseImage from "app/assets/recs-storefront-showcase.png";
 import themeEditorSettingsImage from "app/assets/recs-theme-editor-settings.png";
 import { occasionWindowContains } from "app/services/recommendations/constants";
 import { FeatureHeader } from "app/components/OneApp";
+import OccasionBlockSettingsEditor from "app/components/Occasions/OccasionBlockSettingsEditor";
+import { defaultOccasionBlockSettings } from "app/services/occasions/occasionBlock";
 import { loader, type OccasionRow } from "./loader";
 import { action } from "./action";
 
@@ -43,6 +45,7 @@ function windowLabel(occasion: OccasionRow): string {
 export default function OccasionsIndex() {
   const loaderData = useLoaderData<typeof loader>();
   const occasions = loaderData?.payload?.occasions ?? [];
+  const blockSettings = loaderData?.payload?.blockSettings ?? defaultOccasionBlockSettings();
 
   const navigate = useNavigate();
   const shopify = useAppBridge();
@@ -166,6 +169,26 @@ export default function OccasionsIndex() {
         </Layout.Section>
 
         <Layout.Section>
+          <Card>
+            <BlockStack gap="400">
+              <BlockStack gap="100">
+                <Text as="h2" variant="headingMd">
+                  Product page block
+                </Text>
+                <Text as="p" tone="subdued" variant="bodySm">
+                  What the Occasions + Gifts block says and does on product pages:
+                  it asks whether the shopper is buying for an occasion, suggests a
+                  few, then shows that occasion&rsquo;s gifts with one button that
+                  adds the product they&rsquo;re viewing plus the gift. Colours and
+                  shapes stay in the theme editor.
+                </Text>
+              </BlockStack>
+              <OccasionBlockSettingsEditor key={JSON.stringify(blockSettings)} settings={blockSettings} />
+            </BlockStack>
+          </Card>
+        </Layout.Section>
+
+        <Layout.Section>
           <BlockStack gap="300">
             <BlockStack gap="100">
               <Text as="h2" variant="headingMd">
@@ -198,10 +221,10 @@ export default function OccasionsIndex() {
                       Gift picks on product pages
                     </Text>
                     <Text as="p" tone="subdued">
-                      The Occasions + Gifts block shows the products and
-                      collections you connect to each occasion, with occasion
-                      chips and one-tap add to cart. Occasions are optional:
-                      with none in season, shoppers still see gift picks.
+                      The block asks &ldquo;Shopping for an occasion?&rdquo;, suggests
+                      a few occasions with an &ldquo;Other&rdquo; picker for the rest,
+                      then shows that occasion&rsquo;s gifts. One tap adds the product
+                      being viewed together with the gift.
                     </Text>
                   </BlockStack>
                 </Box>
@@ -235,8 +258,8 @@ export default function OccasionsIndex() {
                         &rarr; Apps &rarr; Occasions + Gifts.
                       </List.Item>
                       <List.Item>
-                        Use the block settings to edit the heading, occasion
-                        chips, layout, button, and colors — no code needed.
+                        The theme editor keeps colours, sizes, and corners. The
+                        words and behaviour are in the card above.
                       </List.Item>
                     </List>
                   </BlockStack>

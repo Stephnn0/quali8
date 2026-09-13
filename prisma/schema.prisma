@@ -60,6 +60,7 @@ model ShopifyStore {
   deliverySchedule    DeliverySchedule?
   deliveryTimeWindows DeliveryTimeWindow[]
   cartOptions         CartOptionsSettings?
+  occasionBlock       OccasionBlockSettings?
 
   storeProfile   StoreProfile?
   dashboardBrief DashboardBrief?
@@ -758,6 +759,36 @@ model DeliverySchedule {
   deliveryTodayCutoff    String? /// "HH:MM" 24h; today closes at this shop time. Null = all day
   pickupTodayEnabled     Boolean  @default(true)
   pickupTodayCutoff      String?
+  //
+  shop         String       @unique
+  shopifyStore ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
+}
+
+/// Copy and behaviour of the Occasions + Gifts product-page block, managed
+/// on the Occasions page (the theme editor only keeps colours and shapes).
+model OccasionBlockSettings {
+  id              Int      @id @default(autoincrement())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+  //
+  heading         String   @default("Shopping for an occasion?")
+  subheading      String   @default("Pick one and we'll suggest the perfect add-on.")
+  suggestedCount  Int      @default(3) /// Chips shown before "Other occasions"
+  otherLabel      String   @default("Other occasions")
+  pickerTitle     String   @default("Which occasion?")
+  giftsHeading    String   @default("Gifts for {occasion}")
+  giftsSubtext    String   @default("Add one to go with this item.")
+  changeLabel     String   @default("Change occasion")
+  pairWithProduct Boolean  @default(true) /// Add the viewed product together with the gift
+  addLabel        String   @default("Add both to cart")
+  addingLabel     String   @default("Adding…")
+  addedLabel      String   @default("Added ✓")
+  afterAdd        String   @default("stay") /// "stay" | "cart"
+  giftLimit       Int      @default(8)
+  showNowBadge    Boolean  @default(true)
+  nowLabel        String   @default("Now")
+  emptyText       String   @default("No gift picks for this occasion yet.")
+  rememberChoice  Boolean  @default(true) /// Keep the occasion across pages and prefill the cart
   //
   shop         String       @unique
   shopifyStore ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)

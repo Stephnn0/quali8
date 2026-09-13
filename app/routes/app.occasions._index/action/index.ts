@@ -3,6 +3,10 @@ import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
 import { gatekeepRoute } from "app/services/subscriptions/gatekeepRoute";
 import { handleApiError } from "app/utils/server/handleApiResponse/handleApiError.server";
+import {
+  occasionBlockActionSchema,
+  saveOccasionBlockSettings,
+} from "app/services/occasions/occasionBlock.server";
 
 export async function action({ request }: ActionFunctionArgs) {
   const authAdminContext = await authenticate.admin(request);
@@ -17,6 +21,10 @@ export async function action({ request }: ActionFunctionArgs) {
 
     const formData = await request.formData();
     const body = JSON.parse(String(formData.get("body") ?? "{}"));
+
+    if (request.method === "POST" && body?.action === "save-block-settings") {
+      return saveOccasionBlockSettings(db, session.shop, occasionBlockActionSchema.parse(body));
+    }
 
     if (request.method === "DELETE") {
       const occasionId = Number(body.occasionId);

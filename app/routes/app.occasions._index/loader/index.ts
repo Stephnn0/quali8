@@ -3,6 +3,8 @@ import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
 import { gatekeepRoute } from "app/services/subscriptions/gatekeepRoute";
 import { DEFAULT_OCCASIONS } from "app/services/recommendations/constants";
+import { loadOccasionBlockSettings } from "app/services/occasions/occasionBlock.server";
+import type { OccasionBlockSettings } from "app/services/occasions/occasionBlock";
 import { handleApiSuccess } from "app/utils/handleApiSuccess";
 import { handleApiError } from "app/utils/server/handleApiResponse/handleApiError.server";
 
@@ -55,8 +57,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
       include: { _count: { select: { products: true, collections: true } } },
     });
 
-    return handleApiSuccess<{ occasions: OccasionRow[] }>({
+    const blockSettings = await loadOccasionBlockSettings(db, session.shop);
+
+    return handleApiSuccess<{ occasions: OccasionRow[]; blockSettings: OccasionBlockSettings }>({
       payload: {
+        blockSettings,
         occasions: occasions.map((occasion) => ({
           id: occasion.id,
           name: occasion.name,
