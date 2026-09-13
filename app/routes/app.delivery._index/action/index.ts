@@ -20,6 +20,10 @@ import {
   saveTimeWindows,
   timeWindowsActionSchema,
 } from "app/services/delivery/timedDelivery.server";
+import {
+  cartOptionsActionSchema,
+  saveCartOptions,
+} from "app/services/delivery/cartOptions.server";
 import { handleApiError } from "app/utils/server/handleApiResponse/handleApiError.server";
 
 const bodySchema = z.discriminatedUnion("action", [
@@ -34,6 +38,7 @@ const bodySchema = z.discriminatedUnion("action", [
   scheduleActionSchema,
   todayRulesActionSchema,
   timeWindowsActionSchema,
+  cartOptionsActionSchema,
   ...deliveryActionSchema.options,
 ]);
 
@@ -94,6 +99,9 @@ export async function action({ request }: ActionFunctionArgs) {
 
       case "save-time-windows":
         return saveTimeWindows(db, session.shop, body);
+
+      case "save-cart-options":
+        return saveCartOptions(db, session.shop, body);
 
       default:
         return runDeliveryAction({ db, shop: session.shop, body });

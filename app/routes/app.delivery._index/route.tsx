@@ -23,6 +23,8 @@ import DeliveryZonesEditor from "app/components/Delivery/DeliveryZonesEditor";
 import DeliveryScheduleEditor from "app/components/Delivery/DeliveryScheduleEditor";
 import TodayDeliveryEditor from "app/components/Delivery/TodayDeliveryEditor";
 import TimedDeliveryEditor from "app/components/Delivery/TimedDeliveryEditor";
+import CartOptionsEditor from "app/components/Delivery/CartOptionsEditor";
+import { defaultCartOptions } from "app/services/delivery/cartOptions";
 import { defaultDeliverySchedule } from "app/services/delivery/deliverySchedule";
 import { DEFAULT_RATE_TITLE } from "app/services/carrier/rates";
 import { loader, type DeliveryPageData } from "./loader";
@@ -396,6 +398,25 @@ export default function DeliveryPage() {
                 <TimedDeliveryEditor
                   key={JSON.stringify(data?.timeWindows ?? [])}
                   windows={data?.timeWindows ?? []}
+                />
+              </BlockStack>
+            </Card>
+
+            <Card>
+              <BlockStack gap="400">
+                <BlockStack gap="100">
+                  <Text as="h2" variant="headingMd">
+                    Options step
+                  </Text>
+                  <Text as="p" tone="subdued" variant="bodySm">
+                    The cart&rsquo;s third step: occasion (with that occasion&rsquo;s
+                    products to add), card message, notes, and what to do if nobody
+                    answers the door. Switch the step off to go straight to Review.
+                  </Text>
+                </BlockStack>
+                <CartOptionsEditor
+                  key={JSON.stringify(data?.cartOptions ?? null)}
+                  options={data?.cartOptions ?? defaultCartOptions()}
                 />
               </BlockStack>
             </Card>

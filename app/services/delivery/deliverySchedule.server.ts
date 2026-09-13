@@ -12,6 +12,8 @@ import {
 } from "./deliverySchedule";
 import { shopNow, type ShopClock } from "./shopTime";
 import { loadActiveTimeWindows, type StorefrontTimeWindow } from "./timedDelivery.server";
+import { loadCartOptions } from "./cartOptions.server";
+import { defaultCartOptions, type CartOptions } from "./cartOptions";
 
 const TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
 
@@ -156,6 +158,8 @@ export type StorefrontSchedule = DeliverySchedule & {
   clock: ShopClock;
   today: Record<"delivery" | "pickup", TodayStatus>;
   timeWindows: StorefrontTimeWindow[];
+  /** What the Options step shows (or whether it shows at all). */
+  options: CartOptions;
 };
 
 export const emptyStorefrontSchedule = (): StorefrontSchedule => ({
@@ -163,6 +167,7 @@ export const emptyStorefrontSchedule = (): StorefrontSchedule => ({
   clock: shopNow(null),
   today: { delivery: "open", pickup: "open" },
   timeWindows: [],
+  options: defaultCartOptions(),
 });
 
 /**
@@ -171,10 +176,11 @@ export const emptyStorefrontSchedule = (): StorefrontSchedule => ({
  * and the timed delivery windows on offer.
  */
 export async function loadStorefrontSchedule(db: PrismaClient, shop: string): Promise<StorefrontSchedule> {
-  const [schedule, timezone, timeWindows] = await Promise.all([
+  const [schedule, timezone, timeWindows, options] = await Promise.all([
     loadDeliverySchedule(db, shop),
     loadShopTimezone(db, shop),
     loadActiveTimeWindows(db, shop),
+    loadCartOptions(db, shop),
   ]);
   const clock = shopNow(timezone);
   const status = (method: MethodSchedule | undefined) => todayStatus(method ?? defaultMethodSchedule(), clock.time);
@@ -183,5 +189,6 @@ export async function loadStorefrontSchedule(db: PrismaClient, shop: string): Pr
     clock,
     today: { delivery: status(schedule.delivery), pickup: status(schedule.pickup) },
     timeWindows,
+    options,
   };
 }

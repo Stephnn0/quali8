@@ -10,8 +10,10 @@
  *    street, city, state, country). Pickup offers the pickup calendar and
  *    skips the address. Same-day rules run on the shop's clock, not the
  *    shopper's.
- * 3. Options: card message, notes (also the cart note), occasion, and the
- *    Smart Recommendations upsell rail with one-tap add.
+ * 3. Options (merchant can switch the step, or any field, off): occasion —
+ *    picking one shows that occasion's products with one-tap add — card
+ *    message, notes (also the cart note), "if nobody answers the door", and
+ *    the Smart Recommendations upsell rail.
  * 4. Review & Checkout.  A summary and the Checkout button, which opens
  *    Shopify checkout with the recipient's shipping address prefilled
  *    through the documented `checkout[...]` URL parameters.
@@ -59,6 +61,7 @@
     cardMessage: "Gift message", // same keys as the gift-notes block
     notes: "Special instructions",
     occasion: "Occasion",
+    door: "If nobody answers the door",
   };
   var NOTE_KEY = "__note"; // pending-save marker for the cart note
   var TIMED_PROPERTY = "_Timed delivery"; // line item property read by the carrier callback
@@ -308,6 +311,13 @@
       return (data && data.occasions) || [];
     });
   }
+  function fetchOccasionProducts(slug) {
+    var params = new URLSearchParams();
+    params.set("occasion", slug);
+    params.set("fallback", "0");
+    params.set("limit", "8");
+    return fetchJson("apps/quali8/recommendations?" + params.toString());
+  }
   function fetchRecommendations(cart) {
     var ids = (cart.items || []).map(function (item) { return item.product_id; }).filter(Boolean);
     var params = new URLSearchParams();
@@ -522,6 +532,17 @@
     if (!schedule || !schedule.enabled) return null;
     return method === "pickup" ? schedule.pickup : schedule.delivery;
   }
+  // What the Options step shows — from the merchant's Delivery page; everything on until it loads.
+  var DEFAULT_OPTIONS_CONFIG = { enabled: true, occasionEnabled: true, cardMessageEnabled: true, notesEnabled: true, notesLabel: "", doorEnabled: true };
+  function optionsConfig() {
+    return (schedule && schedule.options) || DEFAULT_OPTIONS_CONFIG;
+  }
+  function optionsOn() {
+    return optionsConfig().enabled !== false;
+  }
+  function stepAfterMethod() {
+    return optionsOn() ? 3 : 4;
+  }
 
   function initialState(attributes) {
     var a = function (key) {
@@ -560,6 +581,7 @@
         cardMessage: a("cardMessage"),
         notes: a("notes"),
         occasion: a("occasion"),
+        door: a("door"),
       },
       done: { 1: false, 2: false, 3: false },
     };
@@ -720,7 +742,9 @@
       [3, settings.steps.options || "Options", "gift"],
       [4, settings.steps.summary || "Review & Checkout", "card"],
     ];
-    defs.forEach(function (def) {
+    defs.filter(function (def) {
+      return def[0] !== 3 || optionsOn();
+    }).forEach(function (def) {
       var number = def[0];
       var completed = number < state.step || state.done[number];
       var current = number === state.step;
@@ -744,6 +768,10 @@
   }
 
   function go(step) {
+    if (step === 3 && !optionsOn()) {
+      state.done[3] = true;
+      step = 4;
+    }
     state.step = step;
     setBlocked(!(step === 4 && summaryValid()));
     renderSteps();
@@ -868,10 +896,13 @@
     var tw = timedWindow();
     p[ATTR.timed] = tw ? timedLabel(tw) : "";
     p[ATTR.timedCode] = tw ? tw.code : "";
-    p[ATTR.cardMessage] = state.options.cardMessage;
-    p[ATTR.notes] = state.options.notes;
-    p[ATTR.occasion] = state.options.occasion;
-    p[NOTE_KEY] = state.options.notes;
+    var cfg = optionsConfig();
+    var on = optionsOn();
+    p[ATTR.cardMessage] = on && cfg.cardMessageEnabled !== false ? state.options.cardMessage : "";
+    p[ATTR.notes] = on && cfg.notesEnabled !== false ? state.options.notes : "";
+    p[ATTR.occasion] = on && cfg.occasionEnabled !== false ? state.options.occasion : "";
+    p[ATTR.door] = on && cfg.doorEnabled !== false && state.method === "delivery" ? state.options.door : "";
+    p[NOTE_KEY] = p[ATTR.notes];
     if (state.method === "delivery") {
       p[ATTR.locationType] = state.locationType;
       p[ATTR.zip] = state.zip;
@@ -950,7 +981,7 @@
       if (!methodValid()) return;
       state.done[2] = true;
       flush();
-      go(3);
+      go(stepAfterMethod());
     });
     next.disabled = !methodValid();
     actions.appendChild(next);
@@ -1178,14 +1209,18 @@
         priceLine,
       ], 2);
     }
-    var op = state.options;
-    var o2 = settings.options;
-    row(o2.summaryRow || "Extras", [
-      op.occasion ? (o2.occasionLabel || "Occasion") + ": " + op.occasion : "",
-      op.cardMessage ? (o2.cardLabel || "Card message") + ": " + op.cardMessage : "",
-      op.notes ? (o2.notesLabel || "Notes") + ": " + op.notes : "",
-      !op.occasion && !op.cardMessage && !op.notes ? o2.summaryNone || "None added" : "",
-    ], 3);
+    if (optionsOn()) {
+      var op = state.options;
+      var o2 = settings.options;
+      var cfg = optionsConfig();
+      var lines = [
+        cfg.occasionEnabled !== false && op.occasion ? (o2.occasionLabel || "Occasion") + ": " + op.occasion : "",
+        cfg.cardMessageEnabled !== false && op.cardMessage ? (o2.cardLabel || "Card message") + ": " + op.cardMessage : "",
+        cfg.notesEnabled !== false && op.notes ? (cfg.notesLabel || o2.notesLabel || "Notes") + ": " + op.notes : "",
+        cfg.doorEnabled !== false && state.method === "delivery" && op.door ? (o2.doorLabel || "If nobody answers the door") + ": " + op.door : "",
+      ];
+      row(o2.summaryRow || "Extras", lines.some(Boolean) ? lines : [o2.summaryNone || "None added"], 3);
+    }
     panel.appendChild(card);
 
     var actions = el("div", "q8-dc__actions q8-dc__actions--column");
@@ -1196,7 +1231,7 @@
     actions.appendChild(checkout);
     if (s.checkoutHint) actions.appendChild(el("p", "q8-dc__hint", s.checkoutHint));
     actions.appendChild(linkButton(settings.backLabel || "Back", function () {
-      go(3);
+      go(optionsOn() ? 3 : 2);
     }));
     panel.appendChild(actions);
     main.appendChild(panel);
@@ -1319,23 +1354,54 @@
         save(patchFor());
       };
     }
-    var occasionField = field({ id: "q8-dc-occasion", label: o.occasionLabel || "Occasion", options: [["", o.occasionPlaceholder || "Choose an occasion"]].concat(op.occasion ? [[op.occasion, op.occasion]] : []), value: op.occasion, onChange: function (event) {
-      op.occasion = event.target.value;
-      save(patchFor());
-    } });
-    occasionField.wrap.hidden = true;
-    grid.appendChild(occasionField.wrap);
-    grid.appendChild(field({ id: "q8-dc-card", label: o.cardLabel || "Card message", optional: true, textarea: true, rows: 3, maxLength: 500, placeholder: o.cardPlaceholder, value: op.cardMessage, onChange: bind("cardMessage") }).wrap);
-    grid.appendChild(field({ id: "q8-dc-notes", label: o.notesLabel || "Notes for us", optional: true, textarea: true, rows: 3, maxLength: 1000, placeholder: o.notesPlaceholder, value: op.notes, onChange: bind("notes") }).wrap);
+    var cfg = optionsConfig();
+    var occasionField = null;
+    // Products linked to the chosen occasion (Occasions feature), one-tap add.
+    var occasionRecs = el("div", "q8-dc__recs q8-dc__recs--occasion");
+    occasionRecs.hidden = true;
+    var slugByName = {};
+    function showOccasionProducts() {
+      var slug = slugByName[op.occasion];
+      if (!slug) {
+        occasionRecs.hidden = true;
+        return;
+      }
+      fetchOccasionProducts(slug)
+        .then(function (data) {
+          if (slugByName[op.occasion] !== slug) return; // changed meanwhile
+          renderRecs(occasionRecs, { products: (data && data.products) || [], heading: fill(o.occasionProductsHeading || "Perfect for {occasion}", { occasion: op.occasion }) });
+        })
+        .catch(function () { occasionRecs.hidden = true; });
+    }
+    if (cfg.occasionEnabled !== false) {
+      occasionField = field({ id: "q8-dc-occasion", label: o.occasionLabel || "Occasion", options: [["", o.occasionPlaceholder || "Choose an occasion"]].concat(op.occasion ? [[op.occasion, op.occasion]] : []), value: op.occasion, onChange: function (event) {
+        op.occasion = event.target.value;
+        save(patchFor());
+        showOccasionProducts();
+      } });
+      occasionField.wrap.hidden = true;
+      grid.appendChild(occasionField.wrap);
+    }
+    if (cfg.cardMessageEnabled !== false) grid.appendChild(field({ id: "q8-dc-card", label: o.cardLabel || "Card message", optional: true, textarea: true, rows: 3, maxLength: 500, placeholder: o.cardPlaceholder, value: op.cardMessage, onChange: bind("cardMessage") }).wrap);
+    if (cfg.notesEnabled !== false) grid.appendChild(field({ id: "q8-dc-notes", label: cfg.notesLabel || o.notesLabel || "Notes for us", optional: true, textarea: true, rows: 3, maxLength: 1000, placeholder: o.notesPlaceholder, value: op.notes, onChange: bind("notes") }).wrap);
+    if (cfg.doorEnabled !== false && state.method === "delivery") {
+      grid.appendChild(field({ id: "q8-dc-door", label: o.doorLabel || "If nobody answers the door", options: [["", o.doorPlaceholder || "Choose an option"], [o.doorYes || "Yes, it's okay to leave them", o.doorYes || "Yes, it's okay to leave them"], [o.doorNo || "No, do not leave them", o.doorNo || "No, do not leave them"]], value: op.door, onChange: function (event) {
+        op.door = event.target.value;
+        save(patchFor());
+      } }).wrap);
+    }
+    if (!grid.children.length) card.appendChild(el("p", "q8-dc__note q8-dc__note--info", o.nothingText || "Nothing to add here — continue when you're ready."));
     card.appendChild(grid);
     panel.appendChild(card);
+    panel.appendChild(occasionRecs);
 
     // Occasions come from the merchant's Occasions feature; hidden when there are none.
-    fetchOccasions()
+    if (occasionField) fetchOccasions()
       .then(function (occasions) {
         if (!occasions.length) return;
         var select = occasionField.control;
         select.textContent = "";
+        occasions.forEach(function (occ) { slugByName[occ.name] = occ.slug; });
         [["", o.occasionPlaceholder || "Choose an occasion"]].concat(occasions.map(function (occ) {
           return [occ.name, (occ.icon ? occ.icon + " " : "") + occ.name];
         })).forEach(function (pair) {
@@ -1346,6 +1412,7 @@
           select.appendChild(option);
         });
         occasionField.wrap.hidden = false;
+        showOccasionProducts();
       })
       .catch(function () { /* no occasions, no field */ });
 
@@ -1656,6 +1723,12 @@
     addedLabel: "Added",
     summaryRow: "Extras",
     summaryNone: "None added",
+    doorLabel: "If nobody answers the door",
+    doorPlaceholder: "Choose an option",
+    doorYes: "Yes, it's okay to leave them",
+    doorNo: "No, do not leave them",
+    occasionProductsHeading: "Perfect for {occasion}",
+    nothingText: "Nothing to add here \u2014 continue when you're ready.",
   };
   settings.calendar = settings.calendar || {
     deliveryLabel: "Delivery date",

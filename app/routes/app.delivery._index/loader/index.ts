@@ -9,6 +9,8 @@ import type { DeliverySchedule } from "app/services/delivery/deliverySchedule";
 import { syncShopTimezone } from "app/services/delivery/shopTimezone.server";
 import { shopNow, type ShopClock } from "app/services/delivery/shopTime";
 import { loadTimeWindows } from "app/services/delivery/timedDelivery.server";
+import { loadCartOptions } from "app/services/delivery/cartOptions.server";
+import type { CartOptions } from "app/services/delivery/cartOptions";
 import type { TimeWindowRow } from "app/services/delivery/timedDelivery";
 import { DEFAULT_RATE_TITLE } from "app/services/carrier/rates";
 import {
@@ -33,6 +35,7 @@ export type DeliveryPageData = {
   /** The shop's clock as the storefront and carrier will see it; `known` is false when the zone couldn't be read. */
   clock: ShopClock & { known: boolean };
   timeWindows: TimeWindowRow[];
+  cartOptions: CartOptions;
 };
 
 /**
@@ -51,7 +54,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   );
 
   try {
-    const [carrier, methodFilter, rate, delivery, schedule, timezone, timeWindows] = await Promise.all([
+    const [carrier, methodFilter, rate, delivery, schedule, timezone, timeWindows, cartOptions] = await Promise.all([
       detectCarrierService(admin.graphql),
       detectDeliveryMethodFilter(admin.graphql, APP.APP_HANDLE),
       db.carrierRate.findUnique({ where: { shop: session.shop } }),
@@ -59,6 +62,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       loadDeliverySchedule(db, session.shop),
       syncShopTimezone(db, admin.graphql, session.shop),
       loadTimeWindows(db, session.shop),
+      loadCartOptions(db, session.shop),
     ]);
 
     return handleApiSuccess<DeliveryPageData>({
@@ -74,6 +78,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         schedule,
         clock: { ...shopNow(timezone), known: timezone !== null },
         timeWindows,
+        cartOptions,
       },
       code: "success",
     });

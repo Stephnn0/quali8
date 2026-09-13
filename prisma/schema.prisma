@@ -59,6 +59,7 @@ model ShopifyStore {
   carrierRate         CarrierRate?
   deliverySchedule    DeliverySchedule?
   deliveryTimeWindows DeliveryTimeWindow[]
+  cartOptions         CartOptionsSettings?
 
   storeProfile   StoreProfile?
   dashboardBrief DashboardBrief?
@@ -757,6 +758,24 @@ model DeliverySchedule {
   deliveryTodayCutoff    String? /// "HH:MM" 24h; today closes at this shop time. Null = all day
   pickupTodayEnabled     Boolean  @default(true)
   pickupTodayCutoff      String?
+  //
+  shop         String       @unique
+  shopifyStore ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
+}
+
+/// What the cart block's Options step shows (Delivery module). The whole
+/// step can be switched off; each field can be switched off on its own.
+model CartOptionsSettings {
+  id                 Int      @id @default(autoincrement())
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @default(now()) @updatedAt
+  //
+  enabled            Boolean  @default(true) /// Show the Options step at all
+  occasionEnabled    Boolean  @default(true) /// Occasion picker (+ that occasion's products)
+  cardMessageEnabled Boolean  @default(true)
+  notesEnabled       Boolean  @default(true)
+  notesLabel         String   @default("Notes for us") /// Merchant-editable field label
+  doorEnabled        Boolean  @default(true) /// "If nobody answers the door" dropdown
   //
   shop         String       @unique
   shopifyStore ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
