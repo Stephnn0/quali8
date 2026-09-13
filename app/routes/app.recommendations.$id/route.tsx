@@ -47,7 +47,10 @@ type PickedCollection = {
 };
 
 const TRIGGER_OPTIONS = [
-  { label: "Every cart", value: "ALWAYS" },
+  { label: "Every visitor", value: "ALWAYS" },
+  { label: "Returning visitor (first seen before today)", value: "RETURNING_VISITOR" },
+  { label: "Shopper viewed a product from a collection", value: "VIEWED_COLLECTION" },
+  { label: "Shopper viewed a specific product", value: "VIEWED_PRODUCT" },
   { label: "Cart has a product from a collection", value: "CART_HAS_COLLECTION" },
   { label: "Cart has a specific product", value: "CART_HAS_PRODUCT" },
   { label: "Cart total is at least…", value: "CART_TOTAL_MIN" },
@@ -58,6 +61,8 @@ const SOURCE_OPTIONS = [
   { label: "Products with a tag", value: "TAG" },
   { label: "Newest products", value: "NEWEST" },
   { label: "Products I pick", value: "PRODUCTS" },
+  { label: "Recently viewed products", value: "RECENTLY_VIEWED" },
+  { label: "Related to what they viewed (Shopify related products)", value: "RELATED_TO_VIEWED" },
 ];
 
 const numberOrNull = (value: string): number | null => {
@@ -269,7 +274,7 @@ export default function RecommendationRuleEditor() {
                   value={heading}
                   onChange={setHeading}
                   placeholder="e.g. Complete the look"
-                  helpText="Replaces the block's heading when this rule matches."
+                  helpText="Shown above the products on the home page when this rule matches."
                   maxLength={80}
                 />
               </BlockStack>
@@ -282,7 +287,9 @@ export default function RecommendationRuleEditor() {
                     When
                   </Text>
                   <Text as="p" tone="subdued" variant="bodySm">
-                    The condition the cart must meet for this rule to apply.
+                    The condition the shopper must meet for this rule to apply.
+                    Viewed and returning conditions need the Smart recs tracker
+                    embed turned on in the theme editor.
                   </Text>
                 </BlockStack>
                 <Select
@@ -291,7 +298,7 @@ export default function RecommendationRuleEditor() {
                   value={trigger}
                   onChange={(value) => setTrigger(value as RuleDetail["trigger"])}
                 />
-                {trigger === "CART_HAS_COLLECTION" ? (
+                {trigger === "CART_HAS_COLLECTION" || trigger === "VIEWED_COLLECTION" ? (
                   <BlockStack gap="200">
                     {triggerCollection
                       ? pickedRow(triggerCollection, () => setTriggerCollection(null))
@@ -303,7 +310,7 @@ export default function RecommendationRuleEditor() {
                     </InlineStack>
                   </BlockStack>
                 ) : null}
-                {trigger === "CART_HAS_PRODUCT" ? (
+                {trigger === "CART_HAS_PRODUCT" || trigger === "VIEWED_PRODUCT" ? (
                   <BlockStack gap="200">
                     {triggerProduct ? pickedRow(triggerProduct, () => setTriggerProduct(null)) : null}
                     <InlineStack>
@@ -383,6 +390,19 @@ export default function RecommendationRuleEditor() {
                       </Button>
                     </InlineStack>
                   </BlockStack>
+                ) : null}
+
+                {source === "RECENTLY_VIEWED" ? (
+                  <Text as="p" tone="subdued" variant="bodySm">
+                    Shows the products this shopper opened most recently. Needs
+                    the tracker embed.
+                  </Text>
+                ) : null}
+                {source === "RELATED_TO_VIEWED" ? (
+                  <Text as="p" tone="subdued" variant="bodySm">
+                    Shows Shopify&rsquo;s related products for the product this
+                    shopper opened last. Needs the tracker embed.
+                  </Text>
                 ) : null}
 
                 <InlineGrid columns={{ xs: 1, sm: 3 }} gap="400">

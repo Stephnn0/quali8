@@ -13,13 +13,28 @@ const saveRuleSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(80),
   heading: z.string().trim().max(80).nullable(),
   status: z.enum(["ACTIVE", "INACTIVE"]),
-  trigger: z.enum(["ALWAYS", "CART_HAS_COLLECTION", "CART_HAS_PRODUCT", "CART_TOTAL_MIN"]),
+  trigger: z.enum([
+    "ALWAYS",
+    "CART_HAS_COLLECTION",
+    "CART_HAS_PRODUCT",
+    "CART_TOTAL_MIN",
+    "VIEWED_COLLECTION",
+    "VIEWED_PRODUCT",
+    "RETURNING_VISITOR",
+  ]),
   triggerCollectionId: gid("Collection").nullable(),
   triggerCollectionTitle: z.string().nullable(),
   triggerProductId: gid("Product").nullable(),
   triggerProductTitle: z.string().nullable(),
   triggerMinTotal: optionalMoney,
-  source: z.enum(["COLLECTION", "TAG", "NEWEST", "PRODUCTS"]),
+  source: z.enum([
+    "COLLECTION",
+    "TAG",
+    "NEWEST",
+    "PRODUCTS",
+    "RECENTLY_VIEWED",
+    "RELATED_TO_VIEWED",
+  ]),
   sourceCollectionId: gid("Collection").nullable(),
   sourceCollectionTitle: z.string().nullable(),
   sourceTag: z.string().trim().max(80).nullable(),
@@ -56,11 +71,23 @@ export async function action({ request }: ActionFunctionArgs) {
 
     // The trigger and the source must each have what they need
     const problems: string[] = [];
-    if (body.trigger === "CART_HAS_COLLECTION" && !body.triggerCollectionId) {
-      problems.push("Choose the collection the cart must contain");
+    const needsCollection =
+      body.trigger === "CART_HAS_COLLECTION" || body.trigger === "VIEWED_COLLECTION";
+    const needsProduct =
+      body.trigger === "CART_HAS_PRODUCT" || body.trigger === "VIEWED_PRODUCT";
+    if (needsCollection && !body.triggerCollectionId) {
+      problems.push(
+        body.trigger === "CART_HAS_COLLECTION"
+          ? "Choose the collection the cart must contain"
+          : "Choose the collection the shopper must have viewed",
+      );
     }
-    if (body.trigger === "CART_HAS_PRODUCT" && !body.triggerProductId) {
-      problems.push("Choose the product the cart must contain");
+    if (needsProduct && !body.triggerProductId) {
+      problems.push(
+        body.trigger === "CART_HAS_PRODUCT"
+          ? "Choose the product the cart must contain"
+          : "Choose the product the shopper must have viewed",
+      );
     }
     if (body.trigger === "CART_TOTAL_MIN" && body.triggerMinTotal === null) {
       problems.push("Enter the minimum cart total");
@@ -93,10 +120,10 @@ export async function action({ request }: ActionFunctionArgs) {
       heading: body.heading || null,
       status: body.status,
       trigger: body.trigger,
-      triggerCollectionId: body.trigger === "CART_HAS_COLLECTION" ? body.triggerCollectionId : null,
-      triggerCollectionTitle: body.trigger === "CART_HAS_COLLECTION" ? body.triggerCollectionTitle : null,
-      triggerProductId: body.trigger === "CART_HAS_PRODUCT" ? body.triggerProductId : null,
-      triggerProductTitle: body.trigger === "CART_HAS_PRODUCT" ? body.triggerProductTitle : null,
+      triggerCollectionId: needsCollection ? body.triggerCollectionId : null,
+      triggerCollectionTitle: needsCollection ? body.triggerCollectionTitle : null,
+      triggerProductId: needsProduct ? body.triggerProductId : null,
+      triggerProductTitle: needsProduct ? body.triggerProductTitle : null,
       triggerMinTotal: body.trigger === "CART_TOTAL_MIN" ? body.triggerMinTotal : null,
       source: body.source,
       sourceCollectionId: body.source === "COLLECTION" ? body.sourceCollectionId : null,

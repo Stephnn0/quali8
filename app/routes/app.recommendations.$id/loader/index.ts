@@ -11,13 +11,26 @@ export type RuleDetail = {
   name: string;
   heading: string | null;
   status: "ACTIVE" | "INACTIVE";
-  trigger: "ALWAYS" | "CART_HAS_COLLECTION" | "CART_HAS_PRODUCT" | "CART_TOTAL_MIN";
+  trigger:
+    | "ALWAYS"
+    | "CART_HAS_COLLECTION"
+    | "CART_HAS_PRODUCT"
+    | "CART_TOTAL_MIN"
+    | "VIEWED_COLLECTION"
+    | "VIEWED_PRODUCT"
+    | "RETURNING_VISITOR";
   triggerCollectionId: string | null;
   triggerCollectionTitle: string | null;
   triggerProductId: string | null;
   triggerProductTitle: string | null;
   triggerMinTotal: number | null;
-  source: "COLLECTION" | "TAG" | "NEWEST" | "PRODUCTS";
+  source:
+    | "COLLECTION"
+    | "TAG"
+    | "NEWEST"
+    | "PRODUCTS"
+    | "RECENTLY_VIEWED"
+    | "RELATED_TO_VIEWED";
   sourceCollectionId: string | null;
   sourceCollectionTitle: string | null;
   sourceTag: string | null;
