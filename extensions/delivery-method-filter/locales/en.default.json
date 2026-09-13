@@ -1,0 +1,4 @@
+{
+  "name": "Delivery method filter",
+  "description": "Shows only the delivery method the shopper chose in the cart: shipping for Delivery, local pickup for Pickup."
+}

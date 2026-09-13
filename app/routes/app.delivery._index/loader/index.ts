@@ -15,11 +15,18 @@ import {
   detectCarrierService,
   type CarrierDetectStatus,
 } from "app/services/carrier/setupCarrierService.server";
+import {
+  detectDeliveryMethodFilter,
+  type DeliveryMethodFilterStatus,
+} from "app/services/delivery/deliveryMethodFilter.server";
+import { APP } from "app/constants/app.constants";
 import { handleApiSuccess } from "app/utils/handleApiSuccess";
 import { handleApiError } from "app/utils/server/handleApiResponse/handleApiError.server";
 
 export type DeliveryPageData = {
   carrier: CarrierDetectStatus;
+  /** The checkout function that keeps only the method chosen in the cart. */
+  methodFilter: DeliveryMethodFilterStatus;
   rate: { enabled: boolean; title: string; fallbackPrice: number | null };
   delivery: DeliveryConfig;
   schedule: DeliverySchedule;
@@ -44,8 +51,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
   );
 
   try {
-    const [carrier, rate, delivery, schedule, timezone, timeWindows] = await Promise.all([
+    const [carrier, methodFilter, rate, delivery, schedule, timezone, timeWindows] = await Promise.all([
       detectCarrierService(admin.graphql),
+      detectDeliveryMethodFilter(admin.graphql, APP.APP_HANDLE),
       db.carrierRate.findUnique({ where: { shop: session.shop } }),
       loadDeliveryConfig(db, session.shop),
       loadDeliverySchedule(db, session.shop),
@@ -56,6 +64,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     return handleApiSuccess<DeliveryPageData>({
       payload: {
         carrier,
+        methodFilter,
         rate: {
           enabled: rate?.enabled ?? true,
           title: rate?.title ?? DEFAULT_RATE_TITLE,

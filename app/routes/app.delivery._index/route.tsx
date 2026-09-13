@@ -46,6 +46,7 @@ export default function DeliveryPage() {
   const shopify = useAppBridge();
 
   const carrierFetcher = useFetcher<ActionResult>();
+  const filterFetcher = useFetcher<ActionResult>();
   const rateFetcher = useFetcher<ActionResult>();
 
   const [enabled, setEnabled] = useState(data?.rate.enabled ?? true);
@@ -74,6 +75,65 @@ export default function DeliveryPage() {
       { body: JSON.stringify({ action: "install-carrier" }) },
       { method: "POST", encType: "multipart/form-data" },
     );
+
+  useEffect(() => {
+    if (filterFetcher.state === "idle" && filterFetcher.data?.code === "method-filter-installed") {
+      shopify.toast.show("Checkout will follow the cart's delivery method");
+    }
+  }, [filterFetcher.state, filterFetcher.data, shopify]);
+
+  const installFilter = () =>
+    filterFetcher.submit(
+      { body: JSON.stringify({ action: "install-method-filter" }) },
+      { method: "POST", encType: "multipart/form-data" },
+    );
+
+  const methodFilter = data?.methodFilter;
+  const filterError =
+    filterFetcher.state === "idle" && filterFetcher.data?.code === "method-filter-failed"
+      ? filterFetcher.data.errors?.[0]?.message
+      : null;
+  const filterStatus = (() => {
+    if (!methodFilter) return null;
+    switch (methodFilter.state) {
+      case "installed":
+        return {
+          badge: <Badge tone="success">Active</Badge>,
+          text: "Checkout only offers the method the shopper picked in the cart: shipping for Delivery, local pickup for Pickup.",
+          button: null,
+        };
+      case "disabled":
+        return {
+          badge: <Badge tone="attention">Turned off</Badge>,
+          text: "The customization exists but is switched off in Settings → Shipping and delivery. Turn it back on here.",
+          button: "Turn on",
+        };
+      case "missing":
+        return {
+          badge: <Badge tone="critical">Not active</Badge>,
+          text: "Checkout still shows both Ship and Pickup. Activate the customization so it follows the cart.",
+          button: "Activate",
+        };
+      case "not-deployed":
+        return {
+          badge: <Badge tone="critical">Not deployed</Badge>,
+          text: "The delivery method function isn't in the app version installed on this shop yet. Deploy the app, then come back.",
+          button: null,
+        };
+      case "scope-missing":
+        return {
+          badge: <Badge tone="critical">Permission missing</Badge>,
+          text: "The app needs the write_delivery_customizations permission. Deploy the new configuration, reopen the app and accept it.",
+          button: "Try again",
+        };
+      default:
+        return {
+          badge: <Badge tone="critical">Error</Badge>,
+          text: methodFilter.message,
+          button: "Try again",
+        };
+    }
+  })();
 
   const saveRate = () => {
     const price = fallbackPrice.trim() === "" ? null : Number.parseFloat(fallbackPrice);
@@ -178,6 +238,33 @@ export default function DeliveryPage() {
                       Shopify plan with carrier-calculated shipping: Advanced, Plus, or any
                       plan billed annually (ask Shopify support to enable it).
                     </p>
+                  </Banner>
+                ) : null}
+              </BlockStack>
+            </Card>
+
+            <Card>
+              <BlockStack gap="300">
+                <InlineStack align="space-between" blockAlign="center" gap="300">
+                  <InlineStack gap="200" blockAlign="center">
+                    <Text as="h2" variant="headingMd">
+                      Checkout delivery method
+                    </Text>
+                    {filterStatus?.badge}
+                  </InlineStack>
+                  {filterStatus?.button ? (
+                    <Button variant="primary" onClick={installFilter} loading={filterFetcher.state !== "idle"}>
+                      {filterStatus.button}
+                    </Button>
+                  ) : null}
+                </InlineStack>
+                <Text as="p" tone="subdued">
+                  {filterStatus?.text ??
+                    "Makes checkout follow what the shopper chose in the cart, so nobody picks Pickup in the cart and Ship at checkout."}
+                </Text>
+                {filterError ? (
+                  <Banner tone="critical" title="Shopify refused the customization">
+                    <p>{filterError}</p>
                   </Banner>
                 ) : null}
               </BlockStack>

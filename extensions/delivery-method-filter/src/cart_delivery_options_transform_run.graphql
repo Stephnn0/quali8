@@ -1,0 +1,13 @@
+query CartDeliveryOptionsTransformRunInput {
+  cart {
+    deliveryMethod: attribute(key: "Delivery method") {
+      value
+    }
+    deliveryGroups {
+      deliveryOptions {
+        handle
+        deliveryMethodType
+      }
+    }
+  }
+}

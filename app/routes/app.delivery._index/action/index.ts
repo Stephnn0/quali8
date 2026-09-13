@@ -8,6 +8,8 @@ import {
   runDeliveryAction,
 } from "app/services/delivery/deliveryZones.server";
 import { setupCarrierService } from "app/services/carrier/setupCarrierService.server";
+import { installDeliveryMethodFilter } from "app/services/delivery/deliveryMethodFilter.server";
+import { APP } from "app/constants/app.constants";
 import {
   saveDeliverySchedule,
   saveTodayRules,
@@ -22,6 +24,7 @@ import { handleApiError } from "app/utils/server/handleApiResponse/handleApiErro
 
 const bodySchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("install-carrier") }),
+  z.object({ action: z.literal("install-method-filter") }),
   z.object({
     action: z.literal("save-rate"),
     enabled: z.boolean(),
@@ -56,6 +59,16 @@ export async function action({ request }: ActionFunctionArgs) {
           status,
           errors:
             status.state === "registered" ? null : [{ message: status.message }],
+        };
+      }
+
+      case "install-method-filter": {
+        const status = await installDeliveryMethodFilter(admin.graphql, APP.APP_HANDLE);
+        const ok = status.state === "installed";
+        return {
+          code: ok ? "method-filter-installed" : "method-filter-failed",
+          status,
+          errors: ok ? null : [{ message: "message" in status ? status.message : `Could not install (${status.state})` }],
         };
       }
 

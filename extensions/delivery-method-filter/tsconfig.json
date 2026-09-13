@@ -1,0 +1,6 @@
+{
+  // This tsconfig.json file is needed for TypeScript to properly resolve
+  // the generated API types from the GraphQL schema
+  "extends": "../../tsconfig.json",
+  "include": ["./src", "./generated"]
+}
