@@ -27,6 +27,9 @@ type MethodDraft = {
   leadDays: string;
   maxDaysAhead: string;
   newDate: string;
+  /** Same-day rules live in the Today delivery card; carried through untouched. */
+  todayEnabled: boolean;
+  todayCutoff: string | null;
 };
 
 const toDraft = (m: MethodSchedule): MethodDraft => ({
@@ -35,6 +38,8 @@ const toDraft = (m: MethodSchedule): MethodDraft => ({
   leadDays: String(m.leadDays),
   maxDaysAhead: String(m.maxDaysAhead),
   newDate: "",
+  todayEnabled: m.todayEnabled,
+  todayCutoff: m.todayCutoff,
 });
 
 const fromDraft = (d: MethodDraft): MethodSchedule => ({
@@ -42,6 +47,8 @@ const fromDraft = (d: MethodDraft): MethodSchedule => ({
   blockedDates: d.blockedDates,
   leadDays: Math.max(0, Number.parseInt(d.leadDays, 10) || 0),
   maxDaysAhead: Math.max(0, Number.parseInt(d.maxDaysAhead, 10) || 0),
+  todayEnabled: d.todayEnabled,
+  todayCutoff: d.todayCutoff,
 });
 
 const prettyDate = (iso: string) => {

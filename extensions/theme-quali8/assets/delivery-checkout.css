@@ -499,6 +499,32 @@ select.q8-dc__input {
   font-weight: 600;
 }
 
+/* Same-day closed / not offered, shown above the calendar grid */
+.q8-dc__note--today {
+  padding: 0.625em 0.875em;
+  border-radius: var(--q8-dc-input-radius, 10px);
+  background: rgba(180, 35, 24, 0.08);
+  color: #b42318;
+  font-weight: 600;
+}
+
+.q8-dc__note--info {
+  color: var(--q8-dc-muted);
+}
+
+/* The shop's clock, kept quiet under the calendar */
+.q8-dc__tz {
+  margin: 0;
+  font-size: 0.75em;
+  color: var(--q8-dc-muted);
+  opacity: 0.8;
+  font-variant-numeric: tabular-nums;
+}
+
+.q8-dc__timed .q8-dc__field {
+  max-width: 24em;
+}
+
 .q8-dc__result {
   display: flex;
   align-items: center;

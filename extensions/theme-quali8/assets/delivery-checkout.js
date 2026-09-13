@@ -4,9 +4,12 @@
  * 1. Sender information: sender (email, name, phone) + recipient (name, phone),
  *    or "sending to myself" which reuses the sender. Phones are validated.
  * 2. Delivery / Pickup.  Delivery checks the zip against the app's zones,
- *    then a date (when the merchant's calendar is on) and the address
- *    (location type, street, city, state, country). Pickup offers the
- *    pickup calendar and skips the address.
+ *    then a date (when the merchant's calendar is on), an optional timed
+ *    delivery window (a surcharge the carrier adds to the rate — it travels
+ *    as a hidden line item property), and the address (location type,
+ *    street, city, state, country). Pickup offers the pickup calendar and
+ *    skips the address. Same-day rules run on the shop's clock, not the
+ *    shopper's.
  * 3. Options: card message, notes (also the cart note), occasion, and the
  *    Smart Recommendations upsell rail with one-tap add.
  * 4. Review & Checkout.  A summary and the Checkout button, which opens
@@ -51,11 +54,14 @@
     country: "Delivery country",
     date: "Delivery date",
     pickupDate: "Pickup date",
+    timed: "Timed delivery",
+    timedCode: "_Timed delivery code",
     cardMessage: "Gift message", // same keys as the gift-notes block
     notes: "Special instructions",
     occasion: "Occasion",
   };
   var NOTE_KEY = "__note"; // pending-save marker for the cart note
+  var TIMED_PROPERTY = "_Timed delivery"; // line item property read by the carrier callback
 
   var US_STATES = {
     AL: "Alabama", AK: "Alaska", AZ: "Arizona", AR: "Arkansas", CA: "California", CO: "Colorado",
@@ -98,6 +104,7 @@
     pin: "M 8 14 s -4.5 -4 -4.5 -7.5 a 4.5 4.5 0 0 1 9 0 C 12.5 10 8 14 8 14 z M 8 8 a 1.5 1.5 0 1 0 0.01 0",
     tag: "M 2 2.5 h 5.5 l 6 6 l -5 5 l -6 -6 z M 5 5.5 a 0.5 0.5 0 1 0 0.01 0",
     calendar: "M 2.5 4 h 11 v 9.5 h -11 z M 2.5 7 h 11 M 5.5 2.5 v 3 M 10.5 2.5 v 3",
+    clock: "M 8 2.5 a 5.5 5.5 0 1 0 0 11 a 5.5 5.5 0 1 0 0 -11 z M 8 5 v 3.2 l 2.2 1.4",
     gift: "M 2.5 7 h 11 v 6.5 h -11 z M 8 7 v 6.5 M 2 4.5 h 12 v 2.5 h -12 z M 8 4.5 c -1 -2 -3.5 -2.5 -3.5 -1 s 2 1 3.5 1 c 1 -2 3.5 -2.5 3.5 -1 s -2 1 -3.5 1",
     bag: "M 3 5.5 h 10 l -0.8 8 h -8.4 z M 5.5 5.5 v -1 a 2.5 2.5 0 0 1 5 0 v 1",
   };
@@ -191,6 +198,48 @@
     var d = new Date();
     return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
   }
+  function localTime() {
+    var d = new Date();
+    return String(d.getHours()).padStart(2, "0") + ":" + String(d.getMinutes()).padStart(2, "0");
+  }
+  // The shop's date and time (mirror of app/services/delivery/shopTime.ts):
+  // derived from its zone when the browser can, else what the server sent,
+  // else the shopper's own clock.
+  function shopClock() {
+    var clock = (schedule && schedule.clock) || {};
+    if (clock.timezone) {
+      try {
+        var parts = new Intl.DateTimeFormat("en-US", { timeZone: clock.timezone, hourCycle: "h23", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }).formatToParts(new Date());
+        var get = function (type) {
+          var part = parts.filter(function (x) { return x.type === type; })[0];
+          return part ? part.value : "00";
+        };
+        var hour = get("hour") === "24" ? "00" : get("hour");
+        return { timezone: clock.timezone, date: get("year") + "-" + get("month") + "-" + get("day"), time: hour + ":" + get("minute") };
+      } catch (e) {
+        /* zone unknown to this browser — fall through */
+      }
+    }
+    if (clock.date && clock.time) return { timezone: clock.timezone || "", date: clock.date, time: clock.time };
+    return { timezone: "", date: isoToday(), time: localTime() };
+  }
+  function minutesOf(hhmm) {
+    var m = /^(\d{2}):(\d{2})$/.exec(hhmm || "");
+    return m ? Number(m[1]) * 60 + Number(m[2]) : -1;
+  }
+  function formatTime12(hhmm) {
+    var mins = minutesOf(hhmm);
+    if (mins < 0) return hhmm || "";
+    var h = Math.floor(mins / 60), m = mins % 60;
+    return (h % 12 === 0 ? 12 : h % 12) + ":" + String(m).padStart(2, "0") + " " + (h >= 12 ? "PM" : "AM");
+  }
+  // "open" until the cutoff, "closed" after it, "off" when today isn't offered.
+  function todayStatus(rules, now) {
+    if (!rules) return "open";
+    if (rules.todayEnabled === false) return "off";
+    if (!rules.todayCutoff || minutesOf(now) < 0) return "open";
+    return minutesOf(now) >= minutesOf(rules.todayCutoff) ? "closed" : "open";
+  }
   function isoParts(iso) {
     var p = String(iso || "").split("-").map(Number);
     return p.length === 3 && p.every(function (n) { return !isNaN(n); }) ? p : null;
@@ -207,19 +256,20 @@
     var p = isoParts(iso);
     return new Date(Date.UTC(p[0], p[1] - 1, p[2])).getUTCDay();
   }
-  function dateAllowed(rules, iso, today) {
+  function dateAllowed(rules, iso, today, now) {
     if (!rules || !isoParts(iso)) return false;
     var offset = isoDaysBetween(today, iso);
     if (offset < (rules.leadDays || 0) || offset > (rules.maxDaysAhead == null ? 60 : rules.maxDaysAhead)) return false;
+    if (offset === 0 && todayStatus(rules, now) !== "open") return false;
     if ((rules.blockedWeekdays || []).indexOf(isoWeekday(iso)) !== -1) return false;
     if ((rules.blockedDates || []).indexOf(iso) !== -1) return false;
     return true;
   }
-  function firstAllowed(rules, today) {
+  function firstAllowed(rules, today, now) {
     var max = rules.maxDaysAhead == null ? 60 : rules.maxDaysAhead;
     for (var i = rules.leadDays || 0; i <= max; i += 1) {
       var candidate = isoAddDays(today, i);
-      if (dateAllowed(rules, candidate, today)) return candidate;
+      if (dateAllowed(rules, candidate, today, now)) return candidate;
     }
     return null;
   }
@@ -459,7 +509,14 @@
   var defaultCountry;
   var checkerOn = true;
   var schedule = null; // merchant calendar rules, null until fetched
-  var today = isoToday();
+  var today = isoToday(); // the shop's date once the schedule (with its clock) is in
+  var now = localTime(); // the shop's HH:MM, same story
+  function tick() {
+    var clock = shopClock();
+    today = clock.date;
+    now = clock.time;
+    return clock;
+  }
 
   function rulesFor(method) {
     if (!schedule || !schedule.enabled) return null;
@@ -498,6 +555,7 @@
         country: (a("country") || defaultCountry || "US").toUpperCase(),
       },
       dates: { delivery: a("date"), pickup: a("pickupDate") },
+      timed: a("timedCode"), // a window code ("before:12:00"), re-validated once the schedule is in
       options: {
         cardMessage: a("cardMessage"),
         notes: a("notes"),
@@ -512,7 +570,77 @@
     if (!rules) return true;
     var chosen = state.dates[method];
     if (!chosen) return schedule.requireDate === false;
-    return dateAllowed(rules, chosen, today);
+    tick();
+    return dateAllowed(rules, chosen, today, now);
+  }
+
+  // --- Timed delivery ----------------------------------------------------------
+
+  function timeWindows() {
+    return (schedule && schedule.timeWindows) || [];
+  }
+  function timedWindow() {
+    if (state.method !== "delivery" || !state.timed) return null;
+    return timeWindows().filter(function (w) { return w.code === state.timed; })[0] || null;
+  }
+  function timedLabel(w) {
+    return w.label + (w.price > 0 ? " (+" + formatMoney(w.price, currency) + ")" : "");
+  }
+
+  // The carrier callback only sees line items, so the picked window rides on
+  // the first line as a hidden property (underscore = not shown at checkout).
+  var timedSyncing = false;
+  var timedSyncQueued = false;
+  function syncTimedProperty() {
+    if (!cartData || !cartData.items || !cartData.items.length) return Promise.resolve();
+    if (timedSyncing) {
+      timedSyncQueued = true;
+      return Promise.resolve();
+    }
+    var wanted = timedWindow() ? state.timed : "";
+    var changes = [];
+    cartData.items.forEach(function (item, index) {
+      var props = item.properties || {};
+      var has = Object.prototype.hasOwnProperty.call(props, TIMED_PROPERTY) ? String(props[TIMED_PROPERTY] || "") : "";
+      var target = index === 0 ? wanted : "";
+      if (has === target) return;
+      var next = {};
+      Object.keys(props).forEach(function (key) {
+        if (key !== TIMED_PROPERTY) next[key] = props[key];
+      });
+      if (target) next[TIMED_PROPERTY] = target;
+      changes.push({ id: item.key, quantity: item.quantity, properties: next });
+    });
+    if (!changes.length) return Promise.resolve();
+    timedSyncing = true;
+    var chain = Promise.resolve();
+    changes.forEach(function (change) {
+      chain = chain.then(function () {
+        return fetch(ROOT + "cart/change.js", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify(change),
+        }).then(function (response) {
+          if (!response.ok) throw new Error("HTTP " + response.status);
+          return response.json();
+        });
+      });
+    });
+    return chain
+      .then(function () {
+        return reloadCart();
+      })
+      .catch(function () {
+        /* the attribute still records the choice for the merchant */
+      })
+      .then(function () {
+        timedSyncing = false;
+        renderOrder();
+        if (timedSyncQueued) {
+          timedSyncQueued = false;
+          return syncTimedProperty();
+        }
+      });
   }
 
   function recipientName() {
@@ -737,6 +865,9 @@
     p[ATTR.method] = state.method === "pickup" ? "Pickup" : state.method === "delivery" ? "Delivery" : "";
     p[ATTR.date] = state.method === "delivery" ? state.dates.delivery : "";
     p[ATTR.pickupDate] = state.method === "pickup" ? state.dates.pickup : "";
+    var tw = timedWindow();
+    p[ATTR.timed] = tw ? timedLabel(tw) : "";
+    p[ATTR.timedCode] = tw ? tw.code : "";
     p[ATTR.cardMessage] = state.options.cardMessage;
     p[ATTR.notes] = state.options.notes;
     p[ATTR.occasion] = state.options.occasion;
@@ -784,6 +915,7 @@
         renderMethod();
         renderSteps();
         renderOrder();
+        syncTimedProperty();
       });
       return button;
     }
@@ -908,6 +1040,9 @@
     // Date
     if (rulesFor("delivery")) wrap.appendChild(renderCalendar("delivery"));
 
+    // Timed delivery window (optional, surcharge)
+    if (timeWindows().length) wrap.appendChild(renderTimed());
+
     // Address
     var heading = el("h4", "q8-dc__section-title");
     heading.appendChild(icon("pin"));
@@ -973,6 +1108,34 @@
     return wrap;
   }
 
+  function renderTimed() {
+    var t = settings.timed;
+    var card = el("div", "q8-dc__card q8-dc__timed");
+    var head = el("h4", "q8-dc__section-title");
+    head.appendChild(icon("clock"));
+    head.appendChild(el("span", null, t.label || "Timed delivery"));
+    card.appendChild(head);
+    var options = [["", t.none || "No preference"]].concat(timeWindows().map(function (w) {
+      return [w.code, timedLabel(w)];
+    }));
+    var picker = field({ id: "q8-dc-timed", label: t.pickLabel || "Deliver", options: options, value: timedWindow() ? state.timed : "", onChange: function (event) {
+      state.timed = event.target.value;
+      save(patchFor());
+      renderOrder();
+      syncTimedProperty();
+      note.textContent = noteText();
+    } });
+    card.appendChild(picker.wrap);
+    function noteText() {
+      var w = timedWindow();
+      if (w && w.price > 0) return fill(t.pickedNote || "{label} adds {price} to the delivery price.", { label: w.label, price: formatMoney(w.price, currency) });
+      return t.note || "Timed delivery is subject to extra charges. The delivery price updates when you pick a window.";
+    }
+    var note = el("p", "q8-dc__note q8-dc__note--info", noteText());
+    card.appendChild(note);
+    return card;
+  }
+
   // --- Render: step 3 --------------------------------------------------------
 
   function renderSummary() {
@@ -1006,8 +1169,10 @@
       var a = state.address;
       var zone = state.zone || {};
       var priceLine = zone.price === 0 ? settings.method.freeText : typeof zone.price === "number" ? fill(settings.method.priceText, { price: formatMoney(zone.price, currency) }) : "";
+      var tw = timedWindow();
       row(s.methodRow || "Delivery", [
         state.dates.delivery ? (c.deliveryLabel || "Delivery date") + ": " + prettyDate(state.dates.delivery) : "",
+        tw ? (settings.timed.label || "Timed delivery") + ": " + timedLabel(tw) : "",
         [state.locationType, a.address1, a.address2].filter(Boolean).join(" \u00b7 "),
         [a.city, a.province, state.zip].filter(Boolean).join(", ") + (a.country ? " " + a.country : ""),
         priceLine,
@@ -1050,11 +1215,20 @@
     card.appendChild(head);
     if (c.hint) card.appendChild(el("p", "q8-dc__intro", c.hint));
 
+    var clock = tick();
     var chosen = state.dates[method];
-    if (chosen && !dateAllowed(rules, chosen, today)) chosen = state.dates[method] = "";
-    var first = firstAllowed(rules, today);
+    if (chosen && !dateAllowed(rules, chosen, today, now)) chosen = state.dates[method] = "";
+    var first = firstAllowed(rules, today, now);
+    var methodWord = method === "pickup" ? c.pickupWord || "pickup" : c.deliveryWord || "delivery";
+    var status = todayStatus(rules, now);
+    if ((rules.leadDays || 0) === 0 && status !== "open") {
+      card.appendChild(el("p", "q8-dc__note q8-dc__note--today", status === "closed"
+        ? fill(c.todayOverText || "Today {method} is over (orders close at {time}).", { method: methodWord, time: formatTime12(rules.todayCutoff) })
+        : fill(c.todayOffText || "Same-day {method} isn't available.", { method: methodWord })));
+    }
     if (!first) {
       card.appendChild(el("p", "q8-dc__note q8-dc__note--no", c.none || "No dates are available right now."));
+      if (clock.timezone) card.appendChild(el("p", "q8-dc__tz", fill(c.timezoneText || "Shop time: {time} ({timezone})", { time: formatTime12(clock.time), timezone: clock.timezone })));
       return card;
     }
     var anchor = isoParts(chosen || first);
@@ -1071,6 +1245,7 @@
     card.appendChild(grid);
     var picked = el("p", "q8-dc__cal-picked");
     card.appendChild(picked);
+    if (clock.timezone) card.appendChild(el("p", "q8-dc__tz", fill(c.timezoneText || "Shop time: {time} ({timezone})", { time: formatTime12(clock.time), timezone: clock.timezone })));
 
     function monthLabel(y, m) {
       try {
@@ -1090,7 +1265,7 @@
       for (var i = 0; i < firstDay; i += 1) grid.appendChild(el("span", "q8-dc__cal-pad"));
       for (var d = 1; d <= days; d += 1) {
         var iso = view.y + "-" + String(view.m).padStart(2, "0") + "-" + String(d).padStart(2, "0");
-        var ok = dateAllowed(rules, iso, today);
+        var ok = dateAllowed(rules, iso, today, now);
         var cell = el("button", "q8-dc__cal-day" + (iso === state.dates[method] ? " q8-dc__cal-day--on" : "") + (iso === today ? " q8-dc__cal-day--today" : ""), String(d));
         cell.type = "button";
         cell.disabled = !ok;
@@ -1386,6 +1561,7 @@
               return;
             }
             renderOrder();
+            syncTimedProperty();
             try {
               document.dispatchEvent(new CustomEvent("cart:refresh", { bubbles: true, detail: next }));
             } catch (e) {
@@ -1410,6 +1586,8 @@
 
     var deliveryKnown = state.method === "pickup" || (state.method === "delivery" && state.zone && typeof state.zone.price === "number");
     var deliveryAmount = state.method === "pickup" ? 0 : deliveryKnown ? state.zone.price : null;
+    var tw = timedWindow();
+    var timedAmount = tw ? tw.price : 0;
 
     var totals = el("div", "q8-dc__order-totals");
     function line(label, value, className) {
@@ -1439,8 +1617,9 @@
             : formatMoney(deliveryAmount, currency),
       ),
     );
+    if (tw) totals.appendChild(line((settings.timed.label || "Timed delivery") + " (" + tw.label + ")", "+" + formatMoney(timedAmount, currency)));
     orderCard.appendChild(totals);
-    orderCard.appendChild(line(o.totalLabel || "Total", formatMoney(cents(cart.total_price) + (deliveryAmount || 0), currency), "q8-dc__order-line--total"));
+    orderCard.appendChild(line(o.totalLabel || "Total", formatMoney(cents(cart.total_price) + (deliveryAmount || 0) + timedAmount, currency), "q8-dc__order-line--total"));
   }
 
   // --- Boot ------------------------------------------------------------------
@@ -1486,6 +1665,18 @@
     pickedText: "Selected: {date}",
     requiredText: "Pick a day to continue.",
     optionalText: "",
+    todayOverText: "Today {method} is over (orders close at {time}).",
+    todayOffText: "Same-day {method} isn't available.",
+    deliveryWord: "delivery",
+    pickupWord: "pickup",
+    timezoneText: "Shop time: {time} ({timezone})",
+  };
+  settings.timed = settings.timed || {
+    label: "Timed delivery",
+    pickLabel: "Deliver",
+    none: "No preference",
+    note: "Timed delivery is subject to extra charges. The delivery price updates when you pick a window.",
+    pickedNote: "{label} adds {price} to the delivery price.",
   };
   settings.empty = settings.empty || {
     title: "No products selected",
@@ -1520,12 +1711,16 @@
       }),
     fetchSchedule()
       .then(function (result) {
-        schedule = result && result.enabled ? result : null;
+        // Windows and the clock are useful even with the calendar off.
+        schedule = result || null;
+        tick();
+        if (state.timed && !timeWindows().some(function (w) { return w.code === state.timed; })) state.timed = "";
       })
       .catch(function () {
         schedule = null;
       }),
   ]).then(function () {
     go(1);
+    syncTimedProperty();
   });
 })();

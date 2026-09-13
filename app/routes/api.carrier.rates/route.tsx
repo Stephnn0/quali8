@@ -3,6 +3,8 @@ import { z } from "zod";
 import db from "app/db.server";
 import { verifyCarrierRequest } from "app/services/carrier/hmac.server";
 import { buildRates, type ShippingRate } from "app/services/carrier/rates";
+import { TIMED_PROPERTY, findWindow, windowLabel } from "app/services/delivery/timedDelivery";
+import { loadTimeWindows } from "app/services/delivery/timedDelivery.server";
 
 /**
  * Carrier service callback. Shopify POSTs the cart's origin, destination,
@@ -55,12 +57,23 @@ const rateRequestSchema = z.object({
           quantity: z.number().optional(),
           price: z.number().optional(),
           grams: z.number().optional(),
+          /** Line item properties travel with the request; the cart block sets the timed window here. */
+          properties: z.record(z.string(), z.unknown()).nullable().optional(),
         }),
       )
       .optional(),
     currency: z.string().min(1),
   }),
 });
+
+/** The timed window code the cart block stored on a line item, if any. */
+function timedPropertyOf(items: Array<{ properties?: Record<string, unknown> | null }>): string | null {
+  for (const item of items) {
+    const value = item.properties?.[TIMED_PROPERTY];
+    if (typeof value === "string" && value.trim()) return value.trim();
+  }
+  return null;
+}
 
 function respond(shop: string, rates: ShippingRate[], reason: string, startedAt: number) {
   logBlock("RESPONSE → Shopify", [
@@ -119,7 +132,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const postalCode = destination.postal_code ?? "";
     if (!postalCode) return respond(shop, [], "no destination postal code", startedAt);
 
-    const [config, zones] = await Promise.all([
+    const timedCode = timedPropertyOf(items ?? []);
+    const [config, zones, timeWindows] = await Promise.all([
       db.carrierRate.findUnique({
         where: { shop },
         select: { enabled: true, title: true, fallbackPrice: true },
@@ -129,7 +143,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         orderBy: [{ position: "asc" }, { id: "asc" }],
         select: { name: true, zipCodes: true, price: true, message: true },
       }),
+      timedCode ? loadTimeWindows(db, shop) : Promise.resolve([]),
     ]);
+    const window = findWindow(timeWindows, timedCode);
+    const timeWindow = window ? { label: windowLabel(window), price: window.price } : null;
 
     logBlock("MATCHING", [
       ["Shop", shop],
@@ -138,9 +155,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       ["Items", (items ?? []).length],
       ["Checkout rate config", config ?? "(none saved — defaults apply: disabled)"],
       ["Active zones", zones.map((zone) => ({ name: zone.name, codes: zone.zipCodes.length, price: zone.price }))],
+      ["Timed delivery", timedCode ? (timeWindow ?? `"${timedCode}" is not an active window — ignored`) : "(none picked)"],
     ]);
 
-    const rates = buildRates({ postalCode, currency, config, zones });
+    const rates = buildRates({ postalCode, currency, config, zones, timeWindow });
     const reason = rates.length
       ? `matched: ${rates[0].service_name} at ${rates[0].total_price} ${currency} (cents)`
       : !config

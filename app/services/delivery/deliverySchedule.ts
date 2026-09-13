@@ -1,9 +1,11 @@
 /**
  * Pure date rules for the delivery / pickup calendar. No server imports —
  * unit tested. Dates are ISO `yyyy-mm-dd` strings interpreted as calendar
- * days (no time zone maths): the storefront passes the shopper's local
- * "today", the admin stores what the merchant typed.
+ * days: the caller passes "today" (and, for same-day rules, the current
+ * "HH:MM") in the shop's time zone — see shopTime.ts. The admin stores what
+ * the merchant typed.
  */
+import { isValidTime, minutesOf } from "./shopTime";
 
 /** 0 = Sunday … 6 = Saturday, matching `Date.prototype.getDay`. */
 export type Weekday = 0 | 1 | 2 | 3 | 4 | 5 | 6;
@@ -17,6 +19,10 @@ export type MethodSchedule = {
   leadDays: number;
   /** Latest offered day is today + maxDaysAhead. */
   maxDaysAhead: number;
+  /** Offer today at all (still needs leadDays = 0). */
+  todayEnabled: boolean;
+  /** Shop time after which today is no longer offered, "HH:MM"; null = all day. */
+  todayCutoff: string | null;
 };
 
 export type DeliverySchedule = {
@@ -46,6 +52,8 @@ export const defaultMethodSchedule = (): MethodSchedule => ({
   blockedDates: [],
   leadDays: 0,
   maxDaysAhead: 60,
+  todayEnabled: true,
+  todayCutoff: null,
 });
 
 export const defaultDeliverySchedule = (): DeliverySchedule => ({
@@ -94,25 +102,40 @@ export function daysBetween(from: string, to: string): number {
   return Math.round((Date.UTC(ty, tm - 1, td) - Date.UTC(fy, fm - 1, fd)) / 86_400_000);
 }
 
+export type TodayStatus = "open" | "closed" | "off";
+
 /**
- * Whether `isoDate` can be chosen under `schedule`, given the shopper's
- * `today`. Invalid dates are never allowed.
+ * Whether same-day is still on offer: "open" until the cutoff, "closed"
+ * once the shop's clock (`now`, HH:MM) passes it, "off" when the merchant
+ * doesn't offer today at all. Without `now` a cutoff cannot have passed.
  */
-export function isDateAllowed(schedule: MethodSchedule, isoDate: string, today: string): boolean {
+export function todayStatus(schedule: MethodSchedule, now?: string | null): TodayStatus {
+  if (!schedule.todayEnabled) return "off";
+  if (!schedule.todayCutoff || !now || !isValidTime(now)) return "open";
+  return minutesOf(now) >= minutesOf(schedule.todayCutoff) ? "closed" : "open";
+}
+
+/**
+ * Whether `isoDate` can be chosen under `schedule`, given the shop's
+ * `today` and, for same-day rules, its current time `now`. Invalid dates
+ * are never allowed.
+ */
+export function isDateAllowed(schedule: MethodSchedule, isoDate: string, today: string, now?: string | null): boolean {
   if (!isIsoDate(isoDate) || !isIsoDate(today)) return false;
   const offset = daysBetween(today, isoDate);
   if (offset < schedule.leadDays || offset > schedule.maxDaysAhead) return false;
+  if (offset === 0 && todayStatus(schedule, now) !== "open") return false;
   if (schedule.blockedWeekdays.includes(weekdayOf(isoDate))) return false;
   if (schedule.blockedDates.includes(isoDate)) return false;
   return true;
 }
 
 /** The first allowed day on or after today + leadDays, or null when none within the window. */
-export function firstAvailableDate(schedule: MethodSchedule, today: string): string | null {
+export function firstAvailableDate(schedule: MethodSchedule, today: string, now?: string | null): string | null {
   if (!isIsoDate(today)) return null;
   for (let offset = schedule.leadDays; offset <= schedule.maxDaysAhead; offset += 1) {
     const candidate = addDays(today, offset);
-    if (isDateAllowed(schedule, candidate, today)) return candidate;
+    if (isDateAllowed(schedule, candidate, today, now)) return candidate;
   }
   return null;
 }
@@ -127,5 +150,7 @@ export function sanitizeMethodSchedule(input: Partial<MethodSchedule> | null | u
   const dates = Array.from(new Set((input.blockedDates ?? []).filter(isIsoDate))).sort();
   const lead = Number.isInteger(input.leadDays) ? Math.min(MAX_LEAD_DAYS, Math.max(0, Number(input.leadDays))) : base.leadDays;
   const max = Number.isInteger(input.maxDaysAhead) ? Math.min(MAX_DAYS_AHEAD, Math.max(lead, Number(input.maxDaysAhead))) : base.maxDaysAhead;
-  return { blockedWeekdays: weekdays, blockedDates: dates, leadDays: lead, maxDaysAhead: Math.max(max, lead) };
+  const todayEnabled = typeof input.todayEnabled === "boolean" ? input.todayEnabled : base.todayEnabled;
+  const todayCutoff = isValidTime(input.todayCutoff) ? input.todayCutoff : null;
+  return { blockedWeekdays: weekdays, blockedDates: dates, leadDays: lead, maxDaysAhead: Math.max(max, lead), todayEnabled, todayCutoff };
 }

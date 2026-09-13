@@ -10,8 +10,14 @@ import {
 import { setupCarrierService } from "app/services/carrier/setupCarrierService.server";
 import {
   saveDeliverySchedule,
+  saveTodayRules,
   scheduleActionSchema,
+  todayRulesActionSchema,
 } from "app/services/delivery/deliverySchedule.server";
+import {
+  saveTimeWindows,
+  timeWindowsActionSchema,
+} from "app/services/delivery/timedDelivery.server";
 import { handleApiError } from "app/utils/server/handleApiResponse/handleApiError.server";
 
 const bodySchema = z.discriminatedUnion("action", [
@@ -23,6 +29,8 @@ const bodySchema = z.discriminatedUnion("action", [
     fallbackPrice: z.number().min(0).nullable(),
   }),
   scheduleActionSchema,
+  todayRulesActionSchema,
+  timeWindowsActionSchema,
   ...deliveryActionSchema.options,
 ]);
 
@@ -67,6 +75,12 @@ export async function action({ request }: ActionFunctionArgs) {
 
       case "save-schedule":
         return saveDeliverySchedule(db, session.shop, body);
+
+      case "save-today-rules":
+        return saveTodayRules(db, session.shop, body);
+
+      case "save-time-windows":
+        return saveTimeWindows(db, session.shop, body);
 
       default:
         return runDeliveryAction({ db, shop: session.shop, body });

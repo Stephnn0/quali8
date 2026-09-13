@@ -8,6 +8,7 @@ import {
   isIsoDate,
   parseDateList,
   sanitizeMethodSchedule,
+  todayStatus,
   weekdayOf,
 } from "./deliverySchedule";
 
@@ -74,7 +75,43 @@ describe("sanitizeMethodSchedule", () => {
   it("clamps, dedupes and keeps the window consistent", () => {
     expect(
       sanitizeMethodSchedule({ blockedWeekdays: [6, 6, 9, -1] as never, blockedDates: ["2026-01-01", "bad", "2026-01-01"], leadDays: 99, maxDaysAhead: 2 }),
-    ).toEqual({ blockedWeekdays: [6], blockedDates: ["2026-01-01"], leadDays: 60, maxDaysAhead: 60 });
+    ).toEqual({ blockedWeekdays: [6], blockedDates: ["2026-01-01"], leadDays: 60, maxDaysAhead: 60, todayEnabled: true, todayCutoff: null });
     expect(sanitizeMethodSchedule(null)).toEqual(defaultMethodSchedule());
+  });
+});
+
+describe("same-day rules", () => {
+  const base = { ...defaultMethodSchedule(), todayCutoff: "14:00" };
+
+  it("keeps today open until the cutoff, then closes it", () => {
+    expect(todayStatus(base, "13:59")).toBe("open");
+    expect(todayStatus(base, "14:00")).toBe("closed");
+    expect(todayStatus(base, "18:30")).toBe("closed");
+    expect(isDateAllowed(base, "2026-09-13", "2026-09-13", "13:00")).toBe(true);
+    expect(isDateAllowed(base, "2026-09-13", "2026-09-13", "14:00")).toBe(false);
+    expect(isDateAllowed(base, "2026-09-14", "2026-09-13", "14:00")).toBe(true);
+  });
+
+  it("is open all day without a cutoff or without a clock", () => {
+    expect(todayStatus(defaultMethodSchedule(), "23:59")).toBe("open");
+    expect(todayStatus(base, null)).toBe("open");
+    expect(todayStatus(base, "garbage")).toBe("open");
+  });
+
+  it("is off when the merchant turned today off, whatever the time", () => {
+    const off = { ...base, todayEnabled: false };
+    expect(todayStatus(off, "08:00")).toBe("off");
+    expect(isDateAllowed(off, "2026-09-13", "2026-09-13", "08:00")).toBe(false);
+    expect(firstAvailableDate(off, "2026-09-13", "08:00")).toBe("2026-09-14");
+  });
+
+  it("skips today in firstAvailableDate after the cutoff", () => {
+    expect(firstAvailableDate(base, "2026-09-13", "16:00")).toBe("2026-09-14");
+    expect(firstAvailableDate(base, "2026-09-13", "09:00")).toBe("2026-09-13");
+  });
+
+  it("sanitises the cutoff and the switch", () => {
+    expect(sanitizeMethodSchedule({ todayCutoff: "14:00", todayEnabled: false })).toMatchObject({ todayCutoff: "14:00", todayEnabled: false });
+    expect(sanitizeMethodSchedule({ todayCutoff: "2pm" as never })).toMatchObject({ todayCutoff: null, todayEnabled: true });
   });
 });

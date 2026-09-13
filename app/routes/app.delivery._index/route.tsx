@@ -21,7 +21,10 @@ import { useAppBridge } from "@shopify/app-bridge-react";
 import { FeatureHeader } from "app/components/OneApp";
 import DeliveryZonesEditor from "app/components/Delivery/DeliveryZonesEditor";
 import DeliveryScheduleEditor from "app/components/Delivery/DeliveryScheduleEditor";
+import TodayDeliveryEditor from "app/components/Delivery/TodayDeliveryEditor";
+import TimedDeliveryEditor from "app/components/Delivery/TimedDeliveryEditor";
 import { defaultDeliverySchedule } from "app/services/delivery/deliverySchedule";
+import { DEFAULT_RATE_TITLE } from "app/services/carrier/rates";
 import { loader, type DeliveryPageData } from "./loader";
 import { action } from "./action";
 
@@ -46,7 +49,7 @@ export default function DeliveryPage() {
   const rateFetcher = useFetcher<ActionResult>();
 
   const [enabled, setEnabled] = useState(data?.rate.enabled ?? true);
-  const [title, setTitle] = useState(data?.rate.title ?? "Local delivery");
+  const [title, setTitle] = useState(data?.rate.title ?? DEFAULT_RATE_TITLE);
   const [fallbackPrice, setFallbackPrice] = useState(
     data?.rate.fallbackPrice === null || data?.rate.fallbackPrice === undefined
       ? ""
@@ -224,8 +227,10 @@ export default function DeliveryPage() {
                     Checkout rate
                   </Text>
                   <Text as="p" tone="subdued" variant="bodySm">
-                    The shipping method shown at checkout, priced by the matching zone.
-                    A zone without a price returns no rate for its codes.
+                    The shipping method shown at checkout. Inside a zone the rate carries
+                    the zone&rsquo;s name and price, plus &ldquo;+ Timed delivery&rdquo;
+                    when the shopper picked a window. A zone without a price returns no
+                    rate for its codes.
                   </Text>
                 </BlockStack>
                 <Checkbox
@@ -235,12 +240,13 @@ export default function DeliveryPage() {
                 />
                 <InlineGrid columns={{ xs: 1, sm: 2 }} gap="400">
                   <TextField
-                    label="Rate name"
+                    label="Rate name outside your zones"
                     autoComplete="off"
                     value={title}
                     onChange={setTitle}
-                    placeholder="Local delivery"
+                    placeholder={DEFAULT_RATE_TITLE}
                     maxLength={60}
+                    helpText="Only used with the price below. In a zone, the zone's name is the rate."
                   />
                   <TextField
                     label="Price outside your zones"
@@ -264,6 +270,46 @@ export default function DeliveryPage() {
                     Save checkout rate
                   </Button>
                 </InlineStack>
+              </BlockStack>
+            </Card>
+
+            <Card>
+              <BlockStack gap="400">
+                <BlockStack gap="100">
+                  <Text as="h2" variant="headingMd">
+                    Today delivery
+                  </Text>
+                  <Text as="p" tone="subdued" variant="bodySm">
+                    Whether shoppers can still pick today, and until what time. Judged
+                    on the shop&rsquo;s clock, not the shopper&rsquo;s. Once closed, the
+                    cart calendar greys out today and says so.
+                  </Text>
+                </BlockStack>
+                <TodayDeliveryEditor
+                  key={JSON.stringify([data?.schedule.delivery.todayCutoff, data?.schedule.pickup.todayCutoff])}
+                  clock={data?.clock ?? null}
+                  delivery={data?.schedule.delivery ?? defaultDeliverySchedule().delivery}
+                  pickup={data?.schedule.pickup ?? defaultDeliverySchedule().pickup}
+                />
+              </BlockStack>
+            </Card>
+
+            <Card>
+              <BlockStack gap="400">
+                <BlockStack gap="100">
+                  <Text as="h2" variant="headingMd">
+                    Timed delivery
+                  </Text>
+                  <Text as="p" tone="subdued" variant="bodySm">
+                    Windows shoppers can add to a delivery for an extra charge: before,
+                    after, or by a time. The cart shows them under the calendar; checkout
+                    charges the zone price plus the window.
+                  </Text>
+                </BlockStack>
+                <TimedDeliveryEditor
+                  key={JSON.stringify(data?.timeWindows ?? [])}
+                  windows={data?.timeWindows ?? []}
+                />
               </BlockStack>
             </Card>
 

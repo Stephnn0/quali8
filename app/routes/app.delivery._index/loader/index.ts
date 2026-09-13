@@ -6,6 +6,11 @@ import type { DeliveryConfig } from "app/components/Delivery/types";
 import { loadDeliveryConfig } from "app/services/delivery/deliveryZones.server";
 import { loadDeliverySchedule } from "app/services/delivery/deliverySchedule.server";
 import type { DeliverySchedule } from "app/services/delivery/deliverySchedule";
+import { syncShopTimezone } from "app/services/delivery/shopTimezone.server";
+import { shopNow, type ShopClock } from "app/services/delivery/shopTime";
+import { loadTimeWindows } from "app/services/delivery/timedDelivery.server";
+import type { TimeWindowRow } from "app/services/delivery/timedDelivery";
+import { DEFAULT_RATE_TITLE } from "app/services/carrier/rates";
 import {
   detectCarrierService,
   type CarrierDetectStatus,
@@ -18,6 +23,9 @@ export type DeliveryPageData = {
   rate: { enabled: boolean; title: string; fallbackPrice: number | null };
   delivery: DeliveryConfig;
   schedule: DeliverySchedule;
+  /** The shop's clock as the storefront and carrier will see it; `known` is false when the zone couldn't be read. */
+  clock: ShopClock & { known: boolean };
+  timeWindows: TimeWindowRow[];
 };
 
 /**
@@ -36,11 +44,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
   );
 
   try {
-    const [carrier, rate, delivery, schedule] = await Promise.all([
+    const [carrier, rate, delivery, schedule, timezone, timeWindows] = await Promise.all([
       detectCarrierService(admin.graphql),
       db.carrierRate.findUnique({ where: { shop: session.shop } }),
       loadDeliveryConfig(db, session.shop),
       loadDeliverySchedule(db, session.shop),
+      syncShopTimezone(db, admin.graphql, session.shop),
+      loadTimeWindows(db, session.shop),
     ]);
 
     return handleApiSuccess<DeliveryPageData>({
@@ -48,11 +58,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
         carrier,
         rate: {
           enabled: rate?.enabled ?? true,
-          title: rate?.title ?? "Local delivery",
+          title: rate?.title ?? DEFAULT_RATE_TITLE,
           fallbackPrice: rate?.fallbackPrice ?? null,
         },
         delivery,
         schedule,
+        clock: { ...shopNow(timezone), known: timezone !== null },
+        timeWindows,
       },
       code: "success",
     });

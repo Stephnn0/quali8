@@ -58,6 +58,7 @@ model ShopifyStore {
   deliveryZones       DeliveryZone[]
   carrierRate         CarrierRate?
   deliverySchedule    DeliverySchedule?
+  deliveryTimeWindows DeliveryTimeWindow[]
 
   storeProfile   StoreProfile?
   dashboardBrief DashboardBrief?
@@ -751,9 +752,33 @@ model DeliverySchedule {
   pickupBlockedDates     String[] @default([])
   pickupLeadDays         Int      @default(0)
   pickupMaxDaysAhead     Int      @default(60)
+  /// Same-day rules, evaluated in the shop's time zone (ShopifyShopData.ianaTimezone)
+  deliveryTodayEnabled   Boolean  @default(true) /// Offer today at all (subject to lead days)
+  deliveryTodayCutoff    String? /// "HH:MM" 24h; today closes at this shop time. Null = all day
+  pickupTodayEnabled     Boolean  @default(true)
+  pickupTodayCutoff      String?
   //
   shop         String       @unique
   shopifyStore ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
+}
+
+/// A timed delivery window shoppers can add to a delivery ("Before 12:00 PM")
+/// for a surcharge on top of the zone price (Delivery module).
+model DeliveryTimeWindow {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  //
+  kind      String /// "before" | "after" | "by"
+  time      String /// "HH:MM" 24h in the shop's time zone
+  price     Float    @default(0) /// Surcharge in the shop currency
+  active    Boolean  @default(true)
+  position  Int      @default(0)
+  //
+  shop         String
+  shopifyStore ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
+
+  @@index([shop, active, position])
 }
 
 /// The merchant's business profile powering the AI assistant dashboard.
