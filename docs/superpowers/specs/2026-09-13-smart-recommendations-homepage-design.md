@@ -156,8 +156,9 @@ type ShopperFacts = {
 ### 6. Server (`smartRecommendations.server.ts`)
 
 `recommendForCart` becomes `recommendForShopper(db, graphql, request)` with
-`request = { shop, cart: { productIds, total }, viewed: { productIds,
-collectionIds }, returning, slot, maxProducts }`.
+`request = { shop, cartProductIds, cartTotal, viewedProductIds,
+viewedCollectionIds, returning, slot, maxProducts }` (flat, so the parsed
+proxy params map onto it one-to-one).
 
 - No rules → newest products, `fallbackUsed: true`, only for slot 1
   (slots 2 and 3 return empty).
