@@ -691,6 +691,12 @@ enum RecommendationTrigger {
   CART_HAS_COLLECTION
   CART_HAS_PRODUCT
   CART_TOTAL_MIN
+  /// Shopper viewed a product from triggerCollectionId (tracker embed)
+  VIEWED_COLLECTION
+  /// Shopper viewed triggerProductId (tracker embed)
+  VIEWED_PRODUCT
+  /// Shopper's first visit was before today (tracker embed)
+  RETURNING_VISITOR
 }
 
 enum RecommendationSource {
@@ -698,6 +704,10 @@ enum RecommendationSource {
   TAG
   NEWEST
   PRODUCTS
+  /// The products the shopper viewed, newest first
+  RECENTLY_VIEWED
+  /// Shopify's related products for the most recently viewed product (resolved in the storefront block)
+  RELATED_TO_VIEWED
 }
 
 /// A delivery zone for the storefront zip code checker: a list of codes
