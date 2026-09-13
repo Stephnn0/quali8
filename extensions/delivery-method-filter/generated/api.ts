@@ -123,6 +123,8 @@ export type Cart = HasMetafields & {
    * gift wrapping requests, or custom product details. Attributes are stored as key-value pairs.
    */
   attribute?: Maybe<Attribute>;
+  /** The billing address associated with the cart. */
+  billingAddress?: Maybe<MailingAddress>;
   /**
    * Information about the customer that's interacting with the cart. It includes details such as the
    * customer's email and phone number, and the total amount of money the customer has spent in the store.
@@ -151,6 +153,8 @@ export type Cart = HasMetafields & {
    * instead.
    */
   deliveryGroups: Array<CartDeliveryGroup>;
+  /** The discounts that have been applied to the cart. */
+  discountApplications: Array<DiscountApplication>;
   /**
    * The items in a cart that the customer intends to purchase. A cart line is an entry in the
    * customer's cart that represents a single unit of a product variant. For example, if a customer adds two
@@ -170,6 +174,11 @@ export type Cart = HasMetafields & {
    * enables you to customize the checkout experience.
    */
   metafield?: Maybe<Metafield>;
+  /**
+   * A purchase order number associated with the cart, often used for B2B transactions
+   * to reference the buyer's internal purchase order.
+   */
+  poNumber?: Maybe<Scalars['String']['output']>;
   /** The physical location where a retail order is created or completed. */
   retailLocation?: Maybe<Location>;
 };
@@ -208,7 +217,7 @@ export type CartMetafieldArgs = {
  */
 export type CartCost = {
   __typename?: 'CartCost';
-  /** The amount for the customer to pay at checkout, excluding taxes and discounts. */
+  /** The amount, before taxes and cart-level discounts, for the customer to pay. */
   subtotalAmount: MoneyV2;
   /** The total amount for the customer to pay at checkout. */
   totalAmount: MoneyV2;
@@ -239,6 +248,8 @@ export type CartDeliveryGroup = {
    * can choose to have their orders shipped. Examples include express shipping or standard shipping.
    */
   deliveryOptions: Array<CartDeliveryOption>;
+  /** The discounts that have been applied to the delivery group. */
+  discountAllocations: Array<DiscountAllocation>;
   /** The type of merchandise in the delivery group. */
   groupType: CartDeliveryGroupType;
   /**
@@ -324,7 +335,7 @@ export type CartLine = {
    * gift wrapping requests, or custom product details. Attributes are stored as key-value pairs.
    *
    * Cart line attributes are equivalent to the
-   * [`line_item`](https://shopify.dev/docs/apps/build/purchase-options/subscriptions/selling-plans)
+   * [`line_item`](https://shopify.dev/docs/api/liquid/objects/line_item)
    * object in Liquid.
    */
   attribute?: Maybe<Attribute>;
@@ -334,10 +345,17 @@ export type CartLine = {
    * the same t-shirt to their cart, then each size is represented as a separate cart line.
    */
   cost: CartLineCost;
+  /** The discounts that have been applied to the cart line. */
+  discountAllocations: Array<DiscountAllocation>;
   /** The ID of the cart line. */
   id: Scalars['ID']['output'];
   /** The item that the customer intends to purchase. */
   merchandise: Merchandise;
+  /**
+   * The [nested relationship](https://shopify.dev/docs/apps/build/product-merchandising/nested-cart-lines)
+   * between this line and its parent line, if any.
+   */
+  parentRelationship?: Maybe<CartLineParentRelationship>;
   /** The quantity of the item that the customer intends to purchase. */
   quantity: Scalars['Int']['output'];
   /**
@@ -370,7 +388,7 @@ export type CartLineCost = {
    */
   amountPerQuantity: MoneyV2;
   /**
-   * The cost of a single unit before any discounts are applied. This field is used to calculate and display
+   * The `compareAt` price of a single unit before any discounts are applied. This field is used to calculate and display
    * savings for customers. For example, if a product's `compareAtAmountPerQuantity` is $25 and its current price
    * is $20, then the customer sees a $5 discount. This value can change based on the buyer's identity and is
    * `null` when the value is hidden from buyers.
@@ -384,6 +402,13 @@ export type CartLineCost = {
   subtotalAmount: MoneyV2;
   /** The total cost of items in a cart. */
   totalAmount: MoneyV2;
+};
+
+/** Represents the relationship between a cart line and its parent line. */
+export type CartLineParentRelationship = {
+  __typename?: 'CartLineParentRelationship';
+  /** The parent line in the relationship. */
+  parent: CartLine;
 };
 
 /**
@@ -479,6 +504,10 @@ export type CompanyLocation = HasMetafields & {
   metafield?: Maybe<Metafield>;
   /** The name of the company location. */
   name: Scalars['String']['output'];
+  /** The number of orders placed at this company location. */
+  ordersCount: Scalars['Int']['output'];
+  /** The total amount spent at this company location. */
+  totalSpent: MoneyV2;
   /**
    * The date and time ([ISO 8601 format](http://en.wikipedia.org/wiki/ISO_8601))
    * at which the company location was last modified.
@@ -1456,7 +1485,7 @@ export type DeliverableCartLine = {
    * gift wrapping requests, or custom product details. Attributes are stored as key-value pairs.
    *
    * Cart line attributes are equivalent to the
-   * [`line_item`](https://shopify.dev/docs/apps/build/purchase-options/subscriptions/selling-plans)
+   * [`line_item`](https://shopify.dev/docs/api/liquid/objects/line_item)
    * object in Liquid.
    */
   attribute?: Maybe<Attribute>;
@@ -1573,6 +1602,76 @@ export type DeprecatedOperation =
    * @deprecated Use `deliveryOptionRename` instead.
    */
   { hide?: never; move?: never; rename: RenameOperation; };
+
+/** The discount application and the amount applied. */
+export type DiscountAllocation = {
+  __typename?: 'DiscountAllocation';
+  /** The discount that was applied. */
+  discountApplication: DiscountApplication;
+  /** The amount that was discounted. */
+  discountedAmount: MoneyV2;
+};
+
+/** Discount that has been applied to the cart. */
+export type DiscountApplication = HasMetafields & {
+  __typename?: 'DiscountApplication';
+  /** The method by which the discount's value is allocated to its entitled items. */
+  allocationMethod: DiscountApplicationAllocationMethod;
+  /**
+   * A [custom field](https://shopify.dev/docs/apps/build/custom-data) that stores additional information
+   * about a Shopify resource, such as products, orders, and
+   * [many more](https://shopify.dev/docs/api/admin-graphql/latest/enums/MetafieldOwnerType).
+   * Using [metafields with Shopify Functions](https://shopify.dev/docs/apps/build/functions/input-output/metafields-for-input-queries)
+   * enables you to customize the checkout experience.
+   */
+  metafield?: Maybe<Metafield>;
+  /** The lines on the cart targeted by the discount. */
+  targetSelection: DiscountApplicationTargetSelection;
+  /** The type of line (i.e. line item or shipping line) on a cart that the discount is applicable towards. */
+  targetType: DiscountApplicationTarget;
+  /** The total allocated amount of the discount across all items. */
+  totalAllocatedAmount: MoneyV2;
+  /** The value of the discount. */
+  value: PricingValue;
+};
+
+
+/** Discount that has been applied to the cart. */
+export type DiscountApplicationMetafieldArgs = {
+  key: Scalars['String']['input'];
+  namespace?: InputMaybe<Scalars['String']['input']>;
+};
+
+/** The method by which the discount's value is allocated onto its entitled lines. */
+export enum DiscountApplicationAllocationMethod {
+  /** The value is spread across all entitled lines. */
+  Across = 'ACROSS',
+  /** The value is applied onto every entitled line. */
+  Each = 'EACH'
+}
+
+/** The type of line on an order that the discount is applicable towards. */
+export enum DiscountApplicationTarget {
+  /** The discount applies onto line items. */
+  LineItem = 'LINE_ITEM',
+  /** The discount applies onto shipping lines. */
+  ShippingLine = 'SHIPPING_LINE'
+}
+
+/**
+ * The lines on the order to which the discount is applied, of the type defined by
+ * the discount application's `targetType`. For example, the value `ENTITLED`, combined with a `targetType` of
+ * `LINE_ITEM`, applies the discount on all line items that are entitled to the discount.
+ * The value `ALL`, combined with a `targetType` of `SHIPPING_LINE`, applies the discount on all shipping lines.
+ */
+export enum DiscountApplicationTargetSelection {
+  /** The discount is allocated onto all the lines. */
+  All = 'ALL',
+  /** The discount is allocated onto only the lines that it's entitled for. */
+  Entitled = 'ENTITLED',
+  /** The discount is allocated onto explicitly chosen lines. */
+  Explicit = 'EXPLICIT'
+}
 
 /**
  * The output of the Function run target.
@@ -2354,7 +2453,49 @@ export type Metafield = {
   value: Scalars['String']['output'];
 };
 
-/** A precise monetary value and its associated currency. For example, 12.99 USD. */
+/** An instance of custom structured data defined by a MetaobjectDefinition. */
+export type Metaobject = {
+  __typename?: 'Metaobject';
+  /** The field for an object key, or null if the key has no field definition. */
+  field?: Maybe<MetaobjectField>;
+  /** The unique handle of the metaobject, useful as a custom ID. */
+  handle: Scalars['String']['output'];
+  /** The type of the metaobject. */
+  type: Scalars['String']['output'];
+};
+
+
+/** An instance of custom structured data defined by a MetaobjectDefinition. */
+export type MetaobjectFieldArgs = {
+  key: Scalars['String']['input'];
+};
+
+/** Provides a field definition and the data value assigned to it. */
+export type MetaobjectField = {
+  __typename?: 'MetaobjectField';
+  /** The assigned field value in JSON format. */
+  jsonValue?: Maybe<Scalars['JSON']['output']>;
+  /** The object key of this field. */
+  key: Scalars['String']['output'];
+  /** The type of the field. */
+  type: Scalars['String']['output'];
+  /** The assigned field value, always stored as a string regardless of the field type. */
+  value?: Maybe<Scalars['String']['output']>;
+};
+
+/** The input fields for retrieving a metaobject by handle. */
+export type MetaobjectHandleInput = {
+  /** The handle of the metaobject to retrieve. */
+  handle: Scalars['String']['input'];
+  /** The type of the metaobject. Must match an existing metaobject definition type. */
+  type: Scalars['String']['input'];
+};
+
+/**
+ * A precise monetary value and its associated currency. Combines a decimal amount
+ * with a three-letter currency code to express prices, costs, and other financial
+ * values throughout the API. For example, 12.99 USD.
+ */
 export type MoneyV2 = {
   __typename?: 'MoneyV2';
   /**
@@ -2439,6 +2580,16 @@ export type Operation =
    * but you couldn't change **UPS Standard** to **Standard Shipping**.
    */
   { deliveryOptionHide?: never; deliveryOptionMove?: never; deliveryOptionRename: DeliveryOptionRenameOperation; };
+
+/** The percentage value of a discount. */
+export type PricingPercentageValue = {
+  __typename?: 'PricingPercentageValue';
+  /** The percentage value of the discount. */
+  value: Scalars['Decimal']['output'];
+};
+
+/** The price value for a discount application. */
+export type PricingValue = MoneyV2 | PricingPercentageValue;
 
 /**
  * The goods and services that merchants offer to customers. Products can include details such as
@@ -2747,6 +2898,11 @@ export type Shop = HasMetafields & {
    * enables you to customize the checkout experience.
    */
   metafield?: Maybe<Metafield>;
+  /**
+   * Fetch a specific Metaobject by one of its unique identifiers. Only app-owned
+   * metaobjects with the $app reserved prefix are accessible to functions.
+   */
+  metaobject?: Maybe<Metaobject>;
 };
 
 
@@ -2757,6 +2913,16 @@ export type Shop = HasMetafields & {
 export type ShopMetafieldArgs = {
   key: Scalars['String']['input'];
   namespace?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+/**
+ * Information about the store, including the store's timezone setting
+ * and custom data stored in [metafields](https://shopify.dev/docs/apps/build/custom-data).
+ */
+export type ShopMetaobjectArgs = {
+  handle?: InputMaybe<MetaobjectHandleInput>;
+  id?: InputMaybe<Scalars['ID']['input']>;
 };
 
 /** Units of measurement for weight. */

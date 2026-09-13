@@ -1,8 +1,9 @@
-api_version = "2025-07"
+api_version = "2026-04"
 
 [[extensions]]
 name = "t:name"
 handle = "delivery-method-filter"
+uid = "cd1a5c3e-edf9-e98b-0c47-034c704bfbecfc0aa088"
 type = "function"
 description = "t:description"
 
