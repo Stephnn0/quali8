@@ -177,8 +177,8 @@ export default function RecommendationRulesIndex() {
               >
                 <p>
                   For example: when the cart has a product from Bouquets,
-                  show vases under $40. Until you add a rule, the cart block
-                  shows your newest products.
+                  show vases under $40. Until you add a rule, the Options step
+                  of the delivery checkout shows your newest products.
                 </p>
               </EmptyState>
             </Card>
@@ -215,21 +215,22 @@ export default function RecommendationRulesIndex() {
             <Card>
               <BlockStack gap="200">
                 <Text as="h3" variant="headingSm">
-                  Show it on the cart page
+                  Where shoppers see it
                 </Text>
-                <List type="number">
+                <List type="bullet">
                   <List.Item>
-                    In your Shopify admin, go to Online Store &rarr; Themes
-                    &rarr; Customize.
+                    Recommendations appear on the <strong>Options</strong> step of
+                    the Delivery checkout block on your cart page, next to the card
+                    message and occasion fields, with one-tap add to cart.
                   </List.Item>
                   <List.Item>
-                    Open the Cart template, then choose Add block &rarr; Apps
-                    &rarr; Smart Recommendations.
+                    Add the block once: Online Store &rarr; Themes &rarr; Customize
+                    &rarr; Cart template &rarr; Add block &rarr; Apps &rarr;
+                    <strong> Delivery checkout</strong>. No separate block is needed.
                   </List.Item>
                   <List.Item>
-                    Use the block settings for the heading, layout, button,
-                    and colors. A rule&rsquo;s own heading overrides the
-                    block heading when it matches.
+                    A rule&rsquo;s own heading is shown above its products when it
+                    matches.
                   </List.Item>
                 </List>
               </BlockStack>

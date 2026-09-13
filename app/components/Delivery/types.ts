@@ -15,3 +15,9 @@ export type DeliveryConfig = {
   enabled: boolean;
   zones: DeliveryZoneRow[];
 };
+
+export type {
+  DeliverySchedule as DeliveryScheduleConfig,
+  MethodSchedule as DeliveryMethodSchedule,
+  Weekday as DeliveryWeekday,
+} from "app/services/delivery/deliverySchedule";

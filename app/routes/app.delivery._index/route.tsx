@@ -20,6 +20,8 @@ import {
 import { useAppBridge } from "@shopify/app-bridge-react";
 import { FeatureHeader } from "app/components/OneApp";
 import DeliveryZonesEditor from "app/components/Delivery/DeliveryZonesEditor";
+import DeliveryScheduleEditor from "app/components/Delivery/DeliveryScheduleEditor";
+import { defaultDeliverySchedule } from "app/services/delivery/deliverySchedule";
 import { loader, type DeliveryPageData } from "./loader";
 import { action } from "./action";
 
@@ -201,6 +203,24 @@ export default function DeliveryPage() {
               <BlockStack gap="400">
                 <BlockStack gap="100">
                   <Text as="h2" variant="headingMd">
+                    Delivery & pickup calendar
+                  </Text>
+                  <Text as="p" tone="subdued" variant="bodySm">
+                    Which days shoppers can choose for delivery or pickup. Block whole
+                    weekdays, single dates, and set how far ahead they can book.
+                  </Text>
+                </BlockStack>
+                <DeliveryScheduleEditor
+                  key={JSON.stringify(data?.schedule ?? null)}
+                  schedule={data?.schedule ?? defaultDeliverySchedule()}
+                />
+              </BlockStack>
+            </Card>
+
+            <Card>
+              <BlockStack gap="400">
+                <BlockStack gap="100">
+                  <Text as="h2" variant="headingMd">
                     Checkout rate
                   </Text>
                   <Text as="p" tone="subdued" variant="bodySm">
@@ -267,9 +287,10 @@ export default function DeliveryPage() {
                         Add block &rarr; Apps &rarr; <strong>Delivery checkout</strong>.
                       </List.Item>
                       <List.Item>
-                        Shoppers check their zip, fill in their address, and continue to a
-                        prefilled checkout. The theme&rsquo;s own checkout buttons stay
-                        hidden until delivery is confirmed.
+                        Shoppers check their zip, pick a date, fill in their address, add
+                        a card message and extras, and continue to a prefilled checkout.
+                        The theme&rsquo;s own checkout buttons stay hidden until delivery
+                        is confirmed.
                       </List.Item>
                     </List>
                   </BlockStack>

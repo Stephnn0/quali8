@@ -57,6 +57,7 @@ model ShopifyStore {
   recommendationRules RecommendationRule[]
   deliveryZones       DeliveryZone[]
   carrierRate         CarrierRate?
+  deliverySchedule    DeliverySchedule?
 
   storeProfile   StoreProfile?
   dashboardBrief DashboardBrief?
@@ -731,6 +732,28 @@ model CarrierRate {
   //
   shop          String       @unique
   shopifyStore  ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
+}
+
+/// Delivery / pickup date rules for the cart calendar: blocked weekdays and
+/// dates, lead time and how far ahead shoppers may book. One per shop.
+model DeliverySchedule {
+  id                     Int      @id @default(autoincrement())
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @default(now()) @updatedAt
+  //
+  enabled                Boolean  @default(false) /// Show the calendar in the cart
+  requireDate            Boolean  @default(true) /// Shoppers must pick a date to continue
+  deliveryBlockedWeekdays Int[]   @default([]) /// 0 = Sunday … 6 = Saturday
+  deliveryBlockedDates   String[] @default([]) /// ISO yyyy-mm-dd
+  deliveryLeadDays       Int      @default(0)
+  deliveryMaxDaysAhead   Int      @default(60)
+  pickupBlockedWeekdays  Int[]    @default([])
+  pickupBlockedDates     String[] @default([])
+  pickupLeadDays         Int      @default(0)
+  pickupMaxDaysAhead     Int      @default(60)
+  //
+  shop         String       @unique
+  shopifyStore ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
 }
 
 /// The merchant's business profile powering the AI assistant dashboard.

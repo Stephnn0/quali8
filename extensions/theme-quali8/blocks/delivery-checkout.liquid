@@ -1,10 +1,13 @@
 {%- comment -%}
   Quali8 — Delivery checkout (cart page app block).
 
-  A three-step pre-checkout: 1) Sender information (sender + recipient, or
-  "sending to myself"), 2) Delivery / Pickup (delivery verifies the zip
-  against the app's zones, then collects the address; pickup skips it),
-  3) Summary with the Checkout button. Steps on the left, the form in the
+  A four-step pre-checkout: 1) Sender information (sender + recipient, or
+  "sending to myself", phones validated), 2) Delivery / Pickup (delivery
+  verifies the zip against the app's zones, offers the merchant's date
+  calendar, then collects the address; pickup offers its own calendar),
+  3) Options (card message, notes, occasion, Smart Recommendations upsell),
+  4) Summary with the Checkout button. An empty cart shows a "keep
+  shopping" panel instead. Steps on the left, the form in the
   middle, an order summary on the right. Everything typed is saved to cart
   attributes as it changes, and Checkout opens Shopify's checkout with the
   recipient's shipping address prefilled. While the summary isn't complete
@@ -96,6 +99,7 @@
   data-quali8-delivery-checkout
   data-currency="{{ cart.currency.iso_code | default: shop.currency }}"
   data-country="{{ localization.country.iso_code | default: shop.address.country_code }}"
+  data-shop-url="{{ routes.all_products_collection_url }}"
   {%- if customer %} data-customer-email="{{ customer.email | escape }}" data-customer-first="{{ customer.first_name | escape }}" data-customer-last="{{ customer.last_name | escape }}"{% endif -%}
   style="
     --q8-dc-page: {{ block.settings.page_background }};

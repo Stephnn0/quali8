@@ -977,3 +977,189 @@ select.q8-dc__input {
     transition: none;
   }
 }
+
+/* --- Validation ------------------------------------------------------------ */
+.q8-dc__error {
+  margin: 0.35rem 0 0;
+  font-size: 0.8125rem;
+  color: #b42318;
+}
+.q8-dc__input--invalid {
+  border-color: #b42318 !important;
+}
+textarea.q8-dc__input {
+  resize: vertical;
+  min-height: 5.5rem;
+  line-height: 1.45;
+}
+
+/* --- Empty cart -------------------------------------------------------------- */
+.q8-dc__empty {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+  gap: 0.75rem;
+  padding: calc(var(--q8-dc-padding, 24px) * 2) var(--q8-dc-padding, 24px);
+  background: var(--q8-dc-bg, #fff);
+  border-radius: var(--q8-dc-radius, 16px);
+}
+.q8-dc__empty-icon {
+  display: grid;
+  place-items: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--q8-dc-accent, #0f3d3e) 10%, transparent);
+  color: var(--q8-dc-accent, #0f3d3e);
+}
+.q8-dc__empty-title {
+  font-size: calc(var(--q8-dc-heading-size, 44px) * 0.7);
+}
+.q8-dc__empty-cta {
+  display: inline-flex;
+  text-decoration: none;
+  margin-top: 0.5rem;
+}
+
+/* --- Calendar ---------------------------------------------------------------- */
+.q8-dc__cal {
+  display: grid;
+  gap: 0.75rem;
+}
+.q8-dc__cal-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.q8-dc__cal-title {
+  font-weight: 700;
+}
+.q8-dc__cal-btn {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: var(--q8-dc-input-bg, #fff);
+  color: inherit;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+.q8-dc__cal-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.q8-dc__cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.25rem;
+}
+.q8-dc__cal-dow {
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  opacity: 0.6;
+  padding-bottom: 0.25rem;
+}
+.q8-dc__cal-pad {
+  aspect-ratio: 1;
+}
+.q8-dc__cal-day {
+  aspect-ratio: 1;
+  min-width: 0;
+  border: 1px solid transparent;
+  border-radius: var(--q8-dc-input-radius, 10px);
+  background: var(--q8-dc-input-bg, #fff);
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 120ms, color 120ms, border-color 120ms;
+}
+.q8-dc__cal-day:hover:not(:disabled) {
+  border-color: var(--q8-dc-accent, #0f3d3e);
+}
+.q8-dc__cal-day:disabled {
+  opacity: 0.3;
+  text-decoration: line-through;
+  cursor: not-allowed;
+}
+.q8-dc__cal-day--today {
+  border-color: rgba(0, 0, 0, 0.18);
+}
+.q8-dc__cal-day--on {
+  background: var(--q8-dc-accent, #0f3d3e);
+  border-color: var(--q8-dc-accent, #0f3d3e);
+  color: var(--q8-dc-btn-text, #fff);
+}
+.q8-dc__cal-picked {
+  margin: 0;
+  font-size: 0.875rem;
+  opacity: 0.8;
+}
+
+/* --- Recommendations rail ---------------------------------------------------- */
+.q8-dc__recs {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+.q8-dc__recs-track {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+  gap: 0.75rem;
+}
+.q8-dc__rec {
+  display: flex;
+  flex-direction: column;
+  background: var(--q8-dc-bg, #fff);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: var(--q8-dc-radius, 16px);
+  overflow: hidden;
+}
+.q8-dc__rec-media {
+  aspect-ratio: 1;
+  background: rgba(0, 0, 0, 0.04);
+}
+.q8-dc__rec-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.q8-dc__rec-body {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.75rem;
+}
+.q8-dc__rec-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.3;
+}
+.q8-dc__rec-price {
+  font-size: 0.8125rem;
+  opacity: 0.75;
+}
+.q8-dc__rec-add {
+  margin-top: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid var(--q8-dc-accent, #0f3d3e);
+  background: transparent;
+  color: var(--q8-dc-accent, #0f3d3e);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.q8-dc__rec-add:hover:not(:disabled) {
+  background: var(--q8-dc-accent, #0f3d3e);
+  color: var(--q8-dc-btn-text, #fff);
+}
+.q8-dc__rec-add:disabled {
+  opacity: 0.55;
+  cursor: default;
+}

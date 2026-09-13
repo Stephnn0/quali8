@@ -4,6 +4,8 @@ import db from "app/db.server";
 import { gatekeepRoute } from "app/services/subscriptions/gatekeepRoute";
 import type { DeliveryConfig } from "app/components/Delivery/types";
 import { loadDeliveryConfig } from "app/services/delivery/deliveryZones.server";
+import { loadDeliverySchedule } from "app/services/delivery/deliverySchedule.server";
+import type { DeliverySchedule } from "app/services/delivery/deliverySchedule";
 import {
   detectCarrierService,
   type CarrierDetectStatus,
@@ -15,6 +17,7 @@ export type DeliveryPageData = {
   carrier: CarrierDetectStatus;
   rate: { enabled: boolean; title: string; fallbackPrice: number | null };
   delivery: DeliveryConfig;
+  schedule: DeliverySchedule;
 };
 
 /**
@@ -33,10 +36,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
   );
 
   try {
-    const [carrier, rate, delivery] = await Promise.all([
+    const [carrier, rate, delivery, schedule] = await Promise.all([
       detectCarrierService(admin.graphql),
       db.carrierRate.findUnique({ where: { shop: session.shop } }),
       loadDeliveryConfig(db, session.shop),
+      loadDeliverySchedule(db, session.shop),
     ]);
 
     return handleApiSuccess<DeliveryPageData>({
@@ -48,6 +52,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
           fallbackPrice: rate?.fallbackPrice ?? null,
         },
         delivery,
+        schedule,
       },
       code: "success",
     });

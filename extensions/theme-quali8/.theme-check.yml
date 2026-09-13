@@ -3,7 +3,7 @@
 # occasion popup); raise it so deploys don't report every block as an error.
 AssetSizeAppBlockJavaScript:
   enabled: true
-  threshold_in_bytes: 60000
+  threshold_in_bytes: 90000
 AssetSizeAppBlockCSS:
   enabled: true
-  threshold_in_bytes: 60000
+  threshold_in_bytes: 90000

@@ -173,8 +173,8 @@ export default function OccasionsIndex() {
               </Text>
               <Text as="p" tone="subdued">
                 Occasions power the Occasions + Gifts app block on product
-                pages. Cart-page suggestions come from Smart Recommendations
-                instead.
+                pages, and the occasion picker on the delivery checkout&rsquo;s
+                Options step. Cart upsells come from Smart Recommendations.
               </Text>
             </BlockStack>
             <InlineGrid columns={{ xs: 1, md: 2 }} gap="400">

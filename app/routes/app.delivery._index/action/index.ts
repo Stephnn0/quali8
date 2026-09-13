@@ -8,6 +8,10 @@ import {
   runDeliveryAction,
 } from "app/services/delivery/deliveryZones.server";
 import { setupCarrierService } from "app/services/carrier/setupCarrierService.server";
+import {
+  saveDeliverySchedule,
+  scheduleActionSchema,
+} from "app/services/delivery/deliverySchedule.server";
 import { handleApiError } from "app/utils/server/handleApiResponse/handleApiError.server";
 
 const bodySchema = z.discriminatedUnion("action", [
@@ -18,6 +22,7 @@ const bodySchema = z.discriminatedUnion("action", [
     title: z.string().trim().min(1).max(60),
     fallbackPrice: z.number().min(0).nullable(),
   }),
+  scheduleActionSchema,
   ...deliveryActionSchema.options,
 ]);
 
@@ -59,6 +64,9 @@ export async function action({ request }: ActionFunctionArgs) {
         });
         return { code: "rate-saved", errors: null };
       }
+
+      case "save-schedule":
+        return saveDeliverySchedule(db, session.shop, body);
 
       default:
         return runDeliveryAction({ db, shop: session.shop, body });

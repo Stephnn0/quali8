@@ -202,9 +202,9 @@ export const ONEAPP_FEATURES: OneAppFeature[] = [
     key: "smart-recommendations",
     name: "Smart Recommendations",
     category: "sales-pricing",
-    tagline: "Cart recommendations driven by your rules.",
+    tagline: "Cart upsells driven by your rules.",
     description:
-      "Set rules like \"when the cart has a bouquet, suggest vases under $40\" and the cart page shows matching products from your store with one-tap add to cart.",
+      "Set rules like \"when the cart has a bouquet, suggest vases under $40\" and the Options step of the delivery checkout shows matching products with one-tap add to cart.",
     icon: MagicIcon,
     image: "/features/smart-recommendations.svg",
     to: "/app/recommendations",
@@ -216,9 +216,9 @@ export const ONEAPP_FEATURES: OneAppFeature[] = [
     key: "delivery",
     name: "Delivery Zones & Rates",
     category: "sales-pricing",
-    tagline: "Zip code zones, a delivery gate, and checkout rates.",
+    tagline: "Zip code zones, a delivery calendar, a delivery gate, and checkout rates.",
     description:
-      "Define the zip codes you deliver to with a price each, let shoppers check their code in the header and cart, gate checkout on it, and return the zone's price as the shipping rate at checkout.",
+      "Define the zip codes you deliver to with a price each, the days you deliver or offer pickup, let shoppers check their code and pick a date in the cart, gate checkout on it, and return the zone's price as the shipping rate at checkout.",
     icon: DeliveryIcon,
     image: "/features/delivery.svg",
     to: "/app/delivery",

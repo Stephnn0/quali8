@@ -1,14 +1,19 @@
 /*
- * Quali8 — Delivery checkout (cart page): a three-step pre-checkout.
+ * Quali8 — Delivery checkout (cart page): a four-step pre-checkout.
  *
  * 1. Sender information: sender (email, name, phone) + recipient (name, phone),
- *    or "sending to myself" which reuses the sender.
+ *    or "sending to myself" which reuses the sender. Phones are validated.
  * 2. Delivery / Pickup.  Delivery checks the zip against the app's zones,
- *    then collects the address (location type, street, city, state,
- *    country). Pickup skips the address.
- * 3. Review & Checkout.  A summary and the Checkout button, which opens
+ *    then a date (when the merchant's calendar is on) and the address
+ *    (location type, street, city, state, country). Pickup offers the
+ *    pickup calendar and skips the address.
+ * 3. Options: card message, notes (also the cart note), occasion, and the
+ *    Smart Recommendations upsell rail with one-tap add.
+ * 4. Review & Checkout.  A summary and the Checkout button, which opens
  *    Shopify checkout with the recipient's shipping address prefilled
  *    through the documented `checkout[...]` URL parameters.
+ *
+ * An empty cart shows a "keep shopping" panel instead of the steps.
  *
  * Every field is saved to cart attributes (debounced) so it reaches the
  * order. While the summary isn't complete the theme's own checkout and
@@ -44,7 +49,13 @@
     city: "Delivery city",
     province: "Delivery province",
     country: "Delivery country",
+    date: "Delivery date",
+    pickupDate: "Pickup date",
+    cardMessage: "Gift message", // same keys as the gift-notes block
+    notes: "Special instructions",
+    occasion: "Occasion",
   };
+  var NOTE_KEY = "__note"; // pending-save marker for the cart note
 
   var US_STATES = {
     AL: "Alabama", AK: "Alaska", AZ: "Arizona", AR: "Arkansas", CA: "California", CO: "Colorado",
@@ -86,6 +97,9 @@
     card: "M 2 4.5 h 12 v 7.5 h -12 z M 2 7 h 12 M 4.5 10 h 3",
     pin: "M 8 14 s -4.5 -4 -4.5 -7.5 a 4.5 4.5 0 0 1 9 0 C 12.5 10 8 14 8 14 z M 8 8 a 1.5 1.5 0 1 0 0.01 0",
     tag: "M 2 2.5 h 5.5 l 6 6 l -5 5 l -6 -6 z M 5 5.5 a 0.5 0.5 0 1 0 0.01 0",
+    calendar: "M 2.5 4 h 11 v 9.5 h -11 z M 2.5 7 h 11 M 5.5 2.5 v 3 M 10.5 2.5 v 3",
+    gift: "M 2.5 7 h 11 v 6.5 h -11 z M 8 7 v 6.5 M 2 4.5 h 12 v 2.5 h -12 z M 8 4.5 c -1 -2 -3.5 -2.5 -3.5 -1 s 2 1 3.5 1 c 1 -2 3.5 -2.5 3.5 -1 s -2 1 -3.5 1",
+    bag: "M 3 5.5 h 10 l -0.8 8 h -8.4 z M 5.5 5.5 v -1 a 2.5 2.5 0 0 1 5 0 v 1",
   };
 
   // --- Utilities -------------------------------------------------------------
@@ -162,6 +176,63 @@
     return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value || "");
   };
 
+  // 7–15 digits once separators are stripped; an optional leading "+".
+  function phoneOk(value) {
+    var raw = String(value || "").trim();
+    if (!raw) return false;
+    if (!/^\+?[0-9 ().-]+$/.test(raw)) return false;
+    var digits = raw.replace(/\D/g, "");
+    return digits.length >= 7 && digits.length <= 15;
+  }
+
+  // --- Calendar rules (mirror of app/services/delivery/deliverySchedule.ts) --
+
+  function isoToday() {
+    var d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function isoParts(iso) {
+    var p = String(iso || "").split("-").map(Number);
+    return p.length === 3 && p.every(function (n) { return !isNaN(n); }) ? p : null;
+  }
+  function isoAddDays(iso, days) {
+    var p = isoParts(iso);
+    return new Date(Date.UTC(p[0], p[1] - 1, p[2] + days)).toISOString().slice(0, 10);
+  }
+  function isoDaysBetween(from, to) {
+    var a = isoParts(from), b = isoParts(to);
+    return Math.round((Date.UTC(b[0], b[1] - 1, b[2]) - Date.UTC(a[0], a[1] - 1, a[2])) / 86400000);
+  }
+  function isoWeekday(iso) {
+    var p = isoParts(iso);
+    return new Date(Date.UTC(p[0], p[1] - 1, p[2])).getUTCDay();
+  }
+  function dateAllowed(rules, iso, today) {
+    if (!rules || !isoParts(iso)) return false;
+    var offset = isoDaysBetween(today, iso);
+    if (offset < (rules.leadDays || 0) || offset > (rules.maxDaysAhead == null ? 60 : rules.maxDaysAhead)) return false;
+    if ((rules.blockedWeekdays || []).indexOf(isoWeekday(iso)) !== -1) return false;
+    if ((rules.blockedDates || []).indexOf(iso) !== -1) return false;
+    return true;
+  }
+  function firstAllowed(rules, today) {
+    var max = rules.maxDaysAhead == null ? 60 : rules.maxDaysAhead;
+    for (var i = rules.leadDays || 0; i <= max; i += 1) {
+      var candidate = isoAddDays(today, i);
+      if (dateAllowed(rules, candidate, today)) return candidate;
+    }
+    return null;
+  }
+  function prettyDate(iso) {
+    var p = isoParts(iso);
+    if (!p) return "";
+    try {
+      return new Date(Date.UTC(p[0], p[1] - 1, p[2])).toLocaleDateString(document.documentElement.lang || "en", { weekday: "short", month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+    } catch (e) {
+      return iso;
+    }
+  }
+
   // --- Data ------------------------------------------------------------------
 
   function checkZip(zip) {
@@ -170,6 +241,46 @@
     }).then(function (response) {
       if (!response.ok) throw new Error("HTTP " + response.status);
       return response.json();
+    });
+  }
+
+  function fetchJson(path) {
+    return fetch(ROOT + path, { headers: { Accept: "application/json" } }).then(function (response) {
+      if (!response.ok) throw new Error("HTTP " + response.status);
+      return response.json();
+    });
+  }
+  function fetchSchedule() {
+    return fetchJson("apps/quali8/delivery-schedule");
+  }
+  function fetchOccasions() {
+    return fetchJson("apps/quali8/recommendations?limit=1&fallback=0").then(function (data) {
+      return (data && data.occasions) || [];
+    });
+  }
+  function fetchRecommendations(cart) {
+    var ids = (cart.items || []).map(function (item) { return item.product_id; }).filter(Boolean);
+    var params = new URLSearchParams();
+    params.set("cart", ids.join(","));
+    params.set("total", String((cart.items_subtotal_price || 0) / 100));
+    params.set("limit", "6");
+    return fetchJson("apps/quali8/smart-recommendations?" + params.toString());
+  }
+  function addVariant(variantId) {
+    var body = new FormData();
+    body.append("id", String(variantId).split("/").pop());
+    body.append("quantity", "1");
+    return fetch(ROOT + "cart/add.js", { method: "POST", headers: { Accept: "application/json" }, body: body }).then(function (response) {
+      return response.json().then(function (payload) {
+        if (!response.ok) throw new Error((payload && (payload.description || payload.message)) || "HTTP " + response.status);
+        return payload;
+      });
+    });
+  }
+  function reloadCart() {
+    return fetchJson("cart.js").then(function (cart) {
+      cartData = cart;
+      return cart;
     });
   }
 
@@ -195,6 +306,10 @@
     }
     if (!Object.keys(pending).length) return;
     var payload = { attributes: pending };
+    if (Object.prototype.hasOwnProperty.call(pending, NOTE_KEY)) {
+      payload.note = pending[NOTE_KEY];
+      delete pending[NOTE_KEY];
+    }
     pending = {};
     inflight = true;
     fetch(ROOT + "cart/update.js", {
@@ -259,6 +374,12 @@
         if (option[0] === (opts.value || "")) node.selected = true;
         control.appendChild(node);
       });
+    } else if (opts.textarea) {
+      control = document.createElement("textarea");
+      control.rows = opts.rows || 3;
+      control.value = opts.value || "";
+      if (opts.placeholder) control.placeholder = opts.placeholder;
+      if (opts.maxLength) control.maxLength = opts.maxLength;
     } else {
       control = document.createElement("input");
       control.type = opts.type || "text";
@@ -272,7 +393,19 @@
     control.addEventListener("input", opts.onChange);
     control.addEventListener("change", opts.onChange);
     wrap.appendChild(control);
-    return { wrap: wrap, control: control };
+    var error = el("p", "q8-dc__error");
+    error.hidden = true;
+    wrap.appendChild(error);
+    return {
+      wrap: wrap,
+      control: control,
+      setError: function (message) {
+        error.textContent = message || "";
+        error.hidden = !message;
+        control.classList.toggle("q8-dc__input--invalid", Boolean(message));
+        control.setAttribute("aria-invalid", message ? "true" : "false");
+      },
+    };
   }
 
   function provinceOptions(country) {
@@ -325,6 +458,13 @@
   var currency;
   var defaultCountry;
   var checkerOn = true;
+  var schedule = null; // merchant calendar rules, null until fetched
+  var today = isoToday();
+
+  function rulesFor(method) {
+    if (!schedule || !schedule.enabled) return null;
+    return method === "pickup" ? schedule.pickup : schedule.delivery;
+  }
 
   function initialState(attributes) {
     var a = function (key) {
@@ -357,8 +497,22 @@
         province: a("province"),
         country: (a("country") || defaultCountry || "US").toUpperCase(),
       },
-      done: { 1: false, 2: false },
+      dates: { delivery: a("date"), pickup: a("pickupDate") },
+      options: {
+        cardMessage: a("cardMessage"),
+        notes: a("notes"),
+        occasion: a("occasion"),
+      },
+      done: { 1: false, 2: false, 3: false },
     };
+  }
+
+  function dateValid(method) {
+    var rules = rulesFor(method);
+    if (!rules) return true;
+    var chosen = state.dates[method];
+    if (!chosen) return schedule.requireDate === false;
+    return dateAllowed(rules, chosen, today);
   }
 
   function recipientName() {
@@ -370,14 +524,19 @@
     return state.self ? state.sender.phone : state.recipient.phone;
   }
 
+  function phoneValid(value) {
+    if (!value) return settings.sender.requirePhone === false;
+    return phoneOk(value);
+  }
+
   function senderValid() {
     var s = state.sender;
     if (!emailOk(s.email) || !s.firstName || !s.lastName) return false;
-    if (settings.sender.requirePhone !== false && !s.phone) return false;
+    if (!phoneValid(s.phone)) return false;
     if (!state.self) {
       var r = state.recipient;
       if (!r.firstName || !r.lastName) return false;
-      if (settings.sender.requirePhone !== false && !r.phone) return false;
+      if (!phoneValid(r.phone)) return false;
     }
     return true;
   }
@@ -390,8 +549,8 @@
   }
 
   function methodValid() {
-    if (state.method === "pickup") return settings.method.pickupEnabled !== false;
-    if (state.method === "delivery") return (state.deliverable || !checkerOn) && addressValid();
+    if (state.method === "pickup") return settings.method.pickupEnabled !== false && dateValid("pickup");
+    if (state.method === "delivery") return (state.deliverable || !checkerOn) && dateValid("delivery") && addressValid();
     return false;
   }
 
@@ -430,7 +589,8 @@
     var defs = [
       [1, settings.steps.sender || "Sender information", "user"],
       [2, settings.steps.method || "Delivery / Pickup", state.method === "pickup" ? "store" : "truck"],
-      [3, settings.steps.summary || "Review & Checkout", "card"],
+      [3, settings.steps.options || "Options", "gift"],
+      [4, settings.steps.summary || "Review & Checkout", "card"],
     ];
     defs.forEach(function (def) {
       var number = def[0];
@@ -457,13 +617,37 @@
 
   function go(step) {
     state.step = step;
-    setBlocked(!(step === 3 && summaryValid()));
+    setBlocked(!(step === 4 && summaryValid()));
     renderSteps();
     renderOrder();
     if (step === 1) renderSender();
     else if (step === 2) renderMethod();
+    else if (step === 3) renderOptions();
     else renderSummary();
     main.scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }
+
+  // --- Render: empty cart ------------------------------------------------------
+
+  function renderEmpty() {
+    Array.prototype.slice.call(block.children).forEach(function (child) {
+      if (child.tagName !== "SCRIPT") block.removeChild(child);
+    });
+    var e = settings.empty;
+    var panel = el("section", "q8-dc__panel q8-dc__empty");
+    var bubble = el("span", "q8-dc__empty-icon");
+    bubble.appendChild(icon("bag", 28));
+    panel.appendChild(bubble);
+    panel.appendChild(el("h2", "q8-dc__heading q8-dc__empty-title", e.title || "No products selected"));
+    if (e.text) panel.appendChild(el("p", "q8-dc__intro", e.text));
+    var link = document.createElement("a");
+    link.className = "q8-dc__primary q8-dc__empty-cta";
+    link.href = block.dataset.shopUrl || ROOT + "collections/all";
+    link.textContent = e.cta || "Keep shopping";
+    panel.appendChild(link);
+    block.appendChild(panel);
+    block.hidden = false;
+    setBlocked(false);
   }
 
   // --- Render: step 1 --------------------------------------------------------
@@ -490,7 +674,11 @@
     grid.appendChild(field({ id: "q8-dc-s-email", label: labels.email || "Email", type: "email", autocomplete: "email", value: sender.email, onChange: bind(sender, "email") }).wrap);
     grid.appendChild(field({ id: "q8-dc-s-first", label: labels.firstName || "First name", half: true, autocomplete: "given-name", value: sender.firstName, onChange: bind(sender, "firstName") }).wrap);
     grid.appendChild(field({ id: "q8-dc-s-last", label: labels.lastName || "Last name", half: true, autocomplete: "family-name", value: sender.lastName, onChange: bind(sender, "lastName") }).wrap);
-    grid.appendChild(field({ id: "q8-dc-s-phone", label: labels.phone || "Phone", type: "tel", autocomplete: "tel", value: sender.phone, optional: s.requirePhone === false, onChange: bind(sender, "phone") }).wrap);
+    var senderPhone = field({ id: "q8-dc-s-phone", label: labels.phone || "Phone", type: "tel", autocomplete: "tel", value: sender.phone, optional: s.requirePhone === false, onChange: function (event) {
+      bind(sender, "phone")(event);
+      senderPhone.setError(sender.phone && !phoneOk(sender.phone) ? s.phoneError : "");
+    } });
+    grid.appendChild(senderPhone.wrap);
     card.appendChild(grid);
     panel.appendChild(card);
 
@@ -511,7 +699,11 @@
     var r = state.recipient;
     rgrid.appendChild(field({ id: "q8-dc-r-first", label: labels.firstName || "First name", half: true, autocomplete: "off", value: r.firstName, onChange: bind(r, "firstName") }).wrap);
     rgrid.appendChild(field({ id: "q8-dc-r-last", label: labels.lastName || "Last name", half: true, autocomplete: "off", value: r.lastName, onChange: bind(r, "lastName") }).wrap);
-    rgrid.appendChild(field({ id: "q8-dc-r-phone", label: labels.phone || "Phone", type: "tel", autocomplete: "off", value: r.phone, optional: s.requirePhone === false, onChange: bind(r, "phone") }).wrap);
+    var recipientPhone = field({ id: "q8-dc-r-phone", label: labels.phone || "Phone", type: "tel", autocomplete: "off", value: r.phone, optional: s.requirePhone === false, onChange: function (event) {
+      bind(r, "phone")(event);
+      recipientPhone.setError(r.phone && !phoneOk(r.phone) ? s.phoneError : "");
+    } });
+    rgrid.appendChild(recipientPhone.wrap);
     recipientCard.appendChild(rgrid);
     panel.appendChild(recipientCard);
 
@@ -543,6 +735,12 @@
     p[ATTR.recipientLast] = state.self ? "" : state.recipient.lastName;
     p[ATTR.recipientPhone] = state.self ? "" : state.recipient.phone;
     p[ATTR.method] = state.method === "pickup" ? "Pickup" : state.method === "delivery" ? "Delivery" : "";
+    p[ATTR.date] = state.method === "delivery" ? state.dates.delivery : "";
+    p[ATTR.pickupDate] = state.method === "pickup" ? state.dates.pickup : "";
+    p[ATTR.cardMessage] = state.options.cardMessage;
+    p[ATTR.notes] = state.options.notes;
+    p[ATTR.occasion] = state.options.occasion;
+    p[NOTE_KEY] = state.options.notes;
     if (state.method === "delivery") {
       p[ATTR.locationType] = state.locationType;
       p[ATTR.zip] = state.zip;
@@ -607,6 +805,7 @@
       var note = el("div", "q8-dc__card q8-dc__pickup");
       note.appendChild(el("p", null, m.pickupNote || ""));
       panel.appendChild(note);
+      if (rulesFor("pickup")) panel.appendChild(renderCalendar("pickup"));
     } else if (state.method === "delivery") {
       panel.appendChild(renderDelivery());
     }
@@ -706,6 +905,9 @@
       if (!state.deliverable) return wrap;
     }
 
+    // Date
+    if (rulesFor("delivery")) wrap.appendChild(renderCalendar("delivery"));
+
     // Address
     var heading = el("h4", "q8-dc__section-title");
     heading.appendChild(icon("pin"));
@@ -797,18 +999,28 @@
     var sd = state.sender;
     row(s.senderRow || "From", [sd.firstName + " " + sd.lastName, sd.email, sd.phone], 1);
     row(s.recipientRow || "To", [recipientName() + (state.self ? " (yourself)" : ""), recipientPhone()], 1);
+    var c = settings.calendar;
     if (state.method === "pickup") {
-      row(s.methodRow || "Delivery", [settings.method.pickupLabel || "Pickup", settings.method.pickupNote], 2);
+      row(s.methodRow || "Delivery", [settings.method.pickupLabel || "Pickup", state.dates.pickup ? (c.pickupLabel || "Pickup date") + ": " + prettyDate(state.dates.pickup) : "", settings.method.pickupNote], 2);
     } else {
       var a = state.address;
       var zone = state.zone || {};
       var priceLine = zone.price === 0 ? settings.method.freeText : typeof zone.price === "number" ? fill(settings.method.priceText, { price: formatMoney(zone.price, currency) }) : "";
       row(s.methodRow || "Delivery", [
-        [state.locationType, a.address1, a.address2].filter(Boolean).join(" · "),
+        state.dates.delivery ? (c.deliveryLabel || "Delivery date") + ": " + prettyDate(state.dates.delivery) : "",
+        [state.locationType, a.address1, a.address2].filter(Boolean).join(" \u00b7 "),
         [a.city, a.province, state.zip].filter(Boolean).join(", ") + (a.country ? " " + a.country : ""),
         priceLine,
       ], 2);
     }
+    var op = state.options;
+    var o2 = settings.options;
+    row(o2.summaryRow || "Extras", [
+      op.occasion ? (o2.occasionLabel || "Occasion") + ": " + op.occasion : "",
+      op.cardMessage ? (o2.cardLabel || "Card message") + ": " + op.cardMessage : "",
+      op.notes ? (o2.notesLabel || "Notes") + ": " + op.notes : "",
+      !op.occasion && !op.cardMessage && !op.notes ? o2.summaryNone || "None added" : "",
+    ], 3);
     panel.appendChild(card);
 
     var actions = el("div", "q8-dc__actions q8-dc__actions--column");
@@ -819,11 +1031,234 @@
     actions.appendChild(checkout);
     if (s.checkoutHint) actions.appendChild(el("p", "q8-dc__hint", s.checkoutHint));
     actions.appendChild(linkButton(settings.backLabel || "Back", function () {
-      go(2);
+      go(3);
     }));
     panel.appendChild(actions);
     main.appendChild(panel);
     setBlocked(!summaryValid());
+  }
+
+  // --- Render: calendar --------------------------------------------------------
+
+  function renderCalendar(method) {
+    var rules = rulesFor(method);
+    var c = settings.calendar;
+    var card = el("div", "q8-dc__card q8-dc__cal");
+    var head = el("h4", "q8-dc__section-title");
+    head.appendChild(icon("calendar"));
+    head.appendChild(el("span", null, method === "pickup" ? c.pickupLabel || "Pickup date" : c.deliveryLabel || "Delivery date"));
+    card.appendChild(head);
+    if (c.hint) card.appendChild(el("p", "q8-dc__intro", c.hint));
+
+    var chosen = state.dates[method];
+    if (chosen && !dateAllowed(rules, chosen, today)) chosen = state.dates[method] = "";
+    var first = firstAllowed(rules, today);
+    if (!first) {
+      card.appendChild(el("p", "q8-dc__note q8-dc__note--no", c.none || "No dates are available right now."));
+      return card;
+    }
+    var anchor = isoParts(chosen || first);
+    var view = { y: anchor[0], m: anchor[1] };
+    var grid = el("div", "q8-dc__cal-grid");
+    var title = el("span", "q8-dc__cal-title");
+    var nav = el("div", "q8-dc__cal-nav");
+    var prev = el("button", "q8-dc__cal-btn", "\u2039");
+    prev.type = "button"; prev.setAttribute("aria-label", "Previous month");
+    var next = el("button", "q8-dc__cal-btn", "\u203a");
+    next.type = "button"; next.setAttribute("aria-label", "Next month");
+    nav.appendChild(prev); nav.appendChild(title); nav.appendChild(next);
+    card.appendChild(nav);
+    card.appendChild(grid);
+    var picked = el("p", "q8-dc__cal-picked");
+    card.appendChild(picked);
+
+    function monthLabel(y, m) {
+      try {
+        return new Date(Date.UTC(y, m - 1, 1)).toLocaleDateString(document.documentElement.lang || "en", { month: "long", year: "numeric", timeZone: "UTC" });
+      } catch (e) {
+        return y + "-" + m;
+      }
+    }
+    function draw() {
+      grid.textContent = "";
+      title.textContent = monthLabel(view.y, view.m);
+      ["S", "M", "T", "W", "T", "F", "S"].forEach(function (d) {
+        grid.appendChild(el("span", "q8-dc__cal-dow", d));
+      });
+      var firstDay = new Date(Date.UTC(view.y, view.m - 1, 1)).getUTCDay();
+      var days = new Date(Date.UTC(view.y, view.m, 0)).getUTCDate();
+      for (var i = 0; i < firstDay; i += 1) grid.appendChild(el("span", "q8-dc__cal-pad"));
+      for (var d = 1; d <= days; d += 1) {
+        var iso = view.y + "-" + String(view.m).padStart(2, "0") + "-" + String(d).padStart(2, "0");
+        var ok = dateAllowed(rules, iso, today);
+        var cell = el("button", "q8-dc__cal-day" + (iso === state.dates[method] ? " q8-dc__cal-day--on" : "") + (iso === today ? " q8-dc__cal-day--today" : ""), String(d));
+        cell.type = "button";
+        cell.disabled = !ok;
+        cell.setAttribute("aria-label", prettyDate(iso) + (ok ? "" : " (unavailable)"));
+        if (iso === state.dates[method]) cell.setAttribute("aria-pressed", "true");
+        (function (value) {
+          cell.addEventListener("click", function () {
+            state.dates[method] = value;
+            save(patchFor());
+            draw();
+            if (block.q8RefreshMethod) block.q8RefreshMethod();
+          });
+        })(iso);
+        grid.appendChild(cell);
+      }
+      var sel = state.dates[method];
+      picked.textContent = sel ? (c.pickedText || "Selected: {date}").replace("{date}", prettyDate(sel)) : (schedule.requireDate === false ? c.optionalText || "" : c.requiredText || "Pick a day to continue.");
+      var minIso = isoAddDays(today, rules.leadDays || 0);
+      var maxIso = isoAddDays(today, rules.maxDaysAhead == null ? 60 : rules.maxDaysAhead);
+      var minP = isoParts(minIso), maxP = isoParts(maxIso);
+      prev.disabled = view.y * 12 + view.m <= minP[0] * 12 + minP[1];
+      next.disabled = view.y * 12 + view.m >= maxP[0] * 12 + maxP[1];
+    }
+    prev.addEventListener("click", function () {
+      view.m -= 1; if (view.m < 1) { view.m = 12; view.y -= 1; }
+      draw();
+    });
+    next.addEventListener("click", function () {
+      view.m += 1; if (view.m > 12) { view.m = 1; view.y += 1; }
+      draw();
+    });
+    draw();
+    return card;
+  }
+
+  // --- Render: step 3 (options) ------------------------------------------------
+
+  function renderOptions() {
+    main.textContent = "";
+    var o = settings.options;
+    var op = state.options;
+    var panel = el("section", "q8-dc__panel");
+    panel.appendChild(el("h3", "q8-dc__title", o.title || "Options"));
+    if (o.intro) panel.appendChild(el("p", "q8-dc__intro", o.intro));
+
+    var card = el("div", "q8-dc__card");
+    var grid = el("div", "q8-dc__grid");
+    function bind(key) {
+      return function (event) {
+        op[key] = event.target.value.replace(/\s+$/, "").slice(0, 1000);
+        save(patchFor());
+      };
+    }
+    var occasionField = field({ id: "q8-dc-occasion", label: o.occasionLabel || "Occasion", options: [["", o.occasionPlaceholder || "Choose an occasion"]].concat(op.occasion ? [[op.occasion, op.occasion]] : []), value: op.occasion, onChange: function (event) {
+      op.occasion = event.target.value;
+      save(patchFor());
+    } });
+    occasionField.wrap.hidden = true;
+    grid.appendChild(occasionField.wrap);
+    grid.appendChild(field({ id: "q8-dc-card", label: o.cardLabel || "Card message", optional: true, textarea: true, rows: 3, maxLength: 500, placeholder: o.cardPlaceholder, value: op.cardMessage, onChange: bind("cardMessage") }).wrap);
+    grid.appendChild(field({ id: "q8-dc-notes", label: o.notesLabel || "Notes for us", optional: true, textarea: true, rows: 3, maxLength: 1000, placeholder: o.notesPlaceholder, value: op.notes, onChange: bind("notes") }).wrap);
+    card.appendChild(grid);
+    panel.appendChild(card);
+
+    // Occasions come from the merchant's Occasions feature; hidden when there are none.
+    fetchOccasions()
+      .then(function (occasions) {
+        if (!occasions.length) return;
+        var select = occasionField.control;
+        select.textContent = "";
+        [["", o.occasionPlaceholder || "Choose an occasion"]].concat(occasions.map(function (occ) {
+          return [occ.name, (occ.icon ? occ.icon + " " : "") + occ.name];
+        })).forEach(function (pair) {
+          var option = document.createElement("option");
+          option.value = pair[0];
+          option.textContent = pair[1];
+          if (pair[0] === op.occasion) option.selected = true;
+          select.appendChild(option);
+        });
+        occasionField.wrap.hidden = false;
+      })
+      .catch(function () { /* no occasions, no field */ });
+
+    // Smart Recommendations upsell
+    var recs = el("div", "q8-dc__recs");
+    recs.hidden = true;
+    panel.appendChild(recs);
+    fetchRecommendations(cartData || { items: [] })
+      .then(function (data) {
+        renderRecs(recs, data);
+      })
+      .catch(function () { /* rail stays hidden */ });
+
+    var actions = el("div", "q8-dc__actions");
+    actions.appendChild(linkButton(settings.backLabel || "Back", function () {
+      go(2);
+    }));
+    actions.appendChild(primaryButton(settings.continueLabel || "Continue", function () {
+      state.done[3] = true;
+      flush();
+      go(4);
+    }));
+    panel.appendChild(actions);
+    main.appendChild(panel);
+  }
+
+  function renderRecs(container, data) {
+    var o = settings.options;
+    var products = (data && data.products) || [];
+    container.textContent = "";
+    if (!products.length) {
+      container.hidden = true;
+      return;
+    }
+    var inCart = {};
+    ((cartData && cartData.items) || []).forEach(function (item) { inCart[String(item.product_id)] = true; });
+    var head = el("div", "q8-dc__recs-head");
+    head.appendChild(el("h4", "q8-dc__section-title", (data && data.heading) || o.recsHeading || "Complete your order"));
+    if (o.recsIntro) head.appendChild(el("p", "q8-dc__intro", o.recsIntro));
+    container.appendChild(head);
+    var track = el("div", "q8-dc__recs-track");
+    var errorLine = el("p", "q8-dc__error");
+    errorLine.hidden = true;
+    products.forEach(function (product) {
+      var cardNode = el("article", "q8-dc__rec");
+      var media = el("div", "q8-dc__rec-media");
+      if (product.imageUrl) {
+        var img = document.createElement("img");
+        img.src = product.imageUrl;
+        img.alt = product.title || "";
+        img.loading = "lazy";
+        media.appendChild(img);
+      }
+      cardNode.appendChild(media);
+      var body = el("div", "q8-dc__rec-body");
+      body.appendChild(el("span", "q8-dc__rec-title", product.title || ""));
+      if (typeof product.price === "number") body.appendChild(el("span", "q8-dc__rec-price", formatMoney(product.price, currency)));
+      var pid = String(product.productId || product.id || "").split("/").pop();
+      var button = el("button", "q8-dc__rec-add", inCart[pid] ? o.addedLabel || "Added" : o.addLabel || "Add");
+      button.type = "button";
+      if (inCart[pid] || !product.variantId) button.disabled = true;
+      button.addEventListener("click", function () {
+        button.disabled = true;
+        button.textContent = o.addingLabel || "Adding\u2026";
+        errorLine.hidden = true;
+        addVariant(product.variantId)
+          .then(reloadCart)
+          .then(function () {
+            button.textContent = o.addedLabel || "Added";
+            renderOrder();
+            try {
+              document.dispatchEvent(new CustomEvent("cart:refresh", { bubbles: true, detail: cartData }));
+            } catch (e) { /* nothing to announce to */ }
+          })
+          .catch(function (error) {
+            button.disabled = false;
+            button.textContent = o.addLabel || "Add";
+            errorLine.textContent = (error && error.message) || "Could not add to cart.";
+            errorLine.hidden = false;
+          });
+      });
+      body.appendChild(button);
+      cardNode.appendChild(body);
+      track.appendChild(cardNode);
+    });
+    container.appendChild(track);
+    container.appendChild(errorLine);
+    container.hidden = false;
   }
 
   function goToCheckout() {
@@ -1024,27 +1459,73 @@
   settings.order.itemsLabel = "{count} items";
   settings.method.labels = settings.method.labels || {};
   settings.method.labels.zip = settings.method.labels.zip || settings.method.zipPlaceholder || "ZIP code";
+  settings.sender.phoneError = settings.sender.phoneError || "Enter a valid phone number (7 to 15 digits).";
+  settings.steps.options = settings.steps.options || "Options";
+  settings.options = settings.options || {
+    title: "Options",
+    intro: "Add a card message, notes for us, or something extra for the order.",
+    occasionLabel: "Occasion",
+    occasionPlaceholder: "Choose an occasion",
+    cardLabel: "Card message",
+    cardPlaceholder: "The message we should write on the card",
+    notesLabel: "Notes for us",
+    notesPlaceholder: "Delivery instructions, allergies, anything we should know",
+    recsHeading: "Complete your order",
+    recsIntro: "",
+    addLabel: "Add",
+    addingLabel: "Adding\u2026",
+    addedLabel: "Added",
+    summaryRow: "Extras",
+    summaryNone: "None added",
+  };
+  settings.calendar = settings.calendar || {
+    deliveryLabel: "Delivery date",
+    pickupLabel: "Pickup date",
+    hint: "",
+    none: "No dates are available right now. Please contact us.",
+    pickedText: "Selected: {date}",
+    requiredText: "Pick a day to continue.",
+    optionalText: "",
+  };
+  settings.empty = settings.empty || {
+    title: "No products selected",
+    text: "Add something to your cart, then come back here to arrange delivery or pickup.",
+    cta: "Keep shopping",
+  };
   currency = block.dataset.currency;
   defaultCountry = (block.dataset.country || "US").toUpperCase();
   state = initialState(readJson("[data-q8-dc-attributes]") || {});
 
   installGate();
+  cartData = readJson("[data-q8-dc-cart]") || { items: [], item_count: 0 };
+  if (!cartData.item_count) {
+    renderEmpty();
+    return;
+  }
   setBlocked(true);
   renderShell();
 
-  // Is the zip checker on? Re-verify a remembered zip. Then start at step 1.
-  checkZip(state.zip || "00000-probe")
-    .then(function (result) {
-      checkerOn = Boolean(result && result.enabled);
-      if (checkerOn && state.zip && result.deliverable) {
-        state.zone = result.zone || null;
-        state.deliverable = true;
-      }
-    })
-    .catch(function () {
-      checkerOn = false;
-    })
-    .then(function () {
-      go(1);
-    });
+  // Is the zip checker on? Re-verify a remembered zip. Load the calendar rules. Then start at step 1.
+  Promise.all([
+    checkZip(state.zip || "00000-probe")
+      .then(function (result) {
+        checkerOn = Boolean(result && result.enabled);
+        if (checkerOn && state.zip && result.deliverable) {
+          state.zone = result.zone || null;
+          state.deliverable = true;
+        }
+      })
+      .catch(function () {
+        checkerOn = false;
+      }),
+    fetchSchedule()
+      .then(function (result) {
+        schedule = result && result.enabled ? result : null;
+      })
+      .catch(function () {
+        schedule = null;
+      }),
+  ]).then(function () {
+    go(1);
+  });
 })();
