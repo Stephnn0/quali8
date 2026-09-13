@@ -3,6 +3,10 @@
  * left, the form in the middle, the order summary on the right; stacks on
  * phones. Colours, sizes, and radii come from CSS variables the Liquid
  * block sets.
+ *
+ * Every length is in em off the block's own base size (--q8-dc-base) so the
+ * layout doesn't shrink on themes that set a 62.5% root font size (Dawn
+ * and its children make 1rem = 10px).
  */
 
 .q8-dc [hidden] {
@@ -20,8 +24,10 @@
   color: var(--q8-dc-text, #14201d);
   border-radius: var(--q8-dc-radius, 16px);
   padding: var(--q8-dc-padding, 24px);
-  margin: 1.5rem 0;
+  margin: 1.5em 0;
   font-family: inherit;
+  font-size: var(--q8-dc-base, 16px);
+  line-height: 1.4;
 }
 
 .q8-dc *,
@@ -31,8 +37,8 @@
 }
 
 .q8-dc svg {
-  width: 1rem;
-  height: 1rem;
+  width: 1em;
+  height: 1em;
   flex: 0 0 auto;
 }
 
@@ -42,8 +48,8 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  gap: 1em;
+  margin-bottom: 1.5em;
 }
 
 .q8-dc__heading {
@@ -64,10 +70,10 @@
 .q8-dc__status {
   display: inline-flex;
   align-items: center;
-  gap: 0.375rem;
-  font-size: 0.75rem;
+  gap: 0.375em;
+  font-size: 0.75em;
   font-weight: 600;
-  padding: 0.35rem 0.7rem;
+  padding: 0.35em 0.7em;
   border-radius: 999px;
   background: var(--q8-dc-accent-soft);
   color: var(--q8-dc-accent, #0f3d3e);
@@ -75,8 +81,8 @@
 
 .q8-dc__status::before {
   content: "";
-  width: 0.4rem;
-  height: 0.4rem;
+  width: 0.4em;
+  height: 0.4em;
   border-radius: 50%;
   background: currentColor;
 }
@@ -85,8 +91,8 @@
 
 .q8-dc__layout {
   display: grid;
-  grid-template-columns: 15rem minmax(0, 1fr) 24rem;
-  gap: 2rem;
+  grid-template-columns: 17.5em minmax(0, 1fr) 26em;
+  gap: 2em;
   align-items: start;
 }
 
@@ -95,9 +101,9 @@
 .q8-dc__steps {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.5em;
   position: sticky;
-  top: 1rem;
+  top: 1em;
 }
 
 .q8-dc__step {
@@ -109,8 +115,8 @@
   text-align: left;
   display: flex;
   align-items: center;
-  gap: 0.875rem;
-  padding: 0.75rem 0.875rem;
+  gap: 1em;
+  padding: 1em 1.125em;
   border-radius: 12px;
   cursor: pointer;
   position: relative;
@@ -131,16 +137,16 @@
   content: "";
   position: absolute;
   left: 0;
-  top: 0.75rem;
-  bottom: 0.75rem;
+  top: 1em;
+  bottom: 1em;
   width: 3px;
   border-radius: 3px;
   background: var(--q8-dc-accent, #0f3d3e);
 }
 
 .q8-dc__step-icon {
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 2.75em;
+  height: 2.75em;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
@@ -163,17 +169,18 @@
 .q8-dc__step-text {
   display: flex;
   flex-direction: column;
-  gap: 0.125rem;
+  gap: 0.2em;
   min-width: 0;
 }
 
 .q8-dc__step-title {
-  font-size: 0.9375rem;
+  font-size: 1.0625em;
   font-weight: 600;
+  line-height: 1.25;
 }
 
 .q8-dc__step-sub {
-  font-size: 0.75rem;
+  font-size: 0.8125em;
   color: var(--q8-dc-muted);
 }
 
@@ -186,31 +193,31 @@
 .q8-dc__panel {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1em;
   animation: q8-dc-in 320ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
 }
 
 .q8-dc__title {
-  margin: 0.25rem 0 0;
-  font-size: 2.25rem;
+  margin: 0.25em 0 0;
+  font-size: 1.75em;
   line-height: 1.1;
   font-weight: 600;
   letter-spacing: -0.02em;
 }
 
 .q8-dc__intro {
-  margin: -0.5rem 0 0;
-  font-size: 1.0625rem;
+  margin: -0.5em 0 0;
+  font-size: 1em;
   color: var(--q8-dc-muted);
 }
 
 .q8-dc__card {
   background: var(--q8-dc-bg, #ffffff);
   border-radius: var(--q8-dc-radius, 16px);
-  padding: 1.25rem;
+  padding: 1.25em;
   display: flex;
   flex-direction: column;
-  gap: 0.875rem;
+  gap: 0.75em;
   box-shadow: 0 1px 0 rgba(0, 0, 0, 0.03);
 }
 
@@ -219,21 +226,21 @@
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 0.75rem;
+  gap: 0.75em;
 }
 
 .q8-dc__card-title {
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.9375em;
   font-weight: 700;
 }
 
 .q8-dc__section-title {
-  margin: 0.5rem 0 0;
+  margin: 0.5em 0 0;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 1.25rem;
+  gap: 0.5em;
+  font-size: 1.125em;
   font-weight: 600;
 }
 
@@ -244,14 +251,14 @@
 .q8-dc__grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem;
+  gap: 0.625em;
 }
 
 .q8-dc__field {
   grid-column: span 2;
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: 0.3em;
 }
 
 .q8-dc__field--half {
@@ -260,7 +267,7 @@
 
 .q8-dc__label {
   margin: 0;
-  font-size: 0.9375rem;
+  font-size: 0.8125em;
   font-weight: 600;
 }
 
@@ -277,9 +284,9 @@
   background: var(--q8-dc-input-bg, #ffffff);
   color: inherit;
   font: inherit;
-  font-size: 1.0625rem;
+  font-size: 0.9375em;
   line-height: 1.4;
-  padding: 1rem 1.125rem;
+  padding: 0.625em 0.875em;
   transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 
@@ -306,10 +313,10 @@ select.q8-dc__input {
 .q8-dc__toggle {
   display: inline-flex;
   align-items: center;
-  gap: 0.625rem;
+  gap: 0.625em;
   cursor: pointer;
   user-select: none;
-  font-size: 0.875rem;
+  font-size: 0.875em;
   font-weight: 600;
 }
 
@@ -323,8 +330,8 @@ select.q8-dc__input {
 
 .q8-dc__toggle-track {
   position: relative;
-  width: 2.5rem;
-  height: 1.5rem;
+  width: 2.5em;
+  height: 1.5em;
   border-radius: 999px;
   background: rgba(20, 32, 29, 0.18);
   transition: background 160ms ease;
@@ -333,10 +340,10 @@ select.q8-dc__input {
 
 .q8-dc__toggle-thumb {
   position: absolute;
-  top: 0.1875rem;
-  left: 0.1875rem;
-  width: 1.125rem;
-  height: 1.125rem;
+  top: 0.1875em;
+  left: 0.1875em;
+  width: 1.125em;
+  height: 1.125em;
   border-radius: 50%;
   background: #ffffff;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
@@ -348,7 +355,7 @@ select.q8-dc__input {
 }
 
 .q8-dc__toggle-input:checked + .q8-dc__toggle-track .q8-dc__toggle-thumb {
-  transform: translateX(1rem);
+  transform: translateX(1em);
 }
 
 .q8-dc__toggle-input:focus-visible + .q8-dc__toggle-track {
@@ -359,16 +366,16 @@ select.q8-dc__input {
 .q8-dc__options {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem;
+  gap: 0.75em;
 }
 
 .q8-dc__option {
   appearance: none;
   display: flex;
   align-items: center;
-  gap: 0.875rem;
+  gap: 0.875em;
   text-align: left;
-  padding: 0.875rem 1rem;
+  padding: 0.875em 1em;
   border: 1.5px solid var(--q8-dc-line);
   border-radius: 12px;
   background: var(--q8-dc-bg, #ffffff);
@@ -388,8 +395,8 @@ select.q8-dc__input {
 }
 
 .q8-dc__option-icon {
-  width: 2.5rem;
-  height: 2.5rem;
+  width: 2.5em;
+  height: 2.5em;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
@@ -407,7 +414,7 @@ select.q8-dc__input {
 .q8-dc__option-text {
   display: flex;
   flex-direction: column;
-  gap: 0.125rem;
+  gap: 0.125em;
 }
 
 .q8-dc__option-title {
@@ -415,18 +422,18 @@ select.q8-dc__input {
 }
 
 .q8-dc__option-hint {
-  font-size: 0.8125rem;
+  font-size: 0.8125em;
   color: var(--q8-dc-muted);
 }
 
 .q8-dc__delivering-to {
   display: flex;
   align-items: center;
-  gap: 0.625rem;
-  padding: 0.875rem 1rem;
+  gap: 0.625em;
+  padding: 0.875em 1em;
   border-radius: 12px;
   background: rgba(20, 32, 29, 0.06);
-  font-size: 0.9375rem;
+  font-size: 0.9375em;
 }
 
 .q8-dc__delivering-to svg {
@@ -442,7 +449,7 @@ select.q8-dc__input {
 .q8-dc__delivery {
   display: flex;
   flex-direction: column;
-  gap: 0.875rem;
+  gap: 0.875em;
 }
 
 /* Zip check */
@@ -453,13 +460,13 @@ select.q8-dc__input {
 
 .q8-dc__zip-form {
   display: flex;
-  gap: 0.5rem;
+  gap: 0.5em;
   margin: 0;
 }
 
 .q8-dc__zip-input {
   flex: 1;
-  max-width: 16rem;
+  max-width: 16em;
 }
 
 .q8-dc__check {
@@ -468,9 +475,9 @@ select.q8-dc__input {
   background: var(--q8-dc-accent, #0f3d3e);
   color: #ffffff;
   border-radius: var(--q8-dc-input-radius, 10px);
-  padding: 0 1.125rem;
+  padding: 0 1.125em;
   font: inherit;
-  font-size: 0.9375rem;
+  font-size: 0.9375em;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
@@ -483,7 +490,7 @@ select.q8-dc__input {
 
 .q8-dc__note {
   margin: 0;
-  font-size: 0.875rem;
+  font-size: 0.875em;
   color: var(--q8-dc-muted);
 }
 
@@ -496,27 +503,27 @@ select.q8-dc__input {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 0.5rem 0.75rem;
+  gap: 0.5em 0.75em;
   color: var(--q8-dc-accent, #0f3d3e);
 }
 
 .q8-dc__result-pill {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.4em;
   font-weight: 700;
 }
 
 .q8-dc__result-pill::before {
   content: "";
-  width: 0.5rem;
-  height: 0.5rem;
+  width: 0.5em;
+  height: 0.5em;
   border-radius: 50%;
   background: #1f9d55;
 }
 
 .q8-dc__result-note {
-  font-size: 0.875rem;
+  font-size: 0.875em;
   font-weight: 500;
 }
 
@@ -527,7 +534,7 @@ select.q8-dc__input {
   background: transparent;
   color: inherit;
   font: inherit;
-  font-size: 0.875rem;
+  font-size: 0.875em;
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 3px;
@@ -543,7 +550,7 @@ select.q8-dc__input {
 .q8-dc__chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
+  gap: 0.5em;
 }
 
 .q8-dc__chip {
@@ -552,8 +559,8 @@ select.q8-dc__input {
   background: var(--q8-dc-bg, #ffffff);
   color: inherit;
   font: inherit;
-  font-size: 0.9375rem;
-  padding: 0.625rem 1.125rem;
+  font-size: 0.9375em;
+  padding: 0.625em 1.125em;
   border-radius: 999px;
   cursor: pointer;
   transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
@@ -575,14 +582,14 @@ select.q8-dc__input {
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 0.25rem;
+  gap: 1em;
+  margin-top: 0.25em;
 }
 
 .q8-dc__actions--column {
   flex-direction: column;
   align-items: stretch;
-  gap: 0.625rem;
+  gap: 0.625em;
   text-align: center;
 }
 
@@ -593,9 +600,9 @@ select.q8-dc__input {
   background: var(--q8-dc-btn-bg, #0f3d3e);
   color: var(--q8-dc-btn-text, #ffffff);
   border-radius: var(--q8-dc-input-radius, 10px);
-  padding: 0.9375rem 1.75rem;
+  padding: 0.9375em 1.75em;
   font: inherit;
-  font-size: 1rem;
+  font-size: 1em;
   font-weight: 700;
   cursor: pointer;
   transition: filter 120ms ease, transform 120ms ease, opacity 120ms ease;
@@ -603,7 +610,7 @@ select.q8-dc__input {
 
 .q8-dc__checkout {
   width: 100%;
-  padding: 1.0625rem 1.25rem;
+  padding: 1.0625em 1.25em;
 }
 
 .q8-dc__primary:hover:not(:disabled),
@@ -620,22 +627,22 @@ select.q8-dc__input {
 
 .q8-dc__hint {
   margin: 0;
-  font-size: 0.8125rem;
+  font-size: 0.8125em;
   color: var(--q8-dc-muted);
 }
 
 /* Review */
 .q8-dc__review {
   gap: 0;
-  padding: 0.25rem 1.25rem;
+  padding: 0.25em 1.25em;
 }
 
 .q8-dc__review-row {
   display: grid;
-  grid-template-columns: 5rem minmax(0, 1fr) auto;
-  gap: 1rem;
+  grid-template-columns: 5em minmax(0, 1fr) auto;
+  gap: 1em;
   align-items: start;
-  padding: 1rem 0;
+  padding: 1em 0;
   border-bottom: 1px solid var(--q8-dc-line);
 }
 
@@ -644,19 +651,19 @@ select.q8-dc__input {
 }
 
 .q8-dc__review-label {
-  font-size: 0.75rem;
+  font-size: 0.75em;
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--q8-dc-muted);
-  padding-top: 0.2rem;
+  padding-top: 0.2em;
 }
 
 .q8-dc__review-body {
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
-  font-size: 0.9375rem;
+  gap: 0.2em;
+  font-size: 0.9375em;
 }
 
 .q8-dc__review-body span:first-child {
@@ -667,7 +674,7 @@ select.q8-dc__input {
 
 .q8-dc__order {
   position: sticky;
-  top: 1rem;
+  top: 1em;
   background: var(--q8-dc-bg, #ffffff);
   border-radius: var(--q8-dc-radius, 16px);
   overflow: hidden;
@@ -675,20 +682,21 @@ select.q8-dc__input {
 }
 
 .q8-dc__order-head {
-  padding: 1.25rem 1.25rem 0.875rem;
+  padding: 1.5em 1.5em 1.125em;
   background: rgba(20, 32, 29, 0.04);
 }
 
 .q8-dc__order-title {
   margin: 0;
-  font-size: 1.625rem;
+  font-size: 1.75em;
+  line-height: 1.15;
   font-weight: 600;
 }
 
 .q8-dc__order-count {
   display: block;
-  margin-top: 0.125rem;
-  font-size: 0.8125rem;
+  margin-top: 0.25em;
+  font-size: 0.875em;
   color: var(--q8-dc-muted);
 }
 
@@ -700,8 +708,8 @@ select.q8-dc__input {
 .q8-dc__order-item {
   display: flex;
   align-items: flex-start;
-  gap: 1rem;
-  padding: 1.125rem 1.25rem;
+  gap: 1.125em;
+  padding: 1.25em 1.5em;
   border-bottom: 1px solid var(--q8-dc-line);
   transition: opacity 150ms ease;
 }
@@ -712,8 +720,8 @@ select.q8-dc__input {
 }
 
 .q8-dc__order-thumb {
-  width: 4.75rem;
-  height: 4.75rem;
+  width: 5.5em;
+  height: 5.5em;
   border-radius: 8px;
   background: rgba(20, 32, 29, 0.06);
   overflow: hidden;
@@ -732,22 +740,22 @@ select.q8-dc__input {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.125rem;
+  gap: 0.2em;
 }
 
 .q8-dc__order-name {
-  font-size: 1rem;
+  font-size: 1.0625em;
   font-weight: 600;
   line-height: 1.3;
 }
 
 .q8-dc__order-variant {
-  font-size: 0.8125rem;
+  font-size: 0.875em;
   color: var(--q8-dc-muted);
 }
 
 .q8-dc__order-discount {
-  font-size: 0.8125rem;
+  font-size: 0.875em;
   font-weight: 600;
   color: #1f9d55;
 }
@@ -755,8 +763,8 @@ select.q8-dc__input {
 .q8-dc__order-actions {
   display: flex;
   align-items: center;
-  gap: 0.875rem;
-  margin-top: 0.5rem;
+  gap: 1em;
+  margin-top: 0.75em;
 }
 
 .q8-dc__qty {
@@ -773,10 +781,10 @@ select.q8-dc__input {
   background: transparent;
   color: inherit;
   font: inherit;
-  font-size: 1.125rem;
+  font-size: 1.125em;
   line-height: 1;
-  width: 2rem;
-  height: 2rem;
+  width: 2.125em;
+  height: 2.125em;
   cursor: pointer;
 }
 
@@ -785,9 +793,9 @@ select.q8-dc__input {
 }
 
 .q8-dc__qty-value {
-  min-width: 1.75rem;
+  min-width: 2em;
   text-align: center;
-  font-size: 0.9375rem;
+  font-size: 1em;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
@@ -798,7 +806,7 @@ select.q8-dc__input {
   background: transparent;
   color: var(--q8-dc-muted);
   font: inherit;
-  font-size: 0.8125rem;
+  font-size: 0.875em;
   text-decoration: underline;
   text-underline-offset: 3px;
   cursor: pointer;
@@ -813,14 +821,14 @@ select.q8-dc__input {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 0.125rem;
-  font-size: 1.0625rem;
+  gap: 0.2em;
+  font-size: 1.125em;
   font-weight: 600;
   white-space: nowrap;
 }
 
 .q8-dc__order-was {
-  font-size: 0.8125rem;
+  font-size: 0.875em;
   font-weight: 400;
   color: var(--q8-dc-muted);
 }
@@ -830,26 +838,26 @@ select.q8-dc__input {
 }
 
 .q8-dc__order-totals {
-  padding: 0.875rem 1.25rem 0.5rem;
+  padding: 1.125em 1.5em 0.75em;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.625em;
 }
 
 .q8-dc__order-line {
   display: flex;
   justify-content: space-between;
-  gap: 1rem;
-  font-size: 1rem;
+  gap: 1em;
+  font-size: 1.0625em;
   color: var(--q8-dc-muted);
 }
 
 .q8-dc__order-line--total {
-  margin-top: 0.5rem;
-  padding: 1rem 1.25rem;
+  margin-top: 0.625em;
+  padding: 0.875em 1em;
   background: var(--q8-dc-accent, #0f3d3e);
   color: #ffffff;
-  font-size: 1.375rem;
+  font-size: 1.5em;
   font-weight: 700;
 }
 
@@ -857,26 +865,26 @@ select.q8-dc__input {
 
 .q8-dc--small .q8-dc__input,
 .q8-dc--small .q8-dc__check {
-  font-size: 0.9375rem;
-  padding-top: 0.75rem;
-  padding-bottom: 0.75rem;
+  font-size: 0.875em;
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
 }
 
 .q8-dc--large .q8-dc__input,
 .q8-dc--large .q8-dc__check {
-  font-size: 1.125rem;
-  padding-top: 1.125rem;
-  padding-bottom: 1.125rem;
+  font-size: 1em;
+  padding-top: 0.75em;
+  padding-bottom: 0.75em;
 }
 
 .q8-dc--large .q8-dc__label {
-  font-size: 0.9375rem;
+  font-size: 0.875em;
 }
 
 @keyframes q8-dc-in {
   from {
     opacity: 0;
-    transform: translateY(0.375rem);
+    transform: translateY(0.375em);
   }
   to {
     opacity: 1;
@@ -888,7 +896,7 @@ select.q8-dc__input {
 
 @media (max-width: 1099px) {
   .q8-dc__layout {
-    grid-template-columns: 13rem minmax(0, 1fr);
+    grid-template-columns: 16em minmax(0, 1fr);
   }
 
   .q8-dc__order {
@@ -908,20 +916,30 @@ select.q8-dc__input {
 
   .q8-dc__layout {
     grid-template-columns: minmax(0, 1fr);
-    gap: 1.25rem;
+    gap: 1.25em;
   }
 
   .q8-dc__steps {
     position: static;
     flex-direction: row;
     overflow-x: auto;
-    gap: 0.5rem;
+    gap: 0.5em;
     scrollbar-width: none;
   }
 
   .q8-dc__step {
     flex: 0 0 auto;
-    padding: 0.5rem 0.75rem;
+    gap: 0.625em;
+    padding: 0.5em 0.75em;
+  }
+
+  .q8-dc__step-icon {
+    width: 2.25em;
+    height: 2.25em;
+  }
+
+  .q8-dc__step-title {
+    font-size: 0.9375em;
   }
 
   .q8-dc__step--current::before {
@@ -933,7 +951,7 @@ select.q8-dc__input {
   }
 
   .q8-dc__title {
-    font-size: 1.75rem;
+    font-size: 1.75em;
   }
 
   .q8-dc__options {
@@ -949,7 +967,7 @@ select.q8-dc__input {
   }
 
   .q8-dc__check {
-    padding: 0.8125rem 1rem;
+    padding: 0.8125em 1em;
   }
 
   .q8-dc__review-row {
@@ -980,8 +998,8 @@ select.q8-dc__input {
 
 /* --- Validation ------------------------------------------------------------ */
 .q8-dc__error {
-  margin: 0.35rem 0 0;
-  font-size: 0.8125rem;
+  margin: 0.35em 0 0;
+  font-size: 0.8125em;
   color: #b42318;
 }
 .q8-dc__input--invalid {
@@ -989,7 +1007,7 @@ select.q8-dc__input {
 }
 textarea.q8-dc__input {
   resize: vertical;
-  min-height: 5.5rem;
+  min-height: 5.5em;
   line-height: 1.45;
 }
 
@@ -998,7 +1016,7 @@ textarea.q8-dc__input {
   display: grid;
   justify-items: center;
   text-align: center;
-  gap: 0.75rem;
+  gap: 0.75em;
   padding: calc(var(--q8-dc-padding, 24px) * 2) var(--q8-dc-padding, 24px);
   background: var(--q8-dc-bg, #fff);
   border-radius: var(--q8-dc-radius, 16px);
@@ -1006,8 +1024,8 @@ textarea.q8-dc__input {
 .q8-dc__empty-icon {
   display: grid;
   place-items: center;
-  width: 3.5rem;
-  height: 3.5rem;
+  width: 3.5em;
+  height: 3.5em;
   border-radius: 50%;
   background: color-mix(in srgb, var(--q8-dc-accent, #0f3d3e) 10%, transparent);
   color: var(--q8-dc-accent, #0f3d3e);
@@ -1018,31 +1036,31 @@ textarea.q8-dc__input {
 .q8-dc__empty-cta {
   display: inline-flex;
   text-decoration: none;
-  margin-top: 0.5rem;
+  margin-top: 0.5em;
 }
 
 /* --- Calendar ---------------------------------------------------------------- */
 .q8-dc__cal {
   display: grid;
-  gap: 0.75rem;
+  gap: 0.75em;
 }
 .q8-dc__cal-nav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 0.5rem;
+  gap: 0.5em;
 }
 .q8-dc__cal-title {
   font-weight: 700;
 }
 .q8-dc__cal-btn {
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 2em;
+  height: 2em;
   border-radius: 50%;
   border: 1px solid rgba(0, 0, 0, 0.12);
   background: var(--q8-dc-input-bg, #fff);
   color: inherit;
-  font-size: 1.25rem;
+  font-size: 1.25em;
   line-height: 1;
   cursor: pointer;
 }
@@ -1053,15 +1071,15 @@ textarea.q8-dc__input {
 .q8-dc__cal-grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 0.25rem;
+  gap: 0.25em;
 }
 .q8-dc__cal-dow {
   text-align: center;
-  font-size: 0.7rem;
+  font-size: 0.7em;
   font-weight: 700;
   letter-spacing: 0.04em;
   opacity: 0.6;
-  padding-bottom: 0.25rem;
+  padding-bottom: 0.25em;
 }
 .q8-dc__cal-pad {
   aspect-ratio: 1;
@@ -1096,20 +1114,20 @@ textarea.q8-dc__input {
 }
 .q8-dc__cal-picked {
   margin: 0;
-  font-size: 0.875rem;
+  font-size: 0.875em;
   opacity: 0.8;
 }
 
 /* --- Recommendations rail ---------------------------------------------------- */
 .q8-dc__recs {
   display: grid;
-  gap: 0.75rem;
-  margin-top: 1rem;
+  gap: 0.75em;
+  margin-top: 1em;
 }
 .q8-dc__recs-track {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
-  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(9.5em, 1fr));
+  gap: 0.75em;
 }
 .q8-dc__rec {
   display: flex;
@@ -1131,27 +1149,27 @@ textarea.q8-dc__input {
 }
 .q8-dc__rec-body {
   display: grid;
-  gap: 0.35rem;
-  padding: 0.75rem;
+  gap: 0.35em;
+  padding: 0.75em;
 }
 .q8-dc__rec-title {
-  font-size: 0.875rem;
+  font-size: 0.875em;
   font-weight: 600;
   line-height: 1.3;
 }
 .q8-dc__rec-price {
-  font-size: 0.8125rem;
+  font-size: 0.8125em;
   opacity: 0.75;
 }
 .q8-dc__rec-add {
-  margin-top: 0.25rem;
-  padding: 0.5rem 0.75rem;
+  margin-top: 0.25em;
+  padding: 0.5em 0.75em;
   border-radius: 999px;
   border: 1px solid var(--q8-dc-accent, #0f3d3e);
   background: transparent;
   color: var(--q8-dc-accent, #0f3d3e);
   font: inherit;
-  font-size: 0.8125rem;
+  font-size: 0.8125em;
   font-weight: 700;
   cursor: pointer;
 }
