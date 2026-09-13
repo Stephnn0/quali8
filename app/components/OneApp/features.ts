@@ -202,9 +202,9 @@ export const ONEAPP_FEATURES: OneAppFeature[] = [
     key: "smart-recommendations",
     name: "Smart Recommendations",
     category: "sales-pricing",
-    tagline: "Cart upsells driven by your rules.",
+    tagline: "Home page recommendations driven by your rules.",
     description:
-      "Set rules like \"when the cart has a bouquet, suggest vases under $40\" and the Options step of the delivery checkout shows matching products with one-tap add to cart.",
+      "Set rules like \"when a shopper viewed a bouquet, suggest vases under $40\" and the Smart Recommendations block on your home page shows matching products with one-tap add to cart. Reads the cart, what the shopper viewed, and whether they're a returning visitor.",
     icon: MagicIcon,
     image: "/features/smart-recommendations.svg",
     to: "/app/recommendations",
