@@ -4,6 +4,11 @@ import db from "app/db.server";
 import { gatekeepRoute } from "app/services/subscriptions/gatekeepRoute";
 import { handleApiSuccess } from "app/utils/handleApiSuccess";
 import { handleApiError } from "app/utils/server/handleApiResponse/handleApiError.server";
+import {
+  THEME_EXTENSION_UID_FALLBACK,
+  themeEditorLinks,
+  type ThemeEditorLinks,
+} from "app/services/recommendations/themeEditorLinks";
 
 export type RuleRow = {
   id: number;
@@ -36,11 +41,21 @@ export async function loader({ request }: LoaderFunctionArgs) {
       orderBy: [{ position: "asc" }, { id: "asc" }],
     });
 
-    return handleApiSuccess<{ rules: RuleRow[] }>({
+    return handleApiSuccess<{ rules: RuleRow[]; setup: ThemeEditorLinks }>({
       payload: {
+        setup: themeEditorLinks(
+          session.shop,
+          process.env.SHOPIFY_THEME_EXTENSION_UID || THEME_EXTENSION_UID_FALLBACK,
+        ),
         rules: rules.map((rule) => {
-          let when = "Every cart";
-          if (rule.trigger === "CART_HAS_COLLECTION") {
+          let when = "Every visitor";
+          if (rule.trigger === "RETURNING_VISITOR") {
+            when = "Returning visitor";
+          } else if (rule.trigger === "VIEWED_COLLECTION") {
+            when = `Viewed a product from ${rule.triggerCollectionTitle ?? "a collection"}`;
+          } else if (rule.trigger === "VIEWED_PRODUCT") {
+            when = `Viewed ${rule.triggerProductTitle ?? "a product"}`;
+          } else if (rule.trigger === "CART_HAS_COLLECTION") {
             when = `Cart has a product from ${rule.triggerCollectionTitle ?? "a collection"}`;
           } else if (rule.trigger === "CART_HAS_PRODUCT") {
             when = `Cart has ${rule.triggerProductTitle ?? "a product"}`;
@@ -58,6 +73,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
               ? rule.sourceProducts.length
               : 0;
             show = `${count} hand-picked ${count === 1 ? "product" : "products"}`;
+          } else if (rule.source === "RECENTLY_VIEWED") {
+            show = "Recently viewed products";
+          } else if (rule.source === "RELATED_TO_VIEWED") {
+            show = "Related to what they viewed";
           }
           if (rule.minPrice !== null || rule.maxPrice !== null) {
             const min = rule.minPrice !== null ? money(rule.minPrice) : null;

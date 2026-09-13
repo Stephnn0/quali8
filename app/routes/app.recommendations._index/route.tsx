@@ -9,6 +9,7 @@ import {
   EmptyState,
   IndexTable,
   InlineGrid,
+  InlineStack,
   Layout,
   List,
   Modal,
@@ -30,13 +31,15 @@ import { action } from "./action";
 export { loader, action };
 
 /**
- * Smart Recommendations: the merchant's rules for the cart page block.
+ * Smart Recommendations: the merchant's rules for the home page block.
  * Rules are checked top to bottom; the first one whose condition matches
- * the cart decides what shoppers see.
+ * the shopper decides what the block shows (a second block set to
+ * "2nd matching rule" shows the next one).
  */
 export default function RecommendationRulesIndex() {
   const loaderData = useLoaderData<typeof loader>();
   const rules = loaderData?.payload?.rules ?? [];
+  const setup = loaderData?.payload?.setup ?? null;
 
   const navigate = useNavigate();
   const shopify = useAppBridge();
@@ -134,7 +137,7 @@ export default function RecommendationRulesIndex() {
     <Page>
       <FeatureHeader
         featureKey="smart-recommendations"
-        tagline="Rules decide what the cart page suggests. The first rule that matches the cart wins; with no rules, shoppers see your newest products."
+        tagline="Rules decide what the home page suggests. The first rule that matches the shopper wins; with no rules, shoppers see your newest products."
         actions={
           <Button
             variant="primary"
@@ -145,6 +148,37 @@ export default function RecommendationRulesIndex() {
         }
       />
       <Layout>
+        <Layout.Section>
+          <Card>
+            <BlockStack gap="300">
+              <Text as="h3" variant="headingSm">
+                Set up the home page block
+              </Text>
+              <List type="number">
+                <List.Item>
+                  Add the <strong>Smart Recommendations</strong> block to your
+                  home page and place it where you want the rail.
+                </List.Item>
+                <List.Item>
+                  Turn on the <strong>Smart recs tracker</strong> app embed so
+                  viewed products and returning visitors count. Without it only
+                  cart and &ldquo;every visitor&rdquo; rules can fire.
+                </List.Item>
+              </List>
+              {setup ? (
+                <InlineStack gap="200">
+                  <Button url={setup.addBlock} target="_blank" variant="primary">
+                    Add block to home page
+                  </Button>
+                  <Button url={setup.enableTracker} target="_blank">
+                    Turn on tracker embed
+                  </Button>
+                </InlineStack>
+              ) : null}
+            </BlockStack>
+          </Card>
+        </Layout.Section>
+
         <Layout.Section>
           {rules.length > 0 ? (
             <Card padding="0">
@@ -176,9 +210,9 @@ export default function RecommendationRulesIndex() {
                 image={emptyImage}
               >
                 <p>
-                  For example: when the cart has a product from Bouquets,
-                  show vases under $40. Until you add a rule, the Options step
-                  of the delivery checkout shows your newest products.
+                  For example: when a shopper viewed a product from Bouquets,
+                  show vases under $40 on the home page. Until you add a rule,
+                  the home page block shows your newest products.
                 </p>
               </EmptyState>
             </Card>
@@ -194,20 +228,22 @@ export default function RecommendationRulesIndex() {
                 </Text>
                 <List type="bullet">
                   <List.Item>
-                    <strong>When</strong> is the condition: every cart, the
-                    cart contains a product from a collection, the cart
-                    contains a specific product, or the cart total is above an
-                    amount.
+                    <strong>When</strong> is the condition: every visitor, a
+                    returning visitor, the shopper viewed a product or a
+                    collection, or the cart contains a product, a collection,
+                    or a minimum total.
                   </List.Item>
                   <List.Item>
                     <strong>Show</strong> is the source: a collection, a tag,
-                    your newest products, or products you pick by hand. Add an
-                    optional price range and a maximum.
+                    your newest products, products you pick by hand, recently
+                    viewed products, or products related to what they viewed.
+                    Add an optional price range and a maximum.
                   </List.Item>
                   <List.Item>
-                    Products already in the cart are skipped, and rules are
-                    checked top to bottom, so put your most specific rule
-                    first.
+                    Rules are checked top to bottom, so put your most specific
+                    rule first. Products already in the cart are skipped when
+                    the rule says so, and a product never repeats across
+                    stacked blocks.
                   </List.Item>
                 </List>
               </BlockStack>
@@ -219,18 +255,17 @@ export default function RecommendationRulesIndex() {
                 </Text>
                 <List type="bullet">
                   <List.Item>
-                    Recommendations appear on the <strong>Options</strong> step of
-                    the Delivery checkout block on your cart page, next to the card
-                    message and occasion fields, with one-tap add to cart.
+                    Recommendations appear in the <strong>Smart Recommendations</strong>
+                    block on your home page: image, title, price, and a quick Add
+                    button.
                   </List.Item>
                   <List.Item>
-                    Add the block once: Online Store &rarr; Themes &rarr; Customize
-                    &rarr; Cart template &rarr; Add block &rarr; Apps &rarr;
-                    <strong> Delivery checkout</strong>. No separate block is needed.
+                    Add the block more than once and set each copy to the 1st,
+                    2nd or 3rd matching rule to stack rails.
                   </List.Item>
                   <List.Item>
                     A rule&rsquo;s own heading is shown above its products when it
-                    matches.
+                    matches; otherwise the block&rsquo;s fallback heading.
                   </List.Item>
                 </List>
               </BlockStack>
@@ -253,7 +288,7 @@ export default function RecommendationRulesIndex() {
         <Modal.Section>
           <Text as="p">
             {deleteTarget
-              ? `"${deleteTarget.name}" will be removed. The cart block will fall through to the next rule.`
+              ? `"${deleteTarget.name}" will be removed. The home page block will fall through to the next rule.`
               : ""}
           </Text>
         </Modal.Section>
