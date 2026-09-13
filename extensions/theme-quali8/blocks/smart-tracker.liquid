@@ -1,0 +1,33 @@
+{%- comment -%}
+  Quali8 — Smart recs tracker (app embed, every page).
+
+  Records what the shopper looks at so the Smart Recommendations home page
+  block can react to it: on product pages it stores the product and its
+  collections in the browser (localStorage, newest first, 12 at most), and
+  on every page it stores the date of the shopper's first visit. Nothing is
+  sent anywhere; the home page block reads the browser storage and passes
+  it to the app when it asks for recommendations. Renders nothing visible.
+{%- endcomment -%}
+
+<span
+  data-quali8-tracker
+  {%- if template.name == 'product' and product %}
+  data-product-id="{{ product.id }}"
+  data-collection-ids="{{ product.collections | map: 'id' | join: ',' }}"
+  {%- endif %}
+  hidden
+></span>
+
+{% schema %}
+{
+  "name": "Smart recs tracker",
+  "target": "body",
+  "javascript": "smart-tracker.js",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Remembers which products a shopper opens (in their own browser only) so the Smart Recommendations block on the home page can use \"viewed\" and \"returning visitor\" rules. Nothing to configure."
+    }
+  ]
+}
+{% endschema %}

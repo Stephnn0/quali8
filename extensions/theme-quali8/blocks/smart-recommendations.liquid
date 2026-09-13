@@ -1,0 +1,214 @@
+{%- comment -%}
+  Quali8 — Smart Recommendations (home page app block).
+
+  A rail of products chosen by the merchant's rules in the app (Smart
+  Recommendations page): what's in the cart, what the shopper viewed (via
+  the Smart recs tracker embed), and whether they're a returning visitor.
+  Each card links to the product and has a quick Add button. Add the block
+  more than once with different "Rail" settings to stack rails; products
+  never repeat across them. Stays hidden (zero layout shift) until it has
+  products.
+{%- endcomment -%}
+
+<div
+  class="q8-sr q8-sr--{{ block.settings.layout }} q8-sr--btn-{{ block.settings.button_style }}"
+  data-quali8-smart-recs
+  data-slot="{{ block.settings.rail }}"
+  data-limit="{{ block.settings.products }}"
+  data-currency="{{ cart.currency.iso_code | default: shop.currency }}"
+  data-fallback-heading="{{ block.settings.fallback_heading | escape }}"
+  data-add-label="{{ block.settings.add_label | escape }}"
+  data-view-label="{{ block.settings.view_label | escape }}"
+  data-show-price="{{ block.settings.show_price }}"
+  style="
+    --q8-sr-bg: {{ block.settings.background_color }};
+    --q8-sr-text: {{ block.settings.text_color }};
+    --q8-sr-accent: {{ block.settings.accent_color }};
+    --q8-sr-btn-bg: {{ block.settings.button_background }};
+    --q8-sr-btn-text: {{ block.settings.button_text_color }};
+    --q8-sr-heading-size: {{ block.settings.heading_size }}px;
+    --q8-sr-radius: {{ block.settings.border_radius }}px;
+    --q8-sr-card-radius: {{ block.settings.card_radius }}px;
+    --q8-sr-padding: {{ block.settings.padding }}px;
+    --q8-sr-card-width: {{ block.settings.card_width }}px;
+    --q8-sr-border: {% if block.settings.show_border %}1px solid rgba(0, 0, 0, 0.08){% else %}none{% endif %};
+  "
+  hidden
+></div>
+
+{% schema %}
+{
+  "name": "Smart Recommendations",
+  "target": "section",
+  "javascript": "smart-recommendations.js",
+  "stylesheet": "smart-recommendations.css",
+  "enabled_on": {
+    "templates": ["index"]
+  },
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Which products show is decided by your rules in the app under Smart Recommendations. Turn on the Smart recs tracker app embed so \"viewed\" and \"returning visitor\" rules work."
+    },
+    {
+      "type": "select",
+      "id": "rail",
+      "label": "Rail",
+      "info": "Add this block again with a different rail to stack several.",
+      "options": [
+        { "value": "1", "label": "1st matching rule" },
+        { "value": "2", "label": "2nd matching rule" },
+        { "value": "3", "label": "3rd matching rule" }
+      ],
+      "default": "1"
+    },
+    {
+      "type": "range",
+      "id": "products",
+      "label": "Products to show",
+      "min": 2,
+      "max": 12,
+      "step": 1,
+      "default": 4
+    },
+    {
+      "type": "text",
+      "id": "fallback_heading",
+      "label": "Heading when the rule has none",
+      "default": "You might also like"
+    },
+
+    { "type": "header", "content": "Cards" },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout",
+      "options": [
+        { "value": "rail", "label": "Sideways rail" },
+        { "value": "grid", "label": "Grid" }
+      ],
+      "default": "rail"
+    },
+    {
+      "type": "range",
+      "id": "card_width",
+      "label": "Card width",
+      "min": 140,
+      "max": 300,
+      "step": 10,
+      "unit": "px",
+      "default": 200
+    },
+    {
+      "type": "checkbox",
+      "id": "show_price",
+      "label": "Show price",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "button_style",
+      "label": "Button style",
+      "options": [
+        { "value": "solid", "label": "Solid" },
+        { "value": "outline", "label": "Outline" }
+      ],
+      "default": "solid"
+    },
+    {
+      "type": "text",
+      "id": "add_label",
+      "label": "Add button",
+      "default": "Add to cart"
+    },
+    {
+      "type": "text",
+      "id": "view_label",
+      "label": "View button",
+      "info": "Used when a product has options to choose.",
+      "default": "View"
+    },
+    {
+      "type": "range",
+      "id": "heading_size",
+      "label": "Heading size",
+      "min": 16,
+      "max": 44,
+      "step": 2,
+      "unit": "px",
+      "default": 24
+    },
+
+    { "type": "header", "content": "Colors" },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Block background",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "text_color",
+      "label": "Text",
+      "default": "#1a1a1a"
+    },
+    {
+      "type": "color",
+      "id": "accent_color",
+      "label": "Accent",
+      "info": "Price and focus rings.",
+      "default": "#5c3d99"
+    },
+    {
+      "type": "color",
+      "id": "button_background",
+      "label": "Button",
+      "default": "#5c3d99"
+    },
+    {
+      "type": "color",
+      "id": "button_text_color",
+      "label": "Button text",
+      "default": "#ffffff"
+    },
+
+    { "type": "header", "content": "Spacing & shape" },
+    {
+      "type": "range",
+      "id": "padding",
+      "label": "Inner padding",
+      "min": 0,
+      "max": 48,
+      "step": 4,
+      "unit": "px",
+      "default": 24
+    },
+    {
+      "type": "range",
+      "id": "border_radius",
+      "label": "Block corner radius",
+      "min": 0,
+      "max": 32,
+      "step": 2,
+      "unit": "px",
+      "default": 16
+    },
+    {
+      "type": "range",
+      "id": "card_radius",
+      "label": "Card corner radius",
+      "min": 0,
+      "max": 24,
+      "step": 2,
+      "unit": "px",
+      "default": 12
+    },
+    {
+      "type": "checkbox",
+      "id": "show_border",
+      "label": "Show block border",
+      "default": false
+    }
+  ]
+}
+{% endschema %}

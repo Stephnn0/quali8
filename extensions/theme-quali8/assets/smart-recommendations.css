@@ -1,0 +1,175 @@
+/*
+ * Quali8 — Smart Recommendations (home page).
+ *
+ * A heading and a row of product cards: sideways rail (default) or grid.
+ * Colours, sizes, and corners come from CSS variables the Liquid block
+ * sets. Every length is in em off the block's own 16px base so the layout
+ * doesn't shrink on themes with a 62.5% root font size.
+ */
+
+.q8-sr {
+  --q8-sr-muted: color-mix(in srgb, var(--q8-sr-text, #1a1a1a) 60%, transparent);
+  --q8-sr-line: rgba(0, 0, 0, 0.08);
+  box-sizing: border-box;
+  font-size: 16px;
+  line-height: 1.4;
+  font-family: inherit;
+  color: var(--q8-sr-text, #1a1a1a);
+  background: var(--q8-sr-bg, #ffffff);
+  border: var(--q8-sr-border, none);
+  border-radius: var(--q8-sr-radius, 16px);
+  padding: var(--q8-sr-padding, 24px);
+  margin: 1.5em 0;
+  animation: q8-sr-in 320ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.q8-sr *,
+.q8-sr *::before,
+.q8-sr *::after {
+  box-sizing: border-box;
+}
+
+@keyframes q8-sr-in {
+  from { opacity: 0; transform: translateY(0.5em); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .q8-sr { animation: none; }
+}
+
+/* --- Header ------------------------------------------------------------------ */
+
+.q8-sr__heading {
+  margin: 0 0 1em;
+  font-size: var(--q8-sr-heading-size, 24px);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+/* --- Track: rail or grid ----------------------------------------------------- */
+
+.q8-sr__track {
+  display: grid;
+  gap: 1em;
+}
+
+.q8-sr--rail .q8-sr__track {
+  grid-auto-flow: column;
+  grid-auto-columns: var(--q8-sr-card-width, 200px);
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  padding-bottom: 0.5em;
+  scrollbar-width: thin;
+}
+
+.q8-sr--rail .q8-sr__card {
+  scroll-snap-align: start;
+}
+
+.q8-sr--grid .q8-sr__track {
+  grid-template-columns: repeat(auto-fill, minmax(var(--q8-sr-card-width, 200px), 1fr));
+}
+
+/* --- Card -------------------------------------------------------------------- */
+
+.q8-sr__card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6em;
+  min-width: 0;
+}
+
+.q8-sr__media-link {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.q8-sr__media {
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border-radius: var(--q8-sr-card-radius, 12px);
+  background: color-mix(in srgb, var(--q8-sr-text, #1a1a1a) 6%, transparent);
+}
+
+.q8-sr__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 240ms ease;
+}
+
+.q8-sr__card:hover .q8-sr__media img {
+  transform: scale(1.03);
+}
+
+.q8-sr__title {
+  margin: 0;
+  font-size: 1em;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+.q8-sr__title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.q8-sr__title a:hover {
+  text-decoration: underline;
+}
+
+.q8-sr__price {
+  font-size: 0.95em;
+  color: var(--q8-sr-accent, #5c3d99);
+  font-weight: 600;
+}
+
+/* --- Button ------------------------------------------------------------------ */
+
+.q8-sr__button {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.75em;
+  padding: 0 1em;
+  border-radius: calc(var(--q8-sr-card-radius, 12px) * 0.75);
+  border: 1px solid var(--q8-sr-btn-bg, #5c3d99);
+  background: var(--q8-sr-btn-bg, #5c3d99);
+  color: var(--q8-sr-btn-text, #ffffff);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 160ms ease;
+}
+
+.q8-sr--btn-outline .q8-sr__button {
+  background: transparent;
+  color: var(--q8-sr-btn-bg, #5c3d99);
+}
+
+.q8-sr__button:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.q8-sr__button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.q8-sr__button:focus-visible,
+.q8-sr__media-link:focus-visible,
+.q8-sr__title a:focus-visible {
+  outline: 2px solid var(--q8-sr-accent, #5c3d99);
+  outline-offset: 2px;
+}
+
+.q8-sr__error {
+  margin: 0.75em 0 0;
+  font-size: 0.9em;
+  color: #b42318;
+}

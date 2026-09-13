@@ -12,8 +12,7 @@
  *    shopper's.
  * 3. Options (merchant can switch the step, or any field, off): occasion —
  *    picking one shows that occasion's products with one-tap add — card
- *    message, notes (also the cart note), "if nobody answers the door", and
- *    the Smart Recommendations upsell rail.
+ *    message, notes (also the cart note), and "if nobody answers the door".
  * 4. Review & Checkout.  A summary and the Checkout button, which opens
  *    Shopify checkout with the recipient's shipping address prefilled
  *    through the documented `checkout[...]` URL parameters.
@@ -318,14 +317,6 @@
     params.set("fallback", "0");
     params.set("limit", "8");
     return fetchJson("apps/quali8/recommendations?" + params.toString());
-  }
-  function fetchRecommendations(cart) {
-    var ids = (cart.items || []).map(function (item) { return item.product_id; }).filter(Boolean);
-    var params = new URLSearchParams();
-    params.set("cart", ids.join(","));
-    params.set("total", String((cart.items_subtotal_price || 0) / 100));
-    params.set("limit", "6");
-    return fetchJson("apps/quali8/smart-recommendations?" + params.toString());
   }
   function addVariant(variantId) {
     var body = new FormData();
@@ -1428,16 +1419,6 @@
       })
       .catch(function () { /* no occasions, no field */ });
 
-    // Smart Recommendations upsell
-    var recs = el("div", "q8-dc__recs");
-    recs.hidden = true;
-    panel.appendChild(recs);
-    fetchRecommendations(cartData || { items: [] })
-      .then(function (data) {
-        renderRecs(recs, data);
-      })
-      .catch(function () { /* rail stays hidden */ });
-
     var actions = el("div", "q8-dc__actions");
     actions.appendChild(linkButton(settings.backLabel || "Back", function () {
       go(2);
@@ -1462,8 +1443,7 @@
     var inCart = {};
     ((cartData && cartData.items) || []).forEach(function (item) { inCart[String(item.product_id)] = true; });
     var head = el("div", "q8-dc__recs-head");
-    head.appendChild(el("h4", "q8-dc__section-title", (data && data.heading) || o.recsHeading || "Complete your order"));
-    if (o.recsIntro) head.appendChild(el("p", "q8-dc__intro", o.recsIntro));
+    if (data && data.heading) head.appendChild(el("h4", "q8-dc__section-title", data.heading));
     container.appendChild(head);
     var track = el("div", "q8-dc__recs-track");
     var errorLine = el("p", "q8-dc__error");
@@ -1728,8 +1708,6 @@
     cardPlaceholder: "The message we should write on the card",
     notesLabel: "Notes for us",
     notesPlaceholder: "Delivery instructions, allergies, anything we should know",
-    recsHeading: "Complete your order",
-    recsIntro: "",
     addLabel: "Add",
     addingLabel: "Adding\u2026",
     addedLabel: "Added",
