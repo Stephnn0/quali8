@@ -2,6 +2,7 @@ import type { PrismaClient } from "@prisma/client";
 import type { AdminGraphqlClient } from "@shopify/shopify-app-react-router/server";
 import { subscribeCustomer } from "app/models/shopify.server/customers";
 import { shopNow } from "app/services/delivery/shopTime";
+import { loadShopTimezone } from "app/services/delivery/deliverySchedule.server";
 import {
   customerAdminId,
   summarizeDailyStats,
@@ -10,13 +11,9 @@ import {
 
 export type PopupEvent = "view" | "dismiss" | "subscribe";
 
-/** Today's date key in the shop's timezone. */
+/** Today's date key in the shop's timezone (UTC when it was never synced). */
 async function shopDay(db: PrismaClient, shop: string): Promise<string> {
-  const store = await db.shopifyStore.findUnique({
-    where: { shop },
-    select: { timezone: true },
-  });
-  return shopNow(store?.timezone).date;
+  return shopNow(await loadShopTimezone(db, shop)).date;
 }
 
 /** Bumps today's counter for the event. Never throws: analytics are best-effort. */
