@@ -251,7 +251,7 @@ export const getCategoryFeatures = (key: OneAppCategoryKey): OneAppFeature[] =>
 export const categoryPath = (key: OneAppCategoryKey) =>
   `/app/categories/${key}`;
 
-export const REQUEST_FEATURE_EMAIL = "support@8instruments.com";
+export const REQUEST_FEATURE_EMAIL = "ilovetheoneapp@gmail.com";
 
 export const requestFeatureMailto = () =>
   `mailto:${REQUEST_FEATURE_EMAIL}?subject=${encodeURIComponent(

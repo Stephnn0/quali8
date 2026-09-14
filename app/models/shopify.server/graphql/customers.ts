@@ -47,3 +47,56 @@ export const GRAPHQL_QUERY_CUSTOMER_INSIGHTS = `#graphql
     }
   }
 `;
+
+/** Finds the customer that owns an email (for the popup subscribe flow). */
+export const GRAPHQL_QUERY_CUSTOMER_BY_EMAIL = `#graphql
+  query popupCustomerByEmail($query: String!) {
+    customers(first: 1, query: $query) {
+      edges {
+        node {
+          id
+          tags
+          emailMarketingConsent {
+            marketingState
+          }
+        }
+      }
+    }
+  }
+`;
+
+export const GRAPHQL_MUTATION_POPUP_CUSTOMER_CREATE = `#graphql
+  mutation popupCustomerCreate($input: CustomerInput!) {
+    customerCreate(input: $input) {
+      customer {
+        id
+      }
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+`;
+
+export const GRAPHQL_MUTATION_POPUP_CUSTOMER_TAGS_ADD = `#graphql
+  mutation popupCustomerTagsAdd($id: ID!, $tags: [String!]!) {
+    tagsAdd(id: $id, tags: $tags) {
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+`;
+
+export const GRAPHQL_MUTATION_POPUP_CUSTOMER_CONSENT = `#graphql
+  mutation popupCustomerConsent($input: CustomerEmailMarketingConsentUpdateInput!) {
+    customerEmailMarketingConsentUpdate(input: $input) {
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+`;

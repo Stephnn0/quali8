@@ -5,9 +5,11 @@
   scheduled in the app (Subscribe Boost, or a Sales Calendar date); the
   block asks the app proxy (/apps/quali8/popup) whether one is live and
   suppresses signed-in subscribers. Trigger, layout, size, copy, colours,
-  and behaviour are set here. Subscribing posts to the storefront's native
-  /contact newsletter endpoint and reveals the code (optionally applying
-  it to the cart).
+  and behaviour are set here. Subscribing posts to the app proxy, which
+  saves the shopper as a Shopify customer and records the signup for the
+  Subscribe Boost analytics, then reveals the code (optionally applying it
+  to the cart). In the theme editor the popup opens immediately so it can
+  be styled.
 {%- endcomment -%}
 
 {%- capture q8_popup_settings -%}
@@ -65,7 +67,7 @@
     "templates": ["*"]
   },
   "settings": [
-    { "type": "paragraph", "content": "Image, heading, description, discount code, and dates come from Subscribe Boost in the app. Style it here." },
+    { "type": "paragraph", "content": "Image, heading, description, discount code, and dates come from Subscribe Boost in the app. Style it here — the popup stays open in the editor so you can see your changes." },
 
     { "type": "header", "content": "Trigger" },
     {

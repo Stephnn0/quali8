@@ -51,9 +51,9 @@ model ShopifyStore {
   shopData             ShopifyShopData?
 
   // NEW
-  campaigns Campaign[]
-  bundles   Bundle[]
-  occasions Occasion[]
+  campaigns           Campaign[]
+  bundles             Bundle[]
+  occasions           Occasion[]
   recommendationRules RecommendationRule[]
   deliveryZones       DeliveryZone[]
   carrierRate         CarrierRate?
@@ -572,31 +572,30 @@ enum BundleType {
   CLASSIC
 }
 
-
 /// A merchant-defined shopping occasion ("Mother's Day", "Sympathy", ...)
 /// powering the Smart Recommendations storefront blocks. The date window is
 /// recurring yearly (month/day pairs); null months mean "always relevant"
 /// (e.g. Birthday).
 model Occasion {
-  id         Int               @id @default(autoincrement())
-  createdAt  DateTime          @default(now())
-  updatedAt  DateTime          @default(now()) @updatedAt
+  id           Int                  @id @default(autoincrement())
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @default(now()) @updatedAt
   //
-  name       String
-  slug       String /// Storefront identifier + tag suffix (q8:occasion:<slug>)
-  icon       String? /// Emoji shown on the storefront tile (suggested from the name)
-  status     OccasionStatus    @default(ACTIVE)
-  startMonth Int? /// 1-12
-  startDay   Int? /// 1-31
-  endMonth   Int?
-  endDay     Int?
-  position   Int               @default(0)
+  name         String
+  slug         String /// Storefront identifier + tag suffix (q8:occasion:<slug>)
+  icon         String? /// Emoji shown on the storefront tile (suggested from the name)
+  status       OccasionStatus       @default(ACTIVE)
+  startMonth   Int? /// 1-12
+  startDay     Int? /// 1-31
+  endMonth     Int?
+  endDay       Int?
+  position     Int                  @default(0)
   //
-  products   OccasionProduct[]
-  collections OccasionCollection[]
+  products     OccasionProduct[]
+  collections  OccasionCollection[]
   //
   shop         String
-  shopifyStore ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
+  shopifyStore ShopifyStore         @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
 
   @@unique([shop, slug])
   @@index([shop, status])
@@ -625,7 +624,6 @@ model OccasionProduct {
 
   @@index([occasionId])
 }
-
 
 /// A collection connected to an occasion: every sellable product in it is a
 /// candidate for that occasion (resolved live from Shopify at request time).
@@ -676,7 +674,7 @@ model RecommendationRule {
   excludeCartItems       Boolean               @default(true)
   //
   shop                   String
-  shopifyStore           ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
+  shopifyStore           ShopifyStore          @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
 
   @@index([shop, status, position])
 }
@@ -714,16 +712,16 @@ enum RecommendationSource {
 /// (exact, or prefixes ending in "*"), an optional delivery price, and an
 /// optional message. Zones are matched in `position` order.
 model DeliveryZone {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  id           Int          @id @default(autoincrement())
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @default(now()) @updatedAt
   //
-  name      String
-  zipCodes  String[] /// Normalised: uppercase, no spaces; "331*" is a prefix
-  price     Float? /// Delivery price in the shop currency; 0 = free; null = not shown
-  message   String? /// Extra line shown with the result
-  active    Boolean  @default(true)
-  position  Int      @default(0)
+  name         String
+  zipCodes     String[] /// Normalised: uppercase, no spaces; "331*" is a prefix
+  price        Float? /// Delivery price in the shop currency; 0 = free; null = not shown
+  message      String? /// Extra line shown with the result
+  active       Boolean      @default(true)
+  position     Int          @default(0)
   //
   shop         String
   shopifyStore ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
@@ -734,12 +732,12 @@ model DeliveryZone {
 /// Delivery Rates: the single shipping rate the app's carrier service
 /// returns at checkout, priced by the matching DeliveryZone. One per shop.
 model CarrierRate {
-  id            Int      @id @default(autoincrement())
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @default(now()) @updatedAt
+  id            Int          @id @default(autoincrement())
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @default(now()) @updatedAt
   //
-  enabled       Boolean  @default(true)
-  title         String   @default("Local delivery") /// Shown as the shipping method at checkout
+  enabled       Boolean      @default(true)
+  title         String       @default("Local delivery") /// Shown as the shipping method at checkout
   /// Price when no zone matches; null = no rate (checkout blocks the address)
   fallbackPrice Float?
   //
@@ -750,90 +748,90 @@ model CarrierRate {
 /// Delivery / pickup date rules for the cart calendar: blocked weekdays and
 /// dates, lead time and how far ahead shoppers may book. One per shop.
 model DeliverySchedule {
-  id                     Int      @id @default(autoincrement())
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @default(now()) @updatedAt
+  id                      Int          @id @default(autoincrement())
+  createdAt               DateTime     @default(now())
+  updatedAt               DateTime     @default(now()) @updatedAt
   //
-  enabled                Boolean  @default(false) /// Show the calendar in the cart
-  requireDate            Boolean  @default(true) /// Shoppers must pick a date to continue
-  deliveryBlockedWeekdays Int[]   @default([]) /// 0 = Sunday … 6 = Saturday
-  deliveryBlockedDates   String[] @default([]) /// ISO yyyy-mm-dd
-  deliveryLeadDays       Int      @default(0)
-  deliveryMaxDaysAhead   Int      @default(60)
-  pickupBlockedWeekdays  Int[]    @default([])
-  pickupBlockedDates     String[] @default([])
-  pickupLeadDays         Int      @default(0)
-  pickupMaxDaysAhead     Int      @default(60)
+  enabled                 Boolean      @default(false) /// Show the calendar in the cart
+  requireDate             Boolean      @default(true) /// Shoppers must pick a date to continue
+  deliveryBlockedWeekdays Int[]        @default([]) /// 0 = Sunday … 6 = Saturday
+  deliveryBlockedDates    String[]     @default([]) /// ISO yyyy-mm-dd
+  deliveryLeadDays        Int          @default(0)
+  deliveryMaxDaysAhead    Int          @default(60)
+  pickupBlockedWeekdays   Int[]        @default([])
+  pickupBlockedDates      String[]     @default([])
+  pickupLeadDays          Int          @default(0)
+  pickupMaxDaysAhead      Int          @default(60)
   /// Same-day rules, evaluated in the shop's time zone (ShopifyShopData.ianaTimezone)
-  deliveryTodayEnabled   Boolean  @default(true) /// Offer today at all (subject to lead days)
-  deliveryTodayCutoff    String? /// "HH:MM" 24h; today closes at this shop time. Null = all day
-  pickupTodayEnabled     Boolean  @default(true)
-  pickupTodayCutoff      String?
+  deliveryTodayEnabled    Boolean      @default(true) /// Offer today at all (subject to lead days)
+  deliveryTodayCutoff     String? /// "HH:MM" 24h; today closes at this shop time. Null = all day
+  pickupTodayEnabled      Boolean      @default(true)
+  pickupTodayCutoff       String?
   //
-  shop         String       @unique
-  shopifyStore ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
+  shop                    String       @unique
+  shopifyStore            ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
 }
 
 /// Copy and behaviour of the Occasions + Gifts product-page block, managed
 /// on the Occasions page (the theme editor only keeps colours and shapes).
 model OccasionBlockSettings {
-  id              Int      @id @default(autoincrement())
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @default(now()) @updatedAt
+  id              Int          @id @default(autoincrement())
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @default(now()) @updatedAt
   //
-  heading         String   @default("Shopping for an occasion?")
-  subheading      String   @default("Pick one and we'll suggest the perfect add-on.")
-  suggestedCount  Int      @default(3) /// Chips shown before "Other occasions"
-  otherLabel      String   @default("Other occasions")
-  pickerTitle     String   @default("Which occasion?")
-  giftsHeading    String   @default("Gifts for {occasion}")
-  giftsSubtext    String   @default("Add one to go with this item.")
-  changeLabel     String   @default("Change occasion")
-  pairWithProduct Boolean  @default(true) /// Add the viewed product together with the gift
-  addLabel        String   @default("Add both to cart")
-  addingLabel     String   @default("Adding…")
-  addedLabel      String   @default("Added ✓")
-  afterAdd        String   @default("stay") /// "stay" | "cart"
-  giftLimit       Int      @default(8)
-  showNowBadge    Boolean  @default(true)
-  nowLabel        String   @default("Now")
-  emptyText       String   @default("No gift picks for this occasion yet.")
-  rememberChoice  Boolean  @default(true) /// Keep the occasion across pages and prefill the cart
+  heading         String       @default("Shopping for an occasion?")
+  subheading      String       @default("Pick one and we'll suggest the perfect add-on.")
+  suggestedCount  Int          @default(3) /// Chips shown before "Other occasions"
+  otherLabel      String       @default("Other occasions")
+  pickerTitle     String       @default("Which occasion?")
+  giftsHeading    String       @default("Gifts for {occasion}")
+  giftsSubtext    String       @default("Add one to go with this item.")
+  changeLabel     String       @default("Change occasion")
+  pairWithProduct Boolean      @default(true) /// Add the viewed product together with the gift
+  addLabel        String       @default("Add both to cart")
+  addingLabel     String       @default("Adding…")
+  addedLabel      String       @default("Added ✓")
+  afterAdd        String       @default("stay") /// "stay" | "cart"
+  giftLimit       Int          @default(8)
+  showNowBadge    Boolean      @default(true)
+  nowLabel        String       @default("Now")
+  emptyText       String       @default("No gift picks for this occasion yet.")
+  rememberChoice  Boolean      @default(true) /// Keep the occasion across pages and prefill the cart
   //
-  shop         String       @unique
-  shopifyStore ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
+  shop            String       @unique
+  shopifyStore    ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
 }
 
 /// What the cart block's Options step shows (Delivery module). The whole
 /// step can be switched off; each field can be switched off on its own.
 model CartOptionsSettings {
-  id                 Int      @id @default(autoincrement())
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @default(now()) @updatedAt
+  id                 Int          @id @default(autoincrement())
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @default(now()) @updatedAt
   //
-  enabled            Boolean  @default(true) /// Show the Options step at all
-  occasionEnabled    Boolean  @default(true) /// Occasion picker (+ that occasion's products)
-  cardMessageEnabled Boolean  @default(true)
-  notesEnabled       Boolean  @default(true)
-  notesLabel         String   @default("Notes for us") /// Merchant-editable field label
-  doorEnabled        Boolean  @default(true) /// "If nobody answers the door" dropdown
+  enabled            Boolean      @default(true) /// Show the Options step at all
+  occasionEnabled    Boolean      @default(true) /// Occasion picker (+ that occasion's products)
+  cardMessageEnabled Boolean      @default(true)
+  notesEnabled       Boolean      @default(true)
+  notesLabel         String       @default("Notes for us") /// Merchant-editable field label
+  doorEnabled        Boolean      @default(true) /// "If nobody answers the door" dropdown
   //
-  shop         String       @unique
-  shopifyStore ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
+  shop               String       @unique
+  shopifyStore       ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
 }
 
 /// A timed delivery window shoppers can add to a delivery ("Before 12:00 PM")
 /// for a surcharge on top of the zone price (Delivery module).
 model DeliveryTimeWindow {
-  id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  id           Int          @id @default(autoincrement())
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @default(now()) @updatedAt
   //
-  kind      String /// "before" | "after" | "by"
-  time      String /// "HH:MM" 24h in the shop's time zone
-  price     Float    @default(0) /// Surcharge in the shop currency
-  active    Boolean  @default(true)
-  position  Int      @default(0)
+  kind         String /// "before" | "after" | "by"
+  time         String /// "HH:MM" 24h in the shop's time zone
+  price        Float        @default(0) /// Surcharge in the shop currency
+  active       Boolean      @default(true)
+  position     Int          @default(0)
   //
   shop         String
   shopifyStore ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
@@ -845,15 +843,15 @@ model DeliveryTimeWindow {
 /// Collected in a single confirmation step (niche inferred from products,
 /// country prefilled from ShopifyShopData).
 model StoreProfile {
-  id            Int      @id @default(autoincrement())
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @default(now()) @updatedAt
+  id            Int          @id @default(autoincrement())
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @default(now()) @updatedAt
   //
   niche         String /// Taxonomy slug (see app/services/assistant/taxonomy.ts)
   nicheLabel    String /// Display label; the merchant's own words for "other"
   country       String?
   note          String? /// Optional "anything else we should know?"
-  checklistDone String[] @default([]) /// Brief checklist item ids marked done
+  checklistDone String[]     @default([]) /// Brief checklist item ids marked done
   //
   shop          String       @unique
   shopifyStore  ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
@@ -863,12 +861,12 @@ model StoreProfile {
 /// Regenerated when stale (>7 days), on profile change, or on demand — the
 /// dashboard always reads this cache, never Gemini directly.
 model DashboardBrief {
-  id           Int         @id @default(autoincrement())
-  generatedAt  DateTime    @default(now())
+  id           Int          @id @default(autoincrement())
+  generatedAt  DateTime     @default(now())
   //
   niche        String
   country      String?
-  source       BriefSource @default(AI)
+  source       BriefSource  @default(AI)
   payload      Json /// Validated AssistantBrief (see app/services/assistant/brief.server.ts)
   //
   shop         String       @unique
@@ -880,32 +878,31 @@ enum BriefSource {
   FALLBACK
 }
 
-
 /// A date that matters for this shop: upserted from AI briefs (source AI)
 /// or created by the merchant. Parent of per-date to-dos and executed
 /// actions (SEO metadata updates, and future marketing actions).
 model SpecialDate {
-  id               Int               @id @default(autoincrement())
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @default(now()) @updatedAt
+  id                Int                @id @default(autoincrement())
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @default(now()) @updatedAt
   //
-  name             String
-  date             String /// ISO yyyy-mm-dd
-  whyItMatters     String?
-  source           SpecialDateSource @default(MERCHANT)
-  archived         Boolean           @default(false)
+  name              String
+  date              String /// ISO yyyy-mm-dd
+  whyItMatters      String?
+  source            SpecialDateSource  @default(MERCHANT)
+  archived          Boolean            @default(false)
   /// Set once the AI to-do starter set has been generated (lazy, on first
   /// open of the manage page) — prevents regenerating after user deletes.
-  todosGeneratedAt DateTime?
+  todosGeneratedAt  DateTime?
   //
-  todos            SpecialDateTodo[]
-  seoActions       SeoMetaAction[]
-  announcementBar  AnnouncementBar?
-  subscribePopup   SubscribePopup?
+  todos             SpecialDateTodo[]
+  seoActions        SeoMetaAction[]
+  announcementBar   AnnouncementBar?
+  subscribePopup    SubscribePopup?
   scheduledMenuItem ScheduledMenuItem?
   //
-  shop             String
-  shopifyStore     ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
+  shop              String
+  shopifyStore      ShopifyStore       @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
 
   @@unique([shop, name, date])
   @@index([shop, date])
@@ -928,7 +925,7 @@ model SpecialDateTodo {
   position      Int               @default(0)
   //
   specialDateId Int
-  specialDate   SpecialDate @relation(fields: [specialDateId], references: [id], onDelete: Cascade)
+  specialDate   SpecialDate       @relation(fields: [specialDateId], references: [id], onDelete: Cascade)
   shop          String
 
   @@index([specialDateId])
@@ -957,7 +954,7 @@ model SeoMetaAction {
   //
   /// Null when applied from the SEO AI page; set when optimized for a Sales Calendar date.
   specialDateId          Int?
-  specialDate            SpecialDate? @relation(fields: [specialDateId], references: [id], onDelete: Cascade)
+  specialDate            SpecialDate?    @relation(fields: [specialDateId], references: [id], onDelete: Cascade)
   shop                   String
 
   @@index([specialDateId])
@@ -972,14 +969,14 @@ enum SeoResourceType {
 /// Per-store AI token accounting — one row per Gemini call. DB-only for
 /// now; aggregate when billing or limits need it.
 model AiUsage {
-  id           Int      @id @default(autoincrement())
-  createdAt    DateTime @default(now())
+  id           Int          @id @default(autoincrement())
+  createdAt    DateTime     @default(now())
   //
   feature      String /// brief | niche-inference | date-todos | seo-meta
   model        String
-  inputTokens  Int      @default(0)
-  outputTokens Int      @default(0)
-  totalTokens  Int      @default(0)
+  inputTokens  Int          @default(0)
+  outputTokens Int          @default(0)
+  totalTokens  Int          @default(0)
   //
   shop         String
   shopifyStore ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
@@ -987,19 +984,18 @@ model AiUsage {
   @@index([shop, createdAt])
 }
 
-
 /// A scheduled homepage announcement bar tied to a special date. Served to
 /// the storefront via the app proxy only while today falls inside the
 /// window; text and colors are merchant-configured in the app.
 model AnnouncementBar {
-  id              Int      @id @default(autoincrement())
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @default(now()) @updatedAt
+  id              Int          @id @default(autoincrement())
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @default(now()) @updatedAt
   //
-  enabled         Boolean  @default(true)
+  enabled         Boolean      @default(true)
   message         String
-  backgroundColor String   @default("#2c1f58")
-  textColor       String   @default("#ffffff")
+  backgroundColor String       @default("#2c1f58")
+  textColor       String       @default("#ffffff")
   startDate       String /// ISO yyyy-mm-dd, inclusive
   endDate         String /// ISO yyyy-mm-dd, inclusive
   //
@@ -1012,20 +1008,19 @@ model AnnouncementBar {
   @@index([shop, startDate, endDate])
 }
 
-
 /// An SEO-friendly FAQ entry attached to a Shopify collection, rendered
 /// below the products on the collection page (with FAQPage JSON-LD) by the
 /// "Collection FAQs" theme block.
 model CollectionFaq {
-  id              Int      @id @default(autoincrement())
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @default(now()) @updatedAt
+  id              Int          @id @default(autoincrement())
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @default(now()) @updatedAt
   //
   collectionId    String /// Shopify GID (`gid://shopify/Collection/123`)
   collectionTitle String /// Snapshot from the resource picker, for admin display
   question        String
   answer          String
-  position        Int      @default(0)
+  position        Int          @default(0)
   //
   shop            String
   shopifyStore    ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
@@ -1033,16 +1028,15 @@ model CollectionFaq {
   @@index([shop, collectionId])
 }
 
-
 /// A scheduled first-time-subscriber popup tied to a special date. Shown on
 /// the home page while inside the window, suppressed for shoppers who are
 /// already subscribed (signed-in check) or already saw it (localStorage).
 model SubscribePopup {
-  id            Int      @id @default(autoincrement())
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @default(now()) @updatedAt
+  id            Int          @id @default(autoincrement())
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @default(now()) @updatedAt
   //
-  enabled       Boolean  @default(true)
+  enabled       Boolean      @default(true)
   imageUrl      String
   heading       String
   description   String
@@ -1059,6 +1053,55 @@ model SubscribePopup {
   @@index([shop, startDate, endDate])
 }
 
+enum PopupSubscriberResult {
+  /// A new customer was created in Shopify
+  CREATED
+  /// The email already belonged to a customer: consent and tags were updated
+  UPDATED
+  /// The Shopify save failed (see lastError); the signup is still recorded here
+  FAILED
+}
+
+/// One row per email that subscribed through the Subscribe Boost popup.
+/// The storefront posts to `proxy.subscribe`, which saves the shopper as a
+/// Shopify customer (write_customers) and records the outcome here so the
+/// feature page can list who subscribed.
+model PopupSubscriber {
+  id               Int                   @id @default(autoincrement())
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @default(now()) @updatedAt
+  //
+  shop             String
+  email            String /// lower-cased
+  firstName        String?
+  /// Shopify customer GID once the shopper exists in Shopify customers
+  customerId       String?
+  result           PopupSubscriberResult
+  lastError        String?
+  /// Comma-separated tags applied to the customer
+  tags             String
+  /// The code revealed to this subscriber
+  discountCode     String
+  /// How many times this email submitted the popup
+  subscribeCount   Int                   @default(1)
+  lastSubscribedAt DateTime              @default(now())
+
+  @@unique([shop, email])
+  @@index([shop, createdAt])
+}
+
+/// Per-day popup counters (shop timezone) for the Subscribe Boost analytics:
+/// how often the popup was shown, closed, and converted.
+model PopupDailyStat {
+  id         Int    @id @default(autoincrement())
+  shop       String
+  day        String /// ISO yyyy-mm-dd (shop timezone)
+  views      Int    @default(0)
+  dismissals Int    @default(0)
+  subscribes Int    @default(0)
+
+  @@unique([shop, day])
+}
 
 /// One row per registered background job: the claim lock and run history
 /// for the Cloud Scheduler heartbeat (see app/jobs/).
@@ -1095,8 +1138,8 @@ model ScheduledMenuItem {
   removedAt         DateTime?
   lastError         String?
   //
-  specialDateId     Int         @unique
-  specialDate       SpecialDate @relation(fields: [specialDateId], references: [id], onDelete: Cascade)
+  specialDateId     Int          @unique
+  specialDate       SpecialDate  @relation(fields: [specialDateId], references: [id], onDelete: Cascade)
   shop              String
 
   @@index([shop, startDate, endDate])

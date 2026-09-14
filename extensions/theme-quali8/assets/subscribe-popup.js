@@ -4,9 +4,17 @@
  * Shows the live popup from the app proxy once per visitor (localStorage,
  * for the configured number of days; subscribers never again) on the
  * configured trigger: delay, scroll depth, exit intent, or delay + exit.
- * Subscribing posts to the storefront's native /contact newsletter
- * endpoint (no app scopes involved), reveals the merchant's discount code,
- * and can apply it to the cart. All DOM built with createElement and
+ * Subscribing posts to the app proxy (/apps/quali8/subscribe), which saves
+ * the shopper as a Shopify customer with marketing consent and records the
+ * signup for the Subscribe Boost analytics; the storefront's native
+ * /contact form is the fallback when the app can't write customers. The
+ * popup then reveals the merchant's discount code and can apply it to the
+ * cart. Views and closes are reported to the same proxy.
+ *
+ * In the theme editor (Shopify.designMode) the popup opens at once with
+ * the scheduled image and copy (or a sample), ignores the trigger and the
+ * once-per-visitor memory, doesn't submit or count, and re-renders when
+ * the block's settings change. All DOM built with createElement and
  * textContent.
  */
 (function () {
@@ -15,9 +23,12 @@
     "/";
   var DONE_KEY = "q8-popup-done";
   var SUBSCRIBED_KEY = "q8-popup-subscribed";
+  var DESIGN_MODE = Boolean(window.Shopify && window.Shopify.designMode);
 
   var mount = document.querySelector("[data-quali8-popup]");
   if (!mount) return;
+  if (mount.hasAttribute("data-q8-popup-booted")) return;
+  mount.setAttribute("data-q8-popup-booted", "");
 
   function readSettings() {
     var node = mount.querySelector("[data-q8-popup-settings]");
@@ -44,12 +55,14 @@
     }
   }
 
-  if (storageGet(SUBSCRIBED_KEY)) return;
-  var doneUntil = Number(storageGet(DONE_KEY) || 0);
-  if (doneUntil > Date.now()) return;
+  if (!DESIGN_MODE) {
+    if (storageGet(SUBSCRIBED_KEY)) return;
+    var doneUntil = Number(storageGet(DONE_KEY) || 0);
+    if (doneUntil > Date.now()) return;
+  }
 
   var isMobile = window.matchMedia && window.matchMedia("(max-width: 749px)").matches;
-  if (isMobile && settings.showOnMobile === false) return;
+  if (isMobile && settings.showOnMobile === false && !DESIGN_MODE) return;
 
   function markDone() {
     var days = Math.max(1, Number(settings.showAgainDays) || 30);
@@ -63,7 +76,23 @@
     return node;
   }
 
-  function subscribe(email, firstName) {
+  /** Fire-and-forget analytics ping (view / dismiss) to the app proxy. */
+  function track(event) {
+    if (DESIGN_MODE) return;
+    try {
+      fetch(ROOT + "apps/quali8/subscribe", {
+        method: "POST",
+        keepalive: true,
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({ event: event }),
+      }).catch(function () {});
+    } catch (e) {
+      /* analytics are best-effort */
+    }
+  }
+
+  /** The theme's native newsletter form — used only when the app can't save customers. */
+  function subscribeViaContactForm(email, firstName) {
     var body = new FormData();
     body.append("form_type", "customer");
     body.append("utf8", "✓");
@@ -75,6 +104,37 @@
         if (!response.ok) throw new Error("HTTP " + response.status);
       },
     );
+  }
+
+  /**
+   * Saves the subscriber through the app, which creates the Shopify
+   * customer and records the signup. Falls back to the theme form when the
+   * app reports it lacks the customers permission or is unreachable.
+   */
+  function subscribe(email, firstName) {
+    if (DESIGN_MODE) return Promise.resolve();
+    return fetch(ROOT + "apps/quali8/subscribe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({
+        event: "subscribe",
+        email: email,
+        firstName: firstName || "",
+        tags: settings.customerTags || "newsletter,quali8-popup",
+      }),
+    })
+      .then(function (response) {
+        return response.json().catch(function () {
+          return { ok: false, savedInShopify: false };
+        });
+      })
+      .then(function (result) {
+        if (result && result.savedInShopify) return;
+        return subscribeViaContactForm(email, firstName);
+      })
+      .catch(function () {
+        return subscribeViaContactForm(email, firstName);
+      });
   }
 
   /** Shopify applies a code to the session via /discount/<code>. */
@@ -104,6 +164,16 @@
     return close;
   }
 
+  var currentOverlay = null;
+
+  function removeOverlay() {
+    if (currentOverlay && currentOverlay.parentNode) {
+      currentOverlay.parentNode.removeChild(currentOverlay);
+    }
+    currentOverlay = null;
+    document.documentElement.classList.remove("q8-popup-open");
+  }
+
   function show(popup) {
     var layout = settings.layout || "split";
     var overlay = el("div", "q8-popup__overlay");
@@ -121,10 +191,14 @@
     modal.setAttribute("aria-modal", layout === "toast" ? "false" : "true");
     modal.setAttribute("aria-label", popup.heading);
 
-    if (layout !== "text" && layout !== "toast" && popup.imageUrl) {
+    if (layout !== "text" && layout !== "toast") {
       var media = el("div", "q8-popup__media");
-      media.style.backgroundImage =
-        'url("' + String(popup.imageUrl).replace(/"/g, "%22") + '")';
+      if (popup.imageUrl) {
+        media.style.backgroundImage =
+          'url("' + String(popup.imageUrl).replace(/"/g, "%22") + '")';
+      } else {
+        media.classList.add("q8-popup__media--placeholder");
+      }
       modal.appendChild(media);
     }
 
@@ -181,13 +255,18 @@
     modal.appendChild(content);
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
+    currentOverlay = overlay;
     if (layout !== "toast") document.documentElement.classList.add("q8-popup-open");
-    setTimeout(function () {
-      (nameInput || input).focus({ preventScroll: true });
-    }, 50);
+    if (!DESIGN_MODE) {
+      setTimeout(function () {
+        (nameInput || input).focus({ preventScroll: true });
+      }, 50);
+    }
+    track("view");
 
     function dismiss() {
-      markDone();
+      if (!DESIGN_MODE) markDone();
+      track("dismiss");
       overlay.classList.add("q8-popup__overlay--out");
       document.documentElement.classList.remove("q8-popup-open");
       setTimeout(function () {
@@ -225,8 +304,10 @@
           /* subscription is best-effort; the code is the reward either way */
         })
         .then(function () {
-          storageSet(SUBSCRIBED_KEY, String(Date.now()));
-          markDone();
+          if (!DESIGN_MODE) {
+            storageSet(SUBSCRIBED_KEY, String(Date.now()));
+            markDone();
+          }
           content.textContent = "";
           if (close) content.appendChild(close);
           content.appendChild(el("h2", "q8-popup__heading", settings.successHeading || "You're in!"));
@@ -249,9 +330,13 @@
             var applied = el("p", "q8-popup__note q8-popup__note--applied", settings.appliedText || "Applied at checkout.");
             applied.hidden = true;
             content.appendChild(applied);
-            applyDiscount(popup.discountCode).then(function () {
+            if (DESIGN_MODE) {
               applied.hidden = false;
-            });
+            } else {
+              applyDiscount(popup.discountCode).then(function () {
+                applied.hidden = false;
+              });
+            }
           }
         });
     });
@@ -301,17 +386,65 @@
     }
   }
 
-  fetch(ROOT + "apps/quali8/popup", { headers: { Accept: "application/json" } })
+  // --- Theme editor ------------------------------------------------------------
+
+  var SAMPLE_POPUP = {
+    imageUrl: "",
+    heading: "Join the list",
+    description:
+      "This is a preview. Schedule your popup in Quali8 → Subscribe Boost to set the image, headline, and discount code.",
+    discountCode: "WELCOME10",
+    preview: true,
+  };
+
+  /** In the editor: open now, and re-open with fresh settings when the block changes. */
+  function preview(popup) {
+    function render() {
+      var node = document.querySelector("[data-quali8-popup]");
+      if (node) {
+        mount = node;
+        settings = readSettings();
+      }
+      removeOverlay();
+      show(popup);
+    }
+    function holdsPopup(node) {
+      if (!node || !node.querySelector) return false;
+      return (
+        (node.hasAttribute && node.hasAttribute("data-quali8-popup")) ||
+        Boolean(node.querySelector("[data-quali8-popup]"))
+      );
+    }
+    render();
+    document.addEventListener("shopify:section:load", function (event) {
+      if (holdsPopup(event.target)) render();
+    });
+    document.addEventListener("shopify:block:select", function (event) {
+      if (holdsPopup(event.target)) render();
+    });
+    document.addEventListener("shopify:block:deselect", function (event) {
+      if (holdsPopup(event.target)) removeOverlay();
+    });
+  }
+
+  fetch(ROOT + "apps/quali8/popup" + (DESIGN_MODE ? "?preview=1" : ""), {
+    headers: { Accept: "application/json" },
+  })
     .then(function (response) {
       if (!response.ok) throw new Error("HTTP " + response.status);
       return response.json();
     })
     .then(function (data) {
       var popup = data && data.popup;
+      if (DESIGN_MODE) {
+        preview(popup && popup.heading ? popup : SAMPLE_POPUP);
+        return;
+      }
       if (!popup || !popup.heading || !popup.discountCode) return;
       arm(popup);
     })
     .catch(function () {
+      if (DESIGN_MODE) preview(SAMPLE_POPUP);
       /* never break the storefront */
     });
 })();

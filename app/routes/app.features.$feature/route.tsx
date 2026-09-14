@@ -19,6 +19,11 @@ import {
 import AnnouncementScheduler from "app/components/Seasonal/AnnouncementScheduler";
 import PopupScheduler from "app/components/Seasonal/PopupScheduler";
 import SeoOptimizer from "app/components/Seasonal/SeoOptimizer";
+import SubscriberAnalytics from "app/components/Subscribe/SubscriberAnalytics";
+import {
+  loadSubscribeAnalytics,
+  type SubscribeAnalytics as SubscribeAnalyticsData,
+} from "app/services/subscribe/subscribers.server";
 import {
   loadShopFeatureConfig,
   runShopFeatureAction,
@@ -43,7 +48,11 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   await gatekeepRoute({ authAdminContext }, { hasAssistant: true }, "redirect");
 
   const config = await loadShopFeatureConfig(db, session.shop);
-  return { featureKey, config };
+  const subscribers =
+    featureKey === "subscribe-boost"
+      ? await loadSubscribeAnalytics(db, session.shop, session.scope)
+      : null;
+  return { featureKey, config, subscribers };
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -89,7 +98,11 @@ function DeliveryLink({ enabled, zones }: { enabled: boolean; zones: number }) {
 }
 
 /** The cards on a feature page: the primary editor, plus extras. */
-function sectionsFor(featureKey: FeaturePageKey, config: ShopFeatureConfig): Section[] {
+function sectionsFor(
+  featureKey: FeaturePageKey,
+  config: ShopFeatureConfig,
+  subscribers: SubscribeAnalyticsData | null,
+): Section[] {
   const feature = FEATURE_PAGES[featureKey];
   switch (featureKey) {
     case "smart-announcements":
@@ -113,6 +126,16 @@ function sectionsFor(featureKey: FeaturePageKey, config: ShopFeatureConfig): Sec
           help: feature.configHelp,
           node: <PopupScheduler popup={config.popup} />,
         },
+        ...(subscribers
+          ? [
+              {
+                title: "Subscribers",
+                help:
+                  "Everyone who subscribed through the popup. They are saved in Shopify customers with marketing consent and the tags from the theme block.",
+                node: <SubscriberAnalytics analytics={subscribers} />,
+              },
+            ]
+          : []),
       ];
     case "seo-ai":
       return [
@@ -126,7 +149,7 @@ function sectionsFor(featureKey: FeaturePageKey, config: ShopFeatureConfig): Sec
 }
 
 export default function FeaturePage() {
-  const { featureKey, config } = useLoaderData<typeof loader>();
+  const { featureKey, config, subscribers } = useLoaderData<typeof loader>();
 
   return (
     <Page>
@@ -134,7 +157,7 @@ export default function FeaturePage() {
       <Layout>
         <Layout.Section>
           <BlockStack gap="400">
-            {sectionsFor(featureKey, config).map((section) => (
+            {sectionsFor(featureKey, config, subscribers).map((section) => (
               <Card key={section.title}>
                 <BlockStack gap="400">
                   <BlockStack gap="100">

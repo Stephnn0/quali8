@@ -17,8 +17,9 @@ const GRAPHQL_QUERY_MARKETING_STATE = `#graphql
  * Reached at `/apps/quali8/popup`. Returns the active popup config, or
  * `{ popup: null }` — including for signed-in shoppers who are already
  * subscribed (anonymous repeat-visitors are suppressed client-side via
- * localStorage). The discount code is only revealed after subscribing, so
- * it is not cached publicly with the config.
+ * localStorage). With `?preview=1` (the theme editor) it returns the
+ * shop-wide popup regardless of its dates or enabled flag, with the discount
+ * code masked, so merchants can style the block without a live campaign.
  */
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const { session, admin } = await authenticate.public.appProxy(request);
@@ -26,9 +27,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url);
   const shop = session?.shop ?? url.searchParams.get("shop");
   const customerId = url.searchParams.get("logged_in_customer_id");
+  const preview = url.searchParams.get("preview") === "1";
   // Personalized when signed in — don't share-cache those responses
   const headers = {
-    "Cache-Control": customerId ? "no-store" : "public, max-age=60",
+    "Cache-Control": customerId || preview ? "no-store" : "public, max-age=60",
   };
 
   if (!shop) {
@@ -36,6 +38,25 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 
   try {
+    if (preview) {
+      const popup =
+        (await db.subscribePopup.findFirst({
+          where: { shop, specialDateId: null },
+          select: { imageUrl: true, heading: true, description: true },
+        })) ??
+        (await db.subscribePopup.findFirst({
+          where: { shop },
+          orderBy: { updatedAt: "desc" },
+          select: { imageUrl: true, heading: true, description: true },
+        }));
+      return Response.json(
+        {
+          popup: popup ? { ...popup, discountCode: "WELCOME10", preview: true } : null,
+        },
+        { headers },
+      );
+    }
+
     const today = new Date().toISOString().slice(0, 10);
     const popup = await db.subscribePopup.findFirst({
       where: {
