@@ -6,7 +6,7 @@ import type {
 } from "react-router";
 import { useLoaderData, useNavigate, useRouteError } from "react-router";
 import { boundary } from "@shopify/shopify-app-react-router/server";
-import { BlockStack, Button, Card, Layout, Page, Text } from "@shopify/polaris";
+import { Banner, BlockStack, Button, Card, Layout, Page, Text } from "@shopify/polaris";
 import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
 import { gatekeepRoute } from "app/services/subscriptions/gatekeepRoute";
@@ -48,11 +48,20 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   await gatekeepRoute({ authAdminContext }, { hasAssistant: true }, "redirect");
 
   const config = await loadShopFeatureConfig(db, session.shop);
-  const subscribers =
-    featureKey === "subscribe-boost"
-      ? await loadSubscribeAnalytics(db, session.shop, session.scope)
-      : null;
-  return { featureKey, config, subscribers };
+
+  // The analytics must never take the editor down with them (for example
+  // while a database migration is still pending on a fresh deploy).
+  let subscribers: SubscribeAnalyticsData | null = null;
+  let subscribersError: string | null = null;
+  if (featureKey === "subscribe-boost") {
+    try {
+      subscribers = await loadSubscribeAnalytics(db, session.shop, session.scope);
+    } catch (error) {
+      console.error("Subscribe analytics failed to load:", error); // eslint-disable-line no-console
+      subscribersError = error instanceof Error ? error.message : String(error);
+    }
+  }
+  return { featureKey, config, subscribers, subscribersError };
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -102,6 +111,7 @@ function sectionsFor(
   featureKey: FeaturePageKey,
   config: ShopFeatureConfig,
   subscribers: SubscribeAnalyticsData | null,
+  subscribersError: string | null,
 ): Section[] {
   const feature = FEATURE_PAGES[featureKey];
   switch (featureKey) {
@@ -126,16 +136,23 @@ function sectionsFor(
           help: feature.configHelp,
           node: <PopupScheduler popup={config.popup} />,
         },
-        ...(subscribers
-          ? [
-              {
-                title: "Subscribers",
-                help:
-                  "Everyone who subscribed through the popup. They are saved in Shopify customers with marketing consent and the tags from the theme block.",
-                node: <SubscriberAnalytics analytics={subscribers} />,
-              },
-            ]
-          : []),
+        {
+          title: "Subscribers",
+          help:
+            "Everyone who subscribed through the popup. They are saved in Shopify customers with marketing consent and the tags from the theme block.",
+          node: subscribers ? (
+            <SubscriberAnalytics analytics={subscribers} />
+          ) : (
+            <Banner tone="critical" title="Subscriber analytics couldn't be loaded">
+              <p>
+                {subscribersError ?? "Unknown error"}. If this mentions a missing table,
+                the database migration has not run on this server yet: run
+                <code> npx prisma migrate deploy </code>
+                against it (the server does this on start via <code>npm run setup</code>).
+              </p>
+            </Banner>
+          ),
+        },
       ];
     case "seo-ai":
       return [
@@ -149,7 +166,7 @@ function sectionsFor(
 }
 
 export default function FeaturePage() {
-  const { featureKey, config, subscribers } = useLoaderData<typeof loader>();
+  const { featureKey, config, subscribers, subscribersError } = useLoaderData<typeof loader>();
 
   return (
     <Page>
@@ -157,7 +174,7 @@ export default function FeaturePage() {
       <Layout>
         <Layout.Section>
           <BlockStack gap="400">
-            {sectionsFor(featureKey, config, subscribers).map((section) => (
+            {sectionsFor(featureKey, config, subscribers, subscribersError).map((section) => (
               <Card key={section.title}>
                 <BlockStack gap="400">
                   <BlockStack gap="100">
