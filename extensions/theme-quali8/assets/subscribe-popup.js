@@ -194,6 +194,13 @@
     if (layout !== "text" && layout !== "toast") {
       var media = el("div", "q8-popup__media");
       if (popup.imageUrl) {
+        // A real <img> (not only a background) so theme resets that hide
+        // empty divs, like Dawn's `div:empty`, leave the image box alone.
+        var picture = document.createElement("img");
+        picture.src = String(popup.imageUrl);
+        picture.alt = "";
+        picture.decoding = "async";
+        media.appendChild(picture);
         media.style.backgroundImage =
           'url("' + String(popup.imageUrl).replace(/"/g, "%22") + '")';
       } else {

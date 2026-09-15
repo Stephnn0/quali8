@@ -2,6 +2,11 @@
  * Quali8 — Subscribe popup. Colours, sizes, and radius come from CSS
  * variables the Liquid block sets; layout from modifier classes on the
  * mount, which the overlay inherits via the mount's variables.
+ *
+ * Sizes are in px on purpose: themes like Dawn set the root font size to
+ * 62.5%, which would shrink every rem. Selectors for the parts are
+ * qualified with the overlay so they beat theme resets such as Dawn's
+ * `div:empty { display: none }`.
  */
 
 .q8-popup[hidden] {
@@ -25,11 +30,13 @@
   position: fixed;
   inset: 0;
   z-index: 999;
+  font-size: 16px;
+  line-height: 1.4;
   background: rgba(12, 8, 26, var(--q8-popup-overlay));
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
+  padding: 16px;
   animation: q8-popup-fade 240ms ease both;
   transition: opacity 200ms ease;
 }
@@ -59,7 +66,7 @@
 .q8-popup__modal {
   display: flex;
   width: 100%;
-  max-width: 37rem;
+  max-width: 592px;
   background: var(--q8-popup-bg);
   color: var(--q8-popup-text);
   border-radius: var(--q8-popup-radius);
@@ -71,22 +78,36 @@
 }
 
 .q8-popup__overlay--small .q8-popup__modal {
-  max-width: 30rem;
+  max-width: 480px;
 }
 
 .q8-popup__overlay--large .q8-popup__modal {
-  max-width: 46rem;
+  max-width: 736px;
 }
 
-.q8-popup__media {
+.q8-popup__overlay .q8-popup__media {
+  display: block;
+  position: relative;
   flex: 0 0 44%;
+  overflow: hidden;
   background-size: cover;
   background-position: center;
-  min-height: 24rem;
+  min-height: 384px;
+}
+
+.q8-popup__overlay .q8-popup__media img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  object-fit: cover;
+  display: block;
+  margin: 0;
 }
 
 /* No image scheduled yet (theme editor preview) */
-.q8-popup__media--placeholder {
+.q8-popup__overlay .q8-popup__media--placeholder {
   background-image: linear-gradient(
     135deg,
     color-mix(in srgb, var(--q8-popup-accent) 85%, #000000),
@@ -100,26 +121,27 @@
 
 .q8-popup__overlay--top .q8-popup__modal {
   flex-direction: column;
-  max-width: 30rem;
+  max-width: 480px;
 }
 
 .q8-popup__overlay--top .q8-popup__media {
   flex-basis: auto;
-  min-height: 13rem;
+  height: 208px;
+  min-height: 0;
 }
 
 .q8-popup__overlay--text .q8-popup__modal {
-  max-width: 30rem;
+  max-width: 480px;
 }
 
 .q8-popup__content {
   flex: 1;
   min-width: 0;
   position: relative;
-  padding: 2.5rem 2rem 2rem;
+  padding: 40px 32px 32px;
   display: flex;
   flex-direction: column;
-  gap: 0.875rem;
+  gap: 14px;
   justify-content: center;
   text-align: left;
 }
@@ -135,19 +157,19 @@
   pointer-events: none;
   align-items: flex-end;
   justify-content: flex-end;
-  padding: 1.25rem;
+  padding: 20px;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }
 
 .q8-popup__overlay--toast .q8-popup__modal {
   pointer-events: auto;
-  max-width: 22rem;
+  max-width: 352px;
 }
 
 .q8-popup__overlay--toast .q8-popup__content {
-  padding: 1.75rem 1.5rem 1.5rem;
-  gap: 0.625rem;
+  padding: 28px 24px 24px;
+  gap: 10px;
 }
 
 .q8-popup__overlay--toast .q8-popup__heading {
@@ -158,12 +180,12 @@
 
 .q8-popup__close {
   position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
+  top: 12px;
+  right: 12px;
   appearance: none;
   border: none;
-  width: 2.125rem;
-  height: 2.125rem;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   background: color-mix(in srgb, var(--q8-popup-text) 7%, transparent);
   color: var(--q8-popup-muted);
@@ -175,8 +197,8 @@
 }
 
 .q8-popup__close svg {
-  width: 0.75rem;
-  height: 0.75rem;
+  width: 12px;
+  height: 12px;
 }
 
 .q8-popup__close:hover {
@@ -195,7 +217,7 @@
 
 .q8-popup__description {
   margin: 0;
-  font-size: 0.9375rem;
+  font-size: 15px;
   line-height: 1.55;
   color: var(--q8-popup-muted);
 }
@@ -203,7 +225,7 @@
 .q8-popup__form {
   display: flex;
   flex-direction: column;
-  gap: 0.625rem;
+  gap: 10px;
   width: 100%;
 }
 
@@ -214,8 +236,8 @@
   background: color-mix(in srgb, var(--q8-popup-text) 3%, var(--q8-popup-bg));
   color: inherit;
   font: inherit;
-  padding: 0.875rem 1rem;
-  font-size: 0.9375rem;
+  padding: 14px 16px;
+  font-size: 15px;
   transition: border-color 120ms ease, box-shadow 120ms ease;
 }
 
@@ -236,8 +258,8 @@
 }
 
 .q8-popup__error {
-  margin: -0.25rem 0 0;
-  font-size: 0.8125rem;
+  margin: -4px 0 0;
+  font-size: 13px;
   color: #b42318;
 }
 
@@ -248,9 +270,9 @@
   background: var(--q8-popup-accent);
   color: var(--q8-popup-btn-text);
   border-radius: calc(var(--q8-popup-radius) * 0.6);
-  padding: 0.9375rem;
+  padding: 15px;
   font: inherit;
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 650;
   letter-spacing: 0.01em;
   cursor: pointer;
@@ -282,9 +304,9 @@
   border: 2px dashed var(--q8-popup-accent);
   background: var(--q8-popup-accent-soft);
   border-radius: calc(var(--q8-popup-radius) * 0.6);
-  padding: 1rem;
+  padding: 16px;
   text-align: center;
-  font-size: 1.25rem;
+  font-size: 20px;
   font-weight: 750;
   letter-spacing: 0.12em;
   color: var(--q8-popup-accent);
@@ -293,7 +315,7 @@
 
 .q8-popup__note {
   margin: 0;
-  font-size: 0.75rem;
+  font-size: 12px;
   color: var(--q8-popup-muted);
   text-align: center;
 }
@@ -310,7 +332,7 @@
   align-self: center;
   color: var(--q8-popup-muted);
   font: inherit;
-  font-size: 0.8125rem;
+  font-size: 13px;
   text-decoration: underline;
   text-underline-offset: 3px;
   cursor: pointer;
@@ -332,7 +354,7 @@
 
 @keyframes q8-popup-in {
   from {
-    transform: translateY(1rem) scale(0.97);
+    transform: translateY(16px) scale(0.97);
     opacity: 0;
   }
   to {
@@ -351,7 +373,7 @@
 @media (max-width: 599px) {
   .q8-popup__modal,
   /* No image scheduled yet (theme editor preview) */
-.q8-popup__media--placeholder {
+.q8-popup__overlay .q8-popup__media--placeholder {
   background-image: linear-gradient(
     135deg,
     color-mix(in srgb, var(--q8-popup-accent) 85%, #000000),
@@ -363,17 +385,18 @@
     flex-direction: column;
   }
 
-  .q8-popup__media {
-    min-height: 11rem;
+  .q8-popup__overlay .q8-popup__media {
+    height: 176px;
+    min-height: 0;
     flex-basis: auto;
   }
 
   .q8-popup__content {
-    padding: 2rem 1.5rem 1.5rem;
+    padding: 32px 24px 24px;
   }
 
   .q8-popup__overlay--toast {
-    padding: 0.75rem;
+    padding: 12px;
   }
 
   .q8-popup__overlay--toast .q8-popup__modal {
