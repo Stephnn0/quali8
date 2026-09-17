@@ -60,6 +60,7 @@ model ShopifyStore {
   deliverySchedule    DeliverySchedule?
   deliveryTimeWindows DeliveryTimeWindow[]
   cartOptions         CartOptionsSettings?
+  alcoholRules        AlcoholRules?
   occasionBlock       OccasionBlockSettings?
 
   storeProfile   StoreProfile?
@@ -826,6 +827,30 @@ model CartOptionsSettings {
   //
   shop               String       @unique
   shopifyStore       ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
+}
+
+/// Alcohol compliance rules for the cart block and the checkout validation
+/// function (extensions/alcohol-validation). One per shop; managed on the
+/// Delivery page. `collections` = [{ id, title }] of the alcohol collections.
+model AlcoholRules {
+  id               Int          @id @default(autoincrement())
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @default(now()) @updatedAt
+  //
+  enabled          Boolean      @default(false) /// Master switch
+  collections      Json         @default("[]")
+  ageCheckEnabled  Boolean      @default(true)
+  minimumAge       Int          @default(21)
+  localOnlyEnabled Boolean      @default(true)
+  notAloneEnabled  Boolean      @default(true)
+  ageMessage       String       @default("You must be {age} or older to purchase alcohol. Please enter your date of birth and confirm.")
+  localOnlyMessage String       @default("Alcohol can only be delivered locally. We can't deliver alcohol to {zip}.")
+  notAloneMessage  String       @default("Alcohol can't be purchased on its own. Please add another item to your order.")
+  /// GID of the Shopify validation once created
+  validationId     String?
+  //
+  shop             String       @unique
+  shopifyStore     ShopifyStore @relation(fields: [shop], references: [shop], onDelete: Cascade, onUpdate: Cascade)
 }
 
 /// A timed delivery window shoppers can add to a delivery ("Before 12:00 PM")

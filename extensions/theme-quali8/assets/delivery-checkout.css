@@ -1223,3 +1223,46 @@ textarea.q8-dc__input {
   opacity: 0.55;
   cursor: default;
 }
+
+/* Alcohol rules: cart-wide "not sold alone" notice above the steps */
+.q8-dc__notice {
+  display: flex;
+  gap: 0.75em;
+  align-items: flex-start;
+  margin: 0 0 1em;
+  padding: 0.875em 1em;
+  border-radius: var(--q8-dc-radius, 16px);
+  background: rgba(180, 35, 24, 0.08);
+  color: #b42318;
+}
+
+.q8-dc__notice svg {
+  flex: none;
+  margin-top: 0.15em;
+}
+
+.q8-dc__notice-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35em;
+}
+
+.q8-dc__notice-text {
+  margin: 0;
+  font-weight: 600;
+}
+
+.q8-dc__notice-link {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+/* Alcohol rules: age verification card on the Sender step */
+.q8-dc__age .q8-dc__toggle {
+  align-items: flex-start;
+}
+
+.q8-dc__age .q8-dc__toggle-label {
+  line-height: 1.4;
+}

@@ -1,0 +1,4 @@
+{
+  "name": "Alcohol compliance",
+  "description": "Blocks checkout when alcohol rules fail: age confirmation, local delivery only, not sold alone."
+}

@@ -13,6 +13,12 @@ import { loadTimeWindows } from "app/services/delivery/timedDelivery.server";
 import { loadCartOptions } from "app/services/delivery/cartOptions.server";
 import type { CartOptions } from "app/services/delivery/cartOptions";
 import type { TimeWindowRow } from "app/services/delivery/timedDelivery";
+import { loadAlcoholRules } from "app/services/delivery/alcoholRules.server";
+import type { AlcoholRules } from "app/services/delivery/alcoholRules";
+import {
+  detectAlcoholValidation,
+  type AlcoholValidationStatus,
+} from "app/services/delivery/alcoholValidation.server";
 import { DEFAULT_RATE_TITLE } from "app/services/carrier/rates";
 import {
   detectCarrierService,
@@ -43,6 +49,9 @@ export type DeliveryPageData = {
   clock: ShopClock & { known: boolean };
   timeWindows: TimeWindowRow[];
   cartOptions: CartOptions;
+  alcohol: AlcoholRules;
+  /** The checkout validation that enforces the alcohol rules (read-only detection). */
+  alcoholValidation: AlcoholValidationStatus;
 };
 
 /**
@@ -64,7 +73,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const access: DeliveryPageData["access"] = advanceCode ? "zones" : "full";
 
   try {
-    const [carrier, methodFilter, rate, delivery, schedule, timezone, timeWindows, cartOptions] = await Promise.all([
+    const [carrier, methodFilter, rate, delivery, schedule, timezone, timeWindows, cartOptions, alcohol, alcoholValidation] = await Promise.all([
       detectCarrierService(admin.graphql),
       detectDeliveryMethodFilter(admin.graphql, APP.APP_HANDLE),
       db.carrierRate.findUnique({ where: { shop: session.shop } }),
@@ -73,6 +82,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
       syncShopTimezone(db, admin.graphql, session.shop),
       loadTimeWindows(db, session.shop),
       loadCartOptions(db, session.shop),
+      loadAlcoholRules(db, session.shop),
+      detectAlcoholValidation(admin.graphql, db, session.shop),
     ]);
 
     return handleApiSuccess<DeliveryPageData>({
@@ -91,6 +102,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
         clock: { ...shopNow(timezone), known: timezone !== null },
         timeWindows,
         cartOptions,
+        alcohol,
+        alcoholValidation,
       },
       code: "success",
     });

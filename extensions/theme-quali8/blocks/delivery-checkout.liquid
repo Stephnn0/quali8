@@ -13,6 +13,9 @@
   attributes as it changes, and Checkout opens Shopify's checkout with the
   recipient's shipping address prefilled. While the summary isn't complete
   the theme's own checkout and express-payment buttons are hidden.
+  Alcohol rules (from the app's Delivery page): age verification on step 1,
+  a zip check that only accepts the delivery zones, and a cart-wide
+  "not sold alone" notice; the checkout validation function enforces the same.
 {%- endcomment -%}
 
 {%- capture q8_dc_settings -%}

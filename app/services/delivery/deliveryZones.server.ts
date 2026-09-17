@@ -120,19 +120,26 @@ export type DeliveryCheckResult = {
   zone: { name: string; price: number | null; message: string | null } | null;
 };
 
-/** Whether the shop delivers to `zip`, and the matching zone's price/message. */
+/**
+ * Whether the shop delivers to `zip`, and the matching zone's price/message.
+ * `ignoreSwitch` matches the zones even while the merchant's checker switch
+ * is off (the cart block's alcohol local-only rule needs the answer anyway);
+ * `enabled` still reports the switch.
+ */
 export async function checkDelivery(
   db: PrismaClient,
   shop: string,
   rawZip: string,
+  options: { ignoreSwitch?: boolean } = {},
 ): Promise<DeliveryCheckResult> {
   const zip = normalizeZip(rawZip);
   const store = await db.shopifyStore.findUnique({
     where: { shop },
     select: { deliveryCheckEnabled: true },
   });
-  if (!store?.deliveryCheckEnabled || !zip) {
-    return { enabled: Boolean(store?.deliveryCheckEnabled), zip, deliverable: false, zone: null };
+  const enabled = Boolean(store?.deliveryCheckEnabled);
+  if ((!enabled && !options.ignoreSwitch) || !zip) {
+    return { enabled, zip, deliverable: false, zone: null };
   }
 
   const zones = await db.deliveryZone.findMany({
@@ -142,7 +149,7 @@ export async function checkDelivery(
   });
   const zone = matchZone(zones, zip);
   return {
-    enabled: true,
+    enabled,
     zip,
     deliverable: zone !== null,
     zone: zone ? { name: zone.name, price: zone.price, message: zone.message } : null,

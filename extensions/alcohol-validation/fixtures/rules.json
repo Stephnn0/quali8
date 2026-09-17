@@ -1,0 +1,24 @@
+{
+  "rules": {
+    "enabled": true,
+    "minimumAge": 21,
+    "ageCheck": true,
+    "localOnly": true,
+    "notAlone": true,
+    "messages": { "age": "Age {age}", "localOnly": "Local {zip}", "notAlone": "Not alone" }
+  },
+  "cases": [
+    { "name": "no alcohol: nothing fires", "alcoholLineCount": 0, "otherLineCount": 0, "method": "delivery", "zipDeliverable": false, "dob": null, "confirmed": false, "expected": [] },
+    { "name": "alcohol alone", "alcoholLineCount": 1, "otherLineCount": 0, "method": "pickup", "zipDeliverable": null, "dob": "1990-01-01", "confirmed": true, "expected": ["notAlone"] },
+    { "name": "delivery outside zones", "alcoholLineCount": 1, "otherLineCount": 1, "method": "delivery", "zipDeliverable": false, "dob": "1990-01-01", "confirmed": true, "expected": ["localOnly"] },
+    { "name": "delivery with unknown zip", "alcoholLineCount": 1, "otherLineCount": 1, "method": "delivery", "zipDeliverable": null, "dob": "1990-01-01", "confirmed": true, "expected": ["localOnly"] },
+    { "name": "no method yet counts as delivery", "alcoholLineCount": 1, "otherLineCount": 1, "method": null, "zipDeliverable": false, "dob": "1990-01-01", "confirmed": true, "expected": ["localOnly"] },
+    { "name": "pickup ignores zones", "alcoholLineCount": 1, "otherLineCount": 1, "method": "pickup", "zipDeliverable": false, "dob": "1990-01-01", "confirmed": true, "expected": [] },
+    { "name": "missing dob", "alcoholLineCount": 1, "otherLineCount": 1, "method": "pickup", "zipDeliverable": null, "dob": null, "confirmed": true, "expected": ["age"] },
+    { "name": "malformed dob", "alcoholLineCount": 1, "otherLineCount": 1, "method": "pickup", "zipDeliverable": null, "dob": "01/01/1990", "confirmed": true, "expected": ["age"] },
+    { "name": "not confirmed", "alcoholLineCount": 1, "otherLineCount": 1, "method": "pickup", "zipDeliverable": null, "dob": "1990-01-01", "confirmed": false, "expected": ["age"] },
+    { "name": "everything wrong", "alcoholLineCount": 2, "otherLineCount": 0, "method": "delivery", "zipDeliverable": false, "dob": null, "confirmed": false, "expected": ["notAlone", "localOnly", "age"] },
+    { "name": "rules disabled", "rules": { "enabled": false }, "alcoholLineCount": 2, "otherLineCount": 0, "method": "delivery", "zipDeliverable": false, "dob": null, "confirmed": false, "expected": [] },
+    { "name": "only age rule on", "rules": { "localOnly": false, "notAlone": false }, "alcoholLineCount": 1, "otherLineCount": 0, "method": "delivery", "zipDeliverable": false, "dob": null, "confirmed": false, "expected": ["age"] }
+  ]
+}

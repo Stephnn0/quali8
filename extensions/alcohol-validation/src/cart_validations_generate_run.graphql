@@ -1,0 +1,40 @@
+query CartValidationsGenerateRunInput($collectionIds: [ID!]! = []) {
+  buyerJourney {
+    step
+  }
+  validation {
+    metafield(namespace: "$app", key: "alcohol-rules") {
+      jsonValue
+    }
+  }
+  cart {
+    deliveryMethod: attribute(key: "Delivery method") {
+      value
+    }
+    dateOfBirth: attribute(key: "Date of birth") {
+      value
+    }
+    ageConfirmed: attribute(key: "Age confirmed") {
+      value
+    }
+    lines {
+      quantity
+      merchandise {
+        __typename
+        ... on ProductVariant {
+          product {
+            isAlcohol: inAnyCollection(ids: $collectionIds)
+          }
+        }
+      }
+    }
+    deliveryGroups {
+      deliveryAddress {
+        zip
+      }
+      selectedDeliveryOption {
+        deliveryMethodType
+      }
+    }
+  }
+}

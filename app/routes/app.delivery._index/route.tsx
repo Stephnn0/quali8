@@ -24,6 +24,8 @@ import DeliveryScheduleEditor from "app/components/Delivery/DeliveryScheduleEdit
 import TodayDeliveryEditor from "app/components/Delivery/TodayDeliveryEditor";
 import TimedDeliveryEditor from "app/components/Delivery/TimedDeliveryEditor";
 import CartOptionsEditor from "app/components/Delivery/CartOptionsEditor";
+import AlcoholRulesEditor from "app/components/Delivery/AlcoholRulesEditor";
+import { defaultAlcoholRules } from "app/services/delivery/alcoholRules";
 import { defaultCartOptions } from "app/services/delivery/cartOptions";
 import { defaultDeliverySchedule } from "app/services/delivery/deliverySchedule";
 import { DEFAULT_RATE_TITLE } from "app/services/carrier/rates";
@@ -273,6 +275,30 @@ export default function DeliveryPage() {
     </Card>
   );
 
+  const alcoholCard = (
+    <Card>
+      <BlockStack gap="400">
+        <BlockStack gap="100">
+          <Text as="h2" variant="headingMd">
+            Alcohol rules
+          </Text>
+          <Text as="p" tone="subdued" variant="bodySm">
+            Age verification, local-delivery-only and not-sold-alone rules for the
+            products in the collections you pick. Enforced in the cart block and
+            again at checkout, so Buy Now and direct checkout links can&rsquo;t skip
+            them.
+          </Text>
+        </BlockStack>
+        <AlcoholRulesEditor
+          key={JSON.stringify(data?.alcohol ?? null)}
+          rules={data?.alcohol ?? defaultAlcoholRules()}
+          status={data?.alcoholValidation ?? { state: "missing" }}
+          editable={fullAccess}
+        />
+      </BlockStack>
+    </Card>
+  );
+
   if (!fullAccess) {
     return (
       <Page>
@@ -296,8 +322,10 @@ export default function DeliveryPage() {
                   <List.Item>Timed delivery windows for an extra charge</List.Item>
                   <List.Item>The cart&rsquo;s Options step: occasion, card message, and notes</List.Item>
                   <List.Item>Checkout that follows the delivery method chosen in the cart</List.Item>
+                  <List.Item>Alcohol rules: age check, local-only delivery, not sold alone</List.Item>
                 </List>
               </Banner>
+              {alcoholCard}
               {storefrontCard}
             </BlockStack>
           </Layout.Section>
@@ -509,6 +537,8 @@ export default function DeliveryPage() {
                 />
               </BlockStack>
             </Card>
+
+            {alcoholCard}
 
             {storefrontCard}
           </BlockStack>

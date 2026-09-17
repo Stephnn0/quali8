@@ -13,6 +13,8 @@ import {
 import { shopNow, type ShopClock } from "./shopTime";
 import { loadActiveTimeWindows, type StorefrontTimeWindow } from "./timedDelivery.server";
 import { loadCartOptions } from "./cartOptions.server";
+import { loadStorefrontAlcoholRules } from "./alcoholRules.server";
+import { disabledStorefrontAlcoholRules, type StorefrontAlcoholRules } from "./alcoholRules";
 import { defaultCartOptions, type CartOptions } from "./cartOptions";
 
 const TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -160,6 +162,8 @@ export type StorefrontSchedule = DeliverySchedule & {
   timeWindows: StorefrontTimeWindow[];
   /** What the Options step shows (or whether it shows at all). */
   options: CartOptions;
+  /** Alcohol rules: age check, local delivery only, not sold alone (disabled when off). */
+  alcohol: StorefrontAlcoholRules;
 };
 
 export const emptyStorefrontSchedule = (): StorefrontSchedule => ({
@@ -168,6 +172,7 @@ export const emptyStorefrontSchedule = (): StorefrontSchedule => ({
   today: { delivery: "open", pickup: "open" },
   timeWindows: [],
   options: defaultCartOptions(),
+  alcohol: disabledStorefrontAlcoholRules(),
 });
 
 /**
@@ -176,11 +181,12 @@ export const emptyStorefrontSchedule = (): StorefrontSchedule => ({
  * and the timed delivery windows on offer.
  */
 export async function loadStorefrontSchedule(db: PrismaClient, shop: string): Promise<StorefrontSchedule> {
-  const [schedule, timezone, timeWindows, options] = await Promise.all([
+  const [schedule, timezone, timeWindows, options, alcohol] = await Promise.all([
     loadDeliverySchedule(db, shop),
     loadShopTimezone(db, shop),
     loadActiveTimeWindows(db, shop),
     loadCartOptions(db, shop),
+    loadStorefrontAlcoholRules(db, shop),
   ]);
   const clock = shopNow(timezone);
   const status = (method: MethodSchedule | undefined) => todayStatus(method ?? defaultMethodSchedule(), clock.time);
@@ -190,5 +196,6 @@ export async function loadStorefrontSchedule(db: PrismaClient, shop: string): Pr
     today: { delivery: status(schedule.delivery), pickup: status(schedule.pickup) },
     timeWindows,
     options,
+    alcohol,
   };
 }

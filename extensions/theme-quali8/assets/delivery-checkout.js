@@ -62,6 +62,8 @@
     notes: "Special instructions",
     occasion: "Occasion",
     door: "If nobody answers the door",
+    dob: "Date of birth", // alcohol rules: read by the checkout validation function
+    ageConfirmed: "Age confirmed",
   };
   var NOTE_KEY = "__note"; // pending-save marker for the cart note
   var TIMED_PROPERTY = "_Timed delivery"; // line item property read by the carrier callback
@@ -288,8 +290,81 @@
 
   // --- Data ------------------------------------------------------------------
 
-  function checkZip(zip) {
-    return fetch(ROOT + "apps/quali8/delivery-check?zip=" + encodeURIComponent(zip), {
+  // --- Alcohol rules (from the merchant's Delivery page, via the schedule payload) --
+  var ALCOHOL_OFF = { enabled: false, minimumAge: 21, ageCheck: false, localOnly: false, notAlone: false, messages: {} };
+  function alcoholRules() {
+    return (schedule && schedule.alcohol && schedule.alcohol.enabled && schedule.alcohol) || ALCOHOL_OFF;
+  }
+  function alcoholInCart() {
+    return alcoholRules().enabled && state.alcohol.restrictedIds.length > 0;
+  }
+  function ageRequired() {
+    return alcoholInCart() && alcoholRules().ageCheck;
+  }
+  function alcoholLocalOnly() {
+    return alcoholInCart() && alcoholRules().localOnly;
+  }
+  function notAloneBlocked() {
+    return alcoholInCart() && alcoholRules().notAlone && !state.alcohol.hasOther;
+  }
+  function isIsoDate(value) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(value || ""));
+    if (!m) return false;
+    var y = Number(m[1]), mo = Number(m[2]), d = Number(m[3]);
+    var date = new Date(Date.UTC(y, mo - 1, d));
+    return date.getUTCFullYear() === y && date.getUTCMonth() === mo - 1 && date.getUTCDate() === d;
+  }
+  // Same rule as the app's isOfAge: birthdays count exactly.
+  function isOfAge(dob, today, minimumAge) {
+    if (!isIsoDate(dob) || !isIsoDate(today)) return false;
+    var b = dob.split("-").map(Number);
+    var t = today.split("-").map(Number);
+    var age = t[0] - b[0];
+    if (t[1] < b[1] || (t[1] === b[1] && t[2] < b[2])) age -= 1;
+    return age >= minimumAge;
+  }
+  function dobOk() {
+    return isIsoDate(state.age.dob) && isOfAge(state.age.dob, isoToday(), alcoholRules().minimumAge);
+  }
+  function ageValid() {
+    return !ageRequired() || (dobOk() && state.age.confirmed);
+  }
+  function alcoholMessage(key) {
+    return fill((alcoholRules().messages || {})[key] || "", { age: alcoholRules().minimumAge, zip: state.zip });
+  }
+  function fetchAlcoholCheck(ids) {
+    return fetchJson("apps/quali8/alcohol-check?products=" + encodeURIComponent(ids.join(",")));
+  }
+  // Ask the app which cart products are alcohol. Resolves to whether the answer changed.
+  function refreshAlcohol() {
+    if (!alcoholRules().enabled || !cartData || !cartData.items || !cartData.items.length) {
+      var had = state.alcohol.restrictedIds.length > 0;
+      state.alcohol = { restrictedIds: [], hasOther: true, checked: true };
+      return Promise.resolve(had);
+    }
+    var ids = [];
+    cartData.items.forEach(function (item) {
+      if (item.product_id && ids.indexOf(String(item.product_id)) < 0) ids.push(String(item.product_id));
+    });
+    return fetchAlcoholCheck(ids)
+      .then(function (result) {
+        var restricted = ((result && result.restricted) || []).map(String);
+        var hasOther = cartData.items.some(function (item) {
+          return restricted.indexOf(String(item.product_id)) < 0;
+        });
+        var changed = restricted.join(",") !== state.alcohol.restrictedIds.join(",") || hasOther !== state.alcohol.hasOther;
+        state.alcohol = { restrictedIds: restricted, hasOther: hasOther, checked: true };
+        return changed;
+      })
+      .catch(function () {
+        state.alcohol = { restrictedIds: [], hasOther: true, checked: true };
+        return false;
+      });
+  }
+
+  // `zones` = match the zones even when the merchant's checker switch is off (alcohol local-only rule)
+  function checkZip(zip, zones) {
+    return fetch(ROOT + "apps/quali8/delivery-check?zip=" + encodeURIComponent(zip) + (zones ? "&zones=1" : ""), {
       headers: { Accept: "application/json" },
     }).then(function (response) {
       if (!response.ok) throw new Error("HTTP " + response.status);
@@ -332,7 +407,10 @@
   function reloadCart() {
     return fetchJson("cart.js").then(function (cart) {
       cartData = cart;
-      return cart;
+      return refreshAlcohol().then(function (changed) {
+        if (changed) go(state.step);
+        return cart;
+      });
     });
   }
 
@@ -341,6 +419,7 @@
   var queued = false;
   var pending = {};
   var statusNode = null;
+  var noticeNode = null; // alcohol "not sold alone" banner above the steps
   var settings = {};
 
   function save(patch) {
@@ -575,6 +654,8 @@
         occasion: a("occasion"),
         door: a("door"),
       },
+      age: { dob: a("dob"), confirmed: a("ageConfirmed") === "Yes" },
+      alcohol: { restrictedIds: [], hasOther: true, checked: false },
       done: { 1: false, 2: false, 3: false },
     };
   }
@@ -680,6 +761,7 @@
       if (!r.firstName || !r.lastName) return false;
       if (!phoneValid(r.phone)) return false;
     }
+    if (!ageValid()) return false;
     return true;
   }
 
@@ -692,12 +774,12 @@
 
   function methodValid() {
     if (state.method === "pickup") return settings.method.pickupEnabled !== false && dateValid("pickup");
-    if (state.method === "delivery") return (state.deliverable || !checkerOn) && dateValid("delivery") && addressValid();
+    if (state.method === "delivery") return (state.deliverable || (!checkerOn && !alcoholLocalOnly())) && dateValid("delivery") && addressValid();
     return false;
   }
 
   function summaryValid() {
-    return senderValid() && methodValid();
+    return !notAloneBlocked() && senderValid() && methodValid();
   }
 
   // --- Render: shell ---------------------------------------------------------
@@ -714,6 +796,11 @@
     head.appendChild(statusNode);
     block.appendChild(head);
 
+    noticeNode = el("div", "q8-dc__notice");
+    noticeNode.setAttribute("role", "alert");
+    noticeNode.hidden = true;
+    block.appendChild(noticeNode);
+
     var layout = el("div", "q8-dc__layout");
     stepsNav = el("nav", "q8-dc__steps");
     stepsNav.setAttribute("aria-label", "Checkout steps");
@@ -724,6 +811,21 @@
     layout.appendChild(orderCard);
     block.appendChild(layout);
     block.hidden = false;
+  }
+
+  function renderAlcoholNotice() {
+    if (!noticeNode) return;
+    var blocked = notAloneBlocked();
+    noticeNode.textContent = "";
+    noticeNode.hidden = !blocked;
+    if (!blocked) return;
+    noticeNode.appendChild(icon("bag"));
+    var body = el("div", "q8-dc__notice-body");
+    body.appendChild(el("p", "q8-dc__notice-text", alcoholMessage("notAlone")));
+    var link = el("a", "q8-dc__notice-link", settings.empty.cta || "Keep shopping");
+    link.href = ROOT + "collections/all";
+    body.appendChild(link);
+    noticeNode.appendChild(body);
   }
 
   function renderSteps() {
@@ -766,6 +868,7 @@
     }
     state.step = step;
     setBlocked(!(step === 4 && summaryValid()));
+    renderAlcoholNotice();
     renderSteps();
     renderOrder();
     if (step === 1) renderSender();
@@ -855,6 +958,43 @@
     recipientCard.appendChild(rgrid);
     panel.appendChild(recipientCard);
 
+    // Alcohol rules: date of birth + confirmation (only when the cart has alcohol)
+    if (ageRequired()) {
+      var al = settings.alcohol;
+      var minimumAge = alcoholRules().minimumAge;
+      var ageCard = el("div", "q8-dc__card q8-dc__age");
+      ageCard.appendChild(el("h4", "q8-dc__card-title", al.title));
+      ageCard.appendChild(el("p", "q8-dc__note", fill(al.intro, { age: minimumAge })));
+      var confirmInput = null;
+      function syncConfirm() {
+        if (!confirmInput) return;
+        confirmInput.disabled = !dobOk();
+        if (!dobOk() && state.age.confirmed) {
+          state.age.confirmed = false;
+          confirmInput.checked = false;
+        }
+      }
+      var dob = field({ id: "q8-dc-dob", label: al.dobLabel, type: "date", autocomplete: "bday", value: state.age.dob, onChange: function (event) {
+        state.age.dob = event.target.value;
+        dob.setError(isIsoDate(state.age.dob) && !dobOk() ? alcoholMessage("age") : "");
+        syncConfirm();
+        save(patchFor());
+        refreshContinue();
+      } });
+      dob.control.max = isoToday();
+      ageCard.appendChild(dob.wrap);
+      var confirm = toggle(fill(al.confirmLabel, { age: minimumAge }), state.age.confirmed, function (checked) {
+        state.age.confirmed = checked;
+        save(patchFor());
+        refreshContinue();
+      });
+      confirmInput = confirm.querySelector("input");
+      syncConfirm();
+      if (isIsoDate(state.age.dob) && !dobOk()) dob.setError(alcoholMessage("age"));
+      ageCard.appendChild(confirm);
+      panel.appendChild(ageCard);
+    }
+
     var actions = el("div", "q8-dc__actions");
     var next = primaryButton(settings.continueLabel || "Continue", function () {
       if (!senderValid()) return;
@@ -894,6 +1034,10 @@
     p[ATTR.notes] = on && cfg.notesEnabled !== false ? state.options.notes : "";
     p[ATTR.occasion] = on && cfg.occasionEnabled !== false ? state.options.occasion : "";
     p[ATTR.door] = on && cfg.doorEnabled !== false && state.method === "delivery" ? state.options.door : "";
+    // Alcohol rules: only a passing date of birth is recorded, so stale values never linger.
+    var ageOk = ageRequired() && dobOk();
+    p[ATTR.dob] = ageOk ? state.age.dob : "";
+    p[ATTR.ageConfirmed] = ageOk && state.age.confirmed ? "Yes" : "";
     p[NOTE_KEY] = p[ATTR.notes];
     if (state.method === "delivery") {
       p[ATTR.locationType] = state.locationType;
@@ -989,8 +1133,8 @@
     var labels = m.labels || {};
     var wrap = el("div", "q8-dc__delivery");
 
-    // Zip check (only when the app's checker is on)
-    if (checkerOn) {
+    // Zip check (when the app's checker is on, or the cart has alcohol that may only go to the zones)
+    if (checkerOn || alcoholLocalOnly()) {
       var zipCard = el("div", "q8-dc__card");
       if (!state.deliverable) {
         if (m.zipPrompt) zipCard.appendChild(el("p", "q8-dc__prompt", m.zipPrompt));
@@ -1017,7 +1161,7 @@
           if (!zip) return;
           button.disabled = true;
           button.textContent = m.checkingLabel || "Checking…";
-          checkZip(zip)
+          checkZip(zip, alcoholLocalOnly())
             .then(function (result) {
               state.zip = (result && result.zip) || zip.toUpperCase();
               if (result && result.deliverable) {
@@ -1029,7 +1173,7 @@
                 renderOrder();
               } else {
                 state.deliverable = false;
-                note.textContent = fill(m.failText || "Sorry, we don't deliver to {zip} yet.", { zip: state.zip });
+                note.textContent = (alcoholLocalOnly() && alcoholMessage("localOnly")) || fill(m.failText || "Sorry, we don't deliver to {zip} yet.", { zip: state.zip });
                 note.hidden = false;
                 button.disabled = false;
                 button.textContent = m.checkLabel || "Check";
@@ -1185,6 +1329,7 @@
     var sd = state.sender;
     row(s.senderRow || "From", [sd.firstName + " " + sd.lastName, sd.email, sd.phone], 1);
     row(s.recipientRow || "To", [recipientName() + (state.self ? " (yourself)" : ""), recipientPhone()], 1);
+    if (ageRequired()) row(settings.alcohol.title, [settings.alcohol.dobLabel + ": " + state.age.dob, state.age.confirmed ? settings.alcohol.confirmedText : ""], 1);
     var c = settings.calendar;
     if (state.method === "pickup") {
       row(s.methodRow || "Delivery", [settings.method.pickupLabel || "Pickup", state.dates.pickup ? (c.pickupLabel || "Pickup date") + ": " + prettyDate(state.dates.pickup) : "", settings.method.pickupNote], 2);
@@ -1746,6 +1891,14 @@
     text: "Add something to your cart, then come back here to arrange delivery or pickup.",
     cta: "Keep shopping",
   };
+  // Alcohol rules copy (the rule messages themselves come from the Delivery page)
+  settings.alcohol = settings.alcohol || {
+    title: "Age verification",
+    intro: "Your order contains alcohol. You must be {age} or older to continue.",
+    dobLabel: "Date of birth",
+    confirmLabel: "I confirm that I and the recipient are {age} or older and that an adult with valid ID will receive the order.",
+    confirmedText: "Confirmed",
+  };
   currency = block.dataset.currency;
   defaultCountry = (block.dataset.country || "US").toUpperCase();
   state = initialState(readJson("[data-q8-dc-attributes]") || {});
@@ -1760,14 +1913,12 @@
   renderShell();
 
   // Is the zip checker on? Re-verify a remembered zip. Load the calendar rules. Then start at step 1.
+  var probe = null;
   Promise.all([
-    checkZip(state.zip || "00000-probe")
+    checkZip(state.zip || "00000-probe", true)
       .then(function (result) {
+        probe = result || null;
         checkerOn = Boolean(result && result.enabled);
-        if (checkerOn && state.zip && result.deliverable) {
-          state.zone = result.zone || null;
-          state.deliverable = true;
-        }
       })
       .catch(function () {
         checkerOn = false;
@@ -1782,8 +1933,17 @@
       .catch(function () {
         schedule = null;
       }),
-  ]).then(function () {
-    go(1);
-    syncTimedProperty();
-  });
+  ])
+    .then(function () {
+      return refreshAlcohol();
+    })
+    .then(function () {
+      // A remembered zip only counts once we know whether zones matter (checker on, or alcohol in the cart).
+      if (probe && state.zip && probe.deliverable && (checkerOn || alcoholLocalOnly())) {
+        state.zone = probe.zone || null;
+        state.deliverable = true;
+      }
+      go(1);
+      syncTimedProperty();
+    });
 })();

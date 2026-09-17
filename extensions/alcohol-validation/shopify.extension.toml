@@ -1,0 +1,25 @@
+api_version = "2026-04"
+
+[[extensions]]
+name = "t:name"
+handle = "alcohol-validation"
+type = "function"
+uid = "56e80c3f-ef71-8ce8-5e24-9ca731be47b1783e9c99"
+description = "t:description"
+
+  [[extensions.targeting]]
+  target = "cart.validations.generate.run"
+  input_query = "src/cart_validations_generate_run.graphql"
+  export = "cart-validations-generate-run"
+
+  [extensions.build]
+  command = ""
+  path = "dist/function.wasm"
+
+  [extensions.input.variables]
+  namespace = "$app"
+  key = "alcohol-rules"
+
+  [extensions.ui.paths]
+  create = "/app/delivery"
+  details = "/app/delivery"
