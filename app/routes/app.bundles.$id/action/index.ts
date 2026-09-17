@@ -76,6 +76,18 @@ export async function action({ request, params }: ActionFunctionArgs) {
     };
 
     if (request.method === "POST" && id === "new") {
+      const bundleAmount = await db.bundle.count({ where: { shop: session.shop } });
+      const limitCode = await gatekeepRoute(
+        { authAdminContext, amounts: { bundleAmount } },
+        { bundleLimit: true },
+        "return",
+      );
+      if (limitCode) {
+        return handleApiError({
+          errors: `Your plan includes ${bundleAmount} ${bundleAmount === 1 ? "bundle" : "bundles"}. Upgrade to Advance to create more.`,
+          code: "error",
+        });
+      }
       const bundle = await createBundle(session.shop, input, db);
       const syncError = await trySyncBundleDiscounts(session, db);
       if (syncError) return syncError;

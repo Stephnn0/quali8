@@ -1,6 +1,7 @@
 import { APP } from "app/constants/app.constants";
 import type { GateKeepArgs, GateKeepCode } from "./types";
 import { APP_PLANS_MAP, SHOP_PLANS_MAP } from "./plansMap";
+import { limitReached } from "../planLimits";
 
 export function gatekeep({
   criteria,
@@ -70,6 +71,30 @@ export function gatekeep({
 
   if (criteria.hasAssistant) {
     if (!recurringPlan?.hasAssistant) return "AP016";
+  }
+
+  if (criteria.hasAnnouncements) {
+    if (!recurringPlan?.hasAnnouncements) return "AP017";
+  }
+
+  if (criteria.hasDeliveryZones) {
+    if (!recurringPlan?.hasDeliveryZones) return "AP018";
+  }
+
+  if (criteria.hasSubscribePopup) {
+    if (!recurringPlan?.hasSubscribePopup) return "AP019";
+  }
+
+  // ⚙️ 3b - Plan limits: the plan includes the feature, but only up to a
+  // number. The caller passes what the shop already has in `current`.
+  if (criteria.bundleLimit) {
+    if (limitReached(recurringPlan?.bundleLimit, current.bundleAmount))
+      return "AP020";
+  }
+
+  if (criteria.popupSignupLimit) {
+    if (limitReached(recurringPlan?.popupSignupLimit, current.popupSignupAmount))
+      return "AP021";
   }
 
   // ⚙️ 4 - Before checking the Shopify Plan, we check if the store is a DevStore

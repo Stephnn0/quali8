@@ -5,6 +5,8 @@
  *
  * `key` doubles as the OneApp registry key and the route param.
  */
+import type { GateKeepCriteria } from "app/services/subscriptions/gatekeep/types";
+
 export const FEATURE_PAGE_KEYS = [
   "smart-announcements",
   "subscribe-boost",
@@ -12,6 +14,17 @@ export const FEATURE_PAGE_KEYS = [
 ] as const;
 
 export type FeaturePageKey = (typeof FEATURE_PAGE_KEYS)[number];
+
+/**
+ * What each page needs from the plan. Announcements and the popup are on
+ * every plan (the popup with a monthly signup cap on Free); SEO AI costs an
+ * AI call per use and stays on Advance.
+ */
+export const FEATURE_PAGE_GATES: Record<FeaturePageKey, GateKeepCriteria> = {
+  "smart-announcements": { hasAnnouncements: true },
+  "subscribe-boost": { hasSubscribePopup: true },
+  "seo-ai": { hasAssistant: true },
+};
 
 export type FeaturePage = {
   key: FeaturePageKey;

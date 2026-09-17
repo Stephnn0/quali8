@@ -39,6 +39,9 @@ export default function FeatureShowcaseCard({
           </div>
         </div>
         <p className={styles.showcaseTagline}>{feature.tagline}</p>
+        {feature.planNote ? (
+          <p className={styles.showcasePlanNote}>{feature.planNote}</p>
+        ) : null}
         <p className={styles.showcaseText}>{feature.description}</p>
       </div>
       <div className={styles.showcaseFoot}>

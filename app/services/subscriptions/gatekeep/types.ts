@@ -29,7 +29,12 @@ type AppPlanCode =
   | "AP013"
   | "AP014"
   | "AP015"
-  | "AP016";
+  | "AP016"
+  | "AP017"
+  | "AP018"
+  | "AP019"
+  | "AP020"
+  | "AP021";
 
 // (DP) Developer Preview
 // Use this code to redirect when the user cannot access when the store is in Developer Preview
@@ -75,22 +80,27 @@ export type GateKeepCriteria = {
 
 type SubscriptionCriteria = Omit<
   RichRecurringPlan,
-  | "createdAt"
-  | "updatedAt"
-  | "hashID"
-  | "name"
-  | AmountBasedSubscriptionCriteriaKey
->;
-export type OptionalCurrentGatekeepContext = AmountBasedSubscriptionCurrent; // & ... & ... Others in the future
+  "createdAt" | "updatedAt" | "hashID" | "name" | `${string}Limit`
+> &
+  LimitCriteria;
 
-type AmountBasedSubscriptionCurrent = {
-  [K in AmountBasedSubscriptionCriteriaKey]?: number | null | undefined;
-};
+export type OptionalCurrentGatekeepContext = LimitContext; // & ... & ... Others in the future
 
-type AmountBasedSubscriptionCriteriaKey = keyof {
-  [K in keyof RichRecurringPlan as K extends `amount${string}`
-    ? K
-    : never]: RichRecurringPlan[K];
+/**
+ * Every `<name>Limit` column on RecurringPlan becomes a boolean criterion
+ * (`{ bundleLimit: true }` = "check the plan's bundle limit") paired with a
+ * `<name>Amount` in the current context (`{ bundleAmount: 3 }` = what the
+ * shop already has). Add a `...Limit` column and both types follow.
+ */
+type LimitName = keyof RichRecurringPlan extends infer K
+  ? K extends `${infer Name}Limit`
+    ? Name
+    : never
+  : never;
+
+export type LimitCriteria = { [K in LimitName as `${K}Limit`]?: boolean };
+export type LimitContext = {
+  [K in LimitName as `${K}Amount`]?: number | null | undefined;
 };
 
 type RichRecurringPlan = NonNullable<RichShopifySubscription["recurringPlan"]>;

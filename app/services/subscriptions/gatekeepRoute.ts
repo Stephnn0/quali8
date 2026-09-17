@@ -3,6 +3,7 @@ import type {
   GateKeepCriteria,
   GateKeepCode,
   GateKeepArgs,
+  OptionalCurrentGatekeepContext,
 } from "./gatekeep/types";
 import db from "app/db.server";
 import { getShopInfo } from "app/models/shopify.server/shop/shop.server";
@@ -10,11 +11,15 @@ import { shopifySubscriptionModel } from "app/models/app.server/shopifySubscript
 import { gatekeep } from "./gatekeep/gatekeep";
 
 export async function gatekeepRoute(
-  currentContext: { authAdminContext: AuthAdminContext },
+  currentContext: {
+    authAdminContext: AuthAdminContext;
+    /** What the shop already has, for `...Limit` criteria (e.g. `{ bundleAmount: 1 }`). */
+    amounts?: OptionalCurrentGatekeepContext;
+  },
   criteria: GateKeepCriteria,
   action: "redirect" | "throw" | "return",
 ) {
-  const { authAdminContext } = currentContext;
+  const { authAdminContext, amounts } = currentContext;
   const { admin, session } = authAdminContext;
 
   let redirectCode: GateKeepCode | null = null;
@@ -37,6 +42,7 @@ export async function gatekeepRoute(
         shop: session.shop,
         shopPlan: shopInfo.shop.plan.displayName,
         isDevStore: shopInfo.shop.plan.partnerDevelopment,
+        ...amounts,
       };
 
       redirectCode = gatekeep({ current, criteria });

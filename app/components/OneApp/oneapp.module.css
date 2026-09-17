@@ -542,6 +542,12 @@
   color: #2c1f58;
 }
 
+.showcasePlanNote {
+  margin: 0.25rem 0 0;
+  font-size: 0.8125rem;
+  color: #6b6480;
+}
+
 .showcaseText {
   margin: 0.375rem 0 0;
   font-size: 0.8125rem;

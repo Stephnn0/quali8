@@ -2,6 +2,7 @@ import type { LoaderFunctionArgs } from "react-router";
 import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
 import { deliveryCheckAvailable } from "app/services/delivery/deliveryZones.server";
+import { getShopPlan } from "app/services/subscriptions/shopPlan.server";
 
 /**
  * App Proxy endpoint for the homepage announcement bar theme block.
@@ -9,8 +10,8 @@ import { deliveryCheckAvailable } from "app/services/delivery/deliveryZones.serv
  * window contains today (the soonest-ending one when windows overlap), or
  * `{ bar: null }`, plus whether the zip code delivery checker is on so
  * the bar can render the checker even with no announcement scheduled.
- * Advance-plan entitlement is implied by the bar's existence — bars are
- * only creatable from the gated manage page.
+ * Both parts are on every plan (`hasAnnouncements` / `hasDeliveryZones`);
+ * the flags are still honoured so a plan without them renders nothing.
  */
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   // Validates the Shopify HMAC signature; throws a 4xx Response if invalid.
@@ -27,9 +28,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 
   try {
+    const plan = await getShopPlan(shop, db);
     const today = new Date().toISOString().slice(0, 10);
     const [bar, deliveryEnabled] = await Promise.all([
-      db.announcementBar.findFirst({
+      !plan.hasAnnouncements ? null : db.announcementBar.findFirst({
       where: {
         shop,
         enabled: true,
@@ -44,7 +46,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         endDate: true, // lets the theme block show a countdown
       },
       }),
-      deliveryCheckAvailable(db, shop),
+      plan.hasDeliveryZones ? deliveryCheckAvailable(db, shop) : false,
     ]);
 
     return Response.json(

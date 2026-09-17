@@ -89,6 +89,31 @@ export const GATEKEEP_ERROR_CODE_MAP = {
     code: "AP016",
     message: "Your subscription does not include the AI assistant.",
   },
+  // Error: Missing the announcement bar
+  AP017: {
+    code: "AP017",
+    message: "Your subscription does not include the announcement bar.",
+  },
+  // Error: Missing delivery zones
+  AP018: {
+    code: "AP018",
+    message: "Your subscription does not include delivery zones.",
+  },
+  // Error: Missing the subscribe popup
+  AP019: {
+    code: "AP019",
+    message: "Your subscription does not include the subscribe popup.",
+  },
+  // Error: Bundle limit reached
+  AP020: {
+    code: "AP020",
+    message: "You have reached the number of bundles your plan includes.",
+  },
+  // Error: Popup signup limit reached
+  AP021: {
+    code: "AP021",
+    message: "You have reached the popup signups your plan includes this month.",
+  },
   // Developer Preview store error
   DP001: {
     code: "DP001",

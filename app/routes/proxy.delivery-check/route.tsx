@@ -3,6 +3,7 @@ import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
 import { checkDelivery } from "app/services/delivery/deliveryZones.server";
 import { MAX_ZIP_LENGTH } from "app/services/delivery/deliveryZones";
+import { getShopPlan } from "app/services/subscriptions/shopPlan.server";
 
 /**
  * App Proxy endpoint for the bar's zip code checker.
@@ -24,6 +25,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 
   try {
+    if (!(await getShopPlan(shop, db)).hasDeliveryZones) {
+      return Response.json(empty, { headers });
+    }
     return Response.json(await checkDelivery(db, shop, zip), { headers });
   } catch (error) {
     console.error("Error in /proxy/delivery-check:", error); // eslint-disable-line no-console

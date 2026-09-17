@@ -13,15 +13,19 @@ import { gatekeepRoute } from "app/services/subscriptions/gatekeepRoute";
 import { FeatureHeader } from "app/components/OneApp";
 import {
   FEATURE_PAGES,
+  FEATURE_PAGE_GATES,
   isFeaturePageKey,
   type FeaturePageKey,
 } from "app/components/Seasonal/featurePages";
+import { APP } from "app/constants/app.constants";
 import AnnouncementScheduler from "app/components/Seasonal/AnnouncementScheduler";
 import PopupScheduler from "app/components/Seasonal/PopupScheduler";
 import SeoOptimizer from "app/components/Seasonal/SeoOptimizer";
 import SubscriberAnalytics from "app/components/Subscribe/SubscriberAnalytics";
 import {
   loadSubscribeAnalytics,
+  signupLimitStatus,
+  type SignupLimitStatus,
   type SubscribeAnalytics as SubscribeAnalyticsData,
 } from "app/services/subscribe/subscribers.server";
 import {
@@ -45,7 +49,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     throw new Response("Feature not found", { status: 404 });
   }
 
-  await gatekeepRoute({ authAdminContext }, { hasAssistant: true }, "redirect");
+  await gatekeepRoute({ authAdminContext }, FEATURE_PAGE_GATES[featureKey], "redirect");
 
   const config = await loadShopFeatureConfig(db, session.shop);
 
@@ -53,15 +57,19 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   // while a database migration is still pending on a fresh deploy).
   let subscribers: SubscribeAnalyticsData | null = null;
   let subscribersError: string | null = null;
+  let signupLimit: SignupLimitStatus | null = null;
   if (featureKey === "subscribe-boost") {
     try {
-      subscribers = await loadSubscribeAnalytics(db, session.shop, session.scope);
+      [subscribers, signupLimit] = await Promise.all([
+        loadSubscribeAnalytics(db, session.shop, session.scope),
+        signupLimitStatus(db, session.shop),
+      ]);
     } catch (error) {
       console.error("Subscribe analytics failed to load:", error); // eslint-disable-line no-console
       subscribersError = error instanceof Error ? error.message : String(error);
     }
   }
-  return { featureKey, config, subscribers, subscribersError };
+  return { featureKey, config, subscribers, subscribersError, signupLimit };
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -73,7 +81,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   }
 
   try {
-    await gatekeepRoute({ authAdminContext }, { hasAssistant: true }, "throw");
+    await gatekeepRoute({ authAdminContext }, FEATURE_PAGE_GATES[params.feature], "throw");
 
     const formData = await request.formData();
     const body = shopFeatureActionSchema.parse(
@@ -91,6 +99,31 @@ export async function action({ request, params }: ActionFunctionArgs) {
 }
 
 type Section = { title: string; help: string; node: ReactNode };
+
+/** The Free plan's monthly signup cap: how much is left, or that it is used up. */
+function SignupLimitBanner({ status }: { status: SignupLimitStatus }) {
+  if (status.limit === null) return null;
+  const upgrade = { content: "Upgrade to Advance", onAction: APP.OPEN_APP_PLANS_PAGE };
+  if (status.reached) {
+    return (
+      <Banner tone="warning" title="The popup is paused until next month" action={upgrade}>
+        <p>
+          Your {status.planName} plan includes {status.limit} signups a month and they
+          are all used. The popup stays hidden on the storefront until the 1st, or
+          right away on Advance, which has no cap.
+        </p>
+      </Banner>
+    );
+  }
+  return (
+    <Banner tone="info" action={upgrade}>
+      <p>
+        {status.used} of {status.limit} signups used this month on the {status.planName}{" "}
+        plan. The popup pauses at {status.limit}; Advance has no cap.
+      </p>
+    </Banner>
+  );
+}
 
 function DeliveryLink({ enabled, zones }: { enabled: boolean; zones: number }) {
   const navigate = useNavigate();
@@ -112,6 +145,7 @@ function sectionsFor(
   config: ShopFeatureConfig,
   subscribers: SubscribeAnalyticsData | null,
   subscribersError: string | null,
+  signupLimit: SignupLimitStatus | null,
 ): Section[] {
   const feature = FEATURE_PAGES[featureKey];
   switch (featureKey) {
@@ -134,7 +168,12 @@ function sectionsFor(
         {
           title: feature.configTitle,
           help: feature.configHelp,
-          node: <PopupScheduler popup={config.popup} />,
+          node: (
+            <BlockStack gap="400">
+              {signupLimit ? <SignupLimitBanner status={signupLimit} /> : null}
+              <PopupScheduler popup={config.popup} />
+            </BlockStack>
+          ),
         },
         {
           title: "Subscribers",
@@ -166,7 +205,8 @@ function sectionsFor(
 }
 
 export default function FeaturePage() {
-  const { featureKey, config, subscribers, subscribersError } = useLoaderData<typeof loader>();
+  const { featureKey, config, subscribers, subscribersError, signupLimit } =
+    useLoaderData<typeof loader>();
 
   return (
     <Page>
@@ -174,7 +214,7 @@ export default function FeaturePage() {
       <Layout>
         <Layout.Section>
           <BlockStack gap="400">
-            {sectionsFor(featureKey, config, subscribers, subscribersError).map((section) => (
+            {sectionsFor(featureKey, config, subscribers, subscribersError, signupLimit).map((section) => (
               <Card key={section.title}>
                 <BlockStack gap="400">
                   <BlockStack gap="100">

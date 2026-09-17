@@ -3,6 +3,8 @@ import type { AdminGraphqlClient } from "@shopify/shopify-app-react-router/serve
 import { subscribeCustomer } from "app/models/shopify.server/customers";
 import { shopNow } from "app/services/delivery/shopTime";
 import { loadShopTimezone } from "app/services/delivery/deliverySchedule.server";
+import { getShopPlan } from "app/services/subscriptions/shopPlan.server";
+import { limitReached, monthStartUtc } from "app/services/subscriptions/planLimits";
 import {
   customerAdminId,
   summarizeDailyStats,
@@ -35,6 +37,36 @@ export async function recordPopupEvent(
   }
 }
 
+export type SignupLimitStatus = {
+  /** Signups the plan allows per calendar month; null = unlimited. */
+  limit: number | null;
+  /** New subscribers recorded since the first of the month (UTC). */
+  used: number;
+  reached: boolean;
+  planName: string;
+};
+
+/** Where the shop stands against its plan's monthly popup signup cap. */
+export async function signupLimitStatus(
+  db: PrismaClient,
+  shop: string,
+  now: Date = new Date(),
+): Promise<SignupLimitStatus> {
+  const plan = await getShopPlan(shop, db);
+  if (plan.popupSignupLimit === null) {
+    return { limit: null, used: 0, reached: false, planName: plan.name };
+  }
+  const used = await db.popupSubscriber.count({
+    where: { shop, createdAt: { gte: monthStartUtc(now) } },
+  });
+  return {
+    limit: plan.popupSignupLimit,
+    used,
+    reached: limitReached(plan.popupSignupLimit, used),
+    planName: plan.name,
+  };
+}
+
 export type SubscribeFromPopupInput = {
   db: PrismaClient;
   /** Null when the app has no offline session for the shop. */
@@ -52,6 +84,8 @@ export type SubscribeFromPopupResult = {
   savedInShopify: boolean;
   /** The app lacks `write_customers`; the storefront falls back to /contact. */
   scopeMissing: boolean;
+  /** The plan's monthly signup cap is used up; the storefront must not fall back. */
+  limitReached?: boolean;
 };
 
 /**
@@ -63,6 +97,13 @@ export async function subscribeFromPopup(
   input: SubscribeFromPopupInput,
 ): Promise<SubscribeFromPopupResult> {
   const { db, graphql, shop, email, firstName, tags } = input;
+
+  // `proxy.popup` stops showing the popup once the cap is reached; this
+  // guards the window between that and a popup already open in a tab.
+  const cap = await signupLimitStatus(db, shop);
+  if (cap.reached) {
+    return { ok: false, savedInShopify: false, scopeMissing: false, limitReached: true };
+  }
 
   const shopifyResult = graphql
     ? await subscribeCustomer(graphql, { email, firstName: firstName ?? undefined, tags })

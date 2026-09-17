@@ -1,6 +1,8 @@
 import type { LoaderFunctionArgs } from "react-router";
 import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
+import { getShopPlan } from "app/services/subscriptions/shopPlan.server";
+import { signupLimitStatus } from "app/services/subscribe/subscribers.server";
 
 const GRAPHQL_QUERY_MARKETING_STATE = `#graphql
   query popupCustomerMarketingState($id: ID!) {
@@ -55,6 +57,13 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         },
         { headers },
       );
+    }
+
+    // The popup is a plan feature with a monthly signup cap on Free: once the
+    // cap is used up the popup simply stops showing until next month.
+    const plan = await getShopPlan(shop, db);
+    if (!plan.hasSubscribePopup || (await signupLimitStatus(db, shop)).reached) {
+      return Response.json({ popup: null }, { headers });
     }
 
     const today = new Date().toISOString().slice(0, 10);

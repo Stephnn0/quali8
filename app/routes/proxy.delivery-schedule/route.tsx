@@ -1,6 +1,7 @@
 import type { LoaderFunctionArgs } from "react-router";
 import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
+import { getShopPlan } from "app/services/subscriptions/shopPlan.server";
 import {
   emptyStorefrontSchedule,
   loadStorefrontSchedule,
@@ -24,6 +25,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   if (!shop) return Response.json(emptyStorefrontSchedule(), { headers });
   try {
+    // The calendar, time windows, and Options step are Advance features; on
+    // other plans the cart block gets the empty (disabled) schedule.
+    if (!(await getShopPlan(shop, db)).hasShippingDiscounts) {
+      return Response.json(emptyStorefrontSchedule(), { headers });
+    }
     return Response.json(await loadStorefrontSchedule(db, shop), { headers });
   } catch (error) {
     console.error("Error in /proxy/delivery-schedule:", error); // eslint-disable-line no-console

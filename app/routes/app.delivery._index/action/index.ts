@@ -42,19 +42,26 @@ const bodySchema = z.discriminatedUnion("action", [
   ...deliveryActionSchema.options,
 ]);
 
+const ZONE_ACTIONS = new Set<string>(
+  deliveryActionSchema.options.map((option) => option.shape.action.value),
+);
+
 export async function action({ request }: ActionFunctionArgs) {
   const authAdminContext = await authenticate.admin(request);
   const { session, admin } = authAdminContext;
 
   try {
-    await gatekeepRoute(
-      { authAdminContext },
-      { hasShippingDiscounts: true },
-      "throw",
-    );
-
     const formData = await request.formData();
     const body = bodySchema.parse(JSON.parse(String(formData.get("body") ?? "{}")));
+
+    // Zones and the zip checker switch are on every plan; everything else
+    // on this page needs Advance.
+    const zonesOnly = ZONE_ACTIONS.has(body.action);
+    await gatekeepRoute(
+      { authAdminContext },
+      zonesOnly ? { hasDeliveryZones: true } : { hasShippingDiscounts: true },
+      "throw",
+    );
 
     switch (body.action) {
       case "install-carrier": {

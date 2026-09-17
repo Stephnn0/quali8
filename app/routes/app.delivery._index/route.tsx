@@ -27,6 +27,7 @@ import CartOptionsEditor from "app/components/Delivery/CartOptionsEditor";
 import { defaultCartOptions } from "app/services/delivery/cartOptions";
 import { defaultDeliverySchedule } from "app/services/delivery/deliverySchedule";
 import { DEFAULT_RATE_TITLE } from "app/services/carrier/rates";
+import { APP } from "app/constants/app.constants";
 import { loader, type DeliveryPageData } from "./loader";
 import { action } from "./action";
 
@@ -200,6 +201,111 @@ export default function DeliveryPage() {
     }
   })();
 
+  const fullAccess = data?.access !== "zones";
+  const planName = data?.planName ?? "Free";
+
+  const zonesCard = (
+    <Card>
+      <BlockStack gap="400">
+        <BlockStack gap="100">
+          <Text as="h2" variant="headingMd">
+            Delivery zones & zip checker
+          </Text>
+          <Text as="p" tone="subdued" variant="bodySm">
+            A zone is a list of zip or postal codes with an optional price and
+            message. Zones are matched top to bottom. The switch shows the zip
+            checker in the header bar and turns on the cart delivery gate.
+          </Text>
+        </BlockStack>
+        <DeliveryZonesEditor
+          enabled={data?.delivery.enabled ?? false}
+          zones={data?.delivery.zones ?? []}
+        />
+      </BlockStack>
+    </Card>
+  );
+
+  const storefrontCard = (
+    <Card>
+      <BlockStack gap="300">
+        <Text as="h2" variant="headingMd">
+          Storefront setup
+        </Text>
+        <Text as="p" tone="subdued">
+          Two theme pieces show delivery to shoppers. Both are in the theme
+          editor under Online Store &rarr; Themes &rarr; Customize.
+        </Text>
+        <InlineGrid columns={{ xs: 1, md: 2 }} gap="400">
+          <BlockStack gap="200">
+            <Text as="h3" variant="headingSm">
+              1. Every page: zip checker in the header bar
+            </Text>
+            <List type="number">
+              <List.Item>Open Theme settings &rarr; App embeds.</List.Item>
+              <List.Item>
+                Turn on <strong>Announcement + delivery</strong>.
+              </List.Item>
+              <List.Item>
+                The bar shows the zip checker on every page whenever the switch
+                above is on, with or without a scheduled announcement.
+              </List.Item>
+            </List>
+          </BlockStack>
+          <BlockStack gap="200">
+            <Text as="h3" variant="headingSm">
+              2. Cart page: Delivery checkout{fullAccess ? "" : " (Advance)"}
+            </Text>
+            <List type="number">
+              <List.Item>Open the Cart template.</List.Item>
+              <List.Item>
+                Add block &rarr; Apps &rarr; <strong>Delivery checkout</strong>.
+              </List.Item>
+              <List.Item>
+                Shoppers check their zip, pick a date, fill in their address, add
+                a card message and extras, and continue to a prefilled checkout.
+                The theme&rsquo;s own checkout buttons stay hidden until delivery
+                is confirmed.
+              </List.Item>
+            </List>
+          </BlockStack>
+        </InlineGrid>
+      </BlockStack>
+    </Card>
+  );
+
+  if (!fullAccess) {
+    return (
+      <Page>
+        <FeatureHeader
+          featureKey="delivery"
+          tagline="Zip codes you deliver to, what it costs, and how shoppers check it. The header bar and the cart gate read from here."
+        />
+        <Layout>
+          <Layout.Section>
+            <BlockStack gap="400">
+              {zonesCard}
+              <Banner
+                tone="info"
+                title={`Your ${planName} plan includes zones and the zip checker`}
+                action={{ content: "Upgrade to Advance", onAction: APP.OPEN_APP_PLANS_PAGE }}
+              >
+                <p>Advance adds the rest of the delivery hub:</p>
+                <List>
+                  <List.Item>Delivery and pickup calendar with blocked days, lead time, and same-day cutoffs</List.Item>
+                  <List.Item>Checkout rates priced by zone through the carrier service</List.Item>
+                  <List.Item>Timed delivery windows for an extra charge</List.Item>
+                  <List.Item>The cart&rsquo;s Options step: occasion, card message, and notes</List.Item>
+                  <List.Item>Checkout that follows the delivery method chosen in the cart</List.Item>
+                </List>
+              </Banner>
+              {storefrontCard}
+            </BlockStack>
+          </Layout.Section>
+        </Layout>
+      </Page>
+    );
+  }
+
   return (
     <Page>
       <FeatureHeader
@@ -272,24 +378,7 @@ export default function DeliveryPage() {
               </BlockStack>
             </Card>
 
-            <Card>
-              <BlockStack gap="400">
-                <BlockStack gap="100">
-                  <Text as="h2" variant="headingMd">
-                    Delivery zones & zip checker
-                  </Text>
-                  <Text as="p" tone="subdued" variant="bodySm">
-                    A zone is a list of zip or postal codes with an optional price and
-                    message. Zones are matched top to bottom. The switch shows the zip
-                    checker in the header bar and turns on the cart delivery gate.
-                  </Text>
-                </BlockStack>
-                <DeliveryZonesEditor
-                  enabled={data?.delivery.enabled ?? false}
-                  zones={data?.delivery.zones ?? []}
-                />
-              </BlockStack>
-            </Card>
+            {zonesCard}
 
             <Card>
               <BlockStack gap="400">
@@ -421,51 +510,7 @@ export default function DeliveryPage() {
               </BlockStack>
             </Card>
 
-            <Card>
-              <BlockStack gap="300">
-                <Text as="h2" variant="headingMd">
-                  Storefront setup
-                </Text>
-                <Text as="p" tone="subdued">
-                  Two theme pieces show delivery to shoppers. Both are in the theme
-                  editor under Online Store &rarr; Themes &rarr; Customize.
-                </Text>
-                <InlineGrid columns={{ xs: 1, md: 2 }} gap="400">
-                  <BlockStack gap="200">
-                    <Text as="h3" variant="headingSm">
-                      1. Cart page: Delivery checkout
-                    </Text>
-                    <List type="number">
-                      <List.Item>Open the Cart template.</List.Item>
-                      <List.Item>
-                        Add block &rarr; Apps &rarr; <strong>Delivery checkout</strong>.
-                      </List.Item>
-                      <List.Item>
-                        Shoppers check their zip, pick a date, fill in their address, add
-                        a card message and extras, and continue to a prefilled checkout.
-                        The theme&rsquo;s own checkout buttons stay hidden until delivery
-                        is confirmed.
-                      </List.Item>
-                    </List>
-                  </BlockStack>
-                  <BlockStack gap="200">
-                    <Text as="h3" variant="headingSm">
-                      2. Every page: zip checker in the header bar
-                    </Text>
-                    <List type="number">
-                      <List.Item>Open Theme settings &rarr; App embeds.</List.Item>
-                      <List.Item>
-                        Turn on <strong>Announcement + delivery</strong>.
-                      </List.Item>
-                      <List.Item>
-                        The bar shows the zip checker on every page whenever the switch
-                        above is on, with or without a scheduled announcement.
-                      </List.Item>
-                    </List>
-                  </BlockStack>
-                </InlineGrid>
-              </BlockStack>
-            </Card>
+            {storefrontCard}
           </BlockStack>
         </Layout.Section>
       </Layout>

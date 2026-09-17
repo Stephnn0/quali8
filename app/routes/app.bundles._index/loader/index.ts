@@ -3,6 +3,7 @@ import { getBundlesByShop } from "app/models/app.server/bundles/bundles.server";
 import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
 import { gatekeepRoute } from "app/services/subscriptions/gatekeepRoute";
+import { getShopPlan } from "app/services/subscriptions/shopPlan.server";
 import { handleApiSuccess } from "app/utils/handleApiSuccess";
 import { handleApiError } from "app/utils/server/handleApiResponse/handleApiError.server";
 
@@ -19,15 +20,18 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const skip = (page - 1) * itemsPerPage;
 
   try {
-    const { bundles, bundlesCount } = await getBundlesByShop(
-      {
-        where: { shop: session.shop },
-        orderBy: { updatedAt: "desc" },
-        take: itemsPerPage,
-        skip,
-      },
-      db,
-    );
+    const [{ bundles, bundlesCount }, plan] = await Promise.all([
+      getBundlesByShop(
+        {
+          where: { shop: session.shop },
+          orderBy: { updatedAt: "desc" },
+          take: itemsPerPage,
+          skip,
+        },
+        db,
+      ),
+      getShopPlan(session.shop, db),
+    ]);
 
     return handleApiSuccess<BundlesIndexData>({
       payload: {
@@ -35,6 +39,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
         itemsPerPage,
         page,
         total: bundlesCount,
+        bundleLimit: plan.bundleLimit,
+        planName: plan.name,
       },
       code: "success",
     });
@@ -49,4 +55,7 @@ export type BundlesIndexData = {
   itemsPerPage: number;
   page: number;
   total: number;
+  /** How many bundles the plan includes; null = unlimited. */
+  bundleLimit: number | null;
+  planName: string;
 };

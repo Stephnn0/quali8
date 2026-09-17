@@ -11,6 +11,7 @@ import {
   SearchIcon,
 } from "@shopify/polaris-icons";
 import type { GateKeepCriteria } from "app/services/subscriptions/gatekeep/types";
+import { FREE_BUNDLE_LIMIT, FREE_POPUP_SIGNUP_LIMIT } from "app/constants/plans";
 
 /**
  * OneApp organises its features into categories. Each category is a sidebar
@@ -83,6 +84,11 @@ export type OneAppFeature = {
   to: string;
   plan: OneAppPlan;
   gate?: GateKeepCriteria;
+  /**
+   * For Free features with a cap: what Free includes and what Advance adds,
+   * shown under the tagline on the category card.
+   */
+  planNote?: string;
 };
 
 export const ONEAPP_FEATURES: OneAppFeature[] = [
@@ -124,8 +130,9 @@ export const ONEAPP_FEATURES: OneAppFeature[] = [
     icon: PackageIcon,
     image: "/features/bundle-builder.svg",
     to: "/app/bundles",
-    plan: "Advance",
+    plan: "Free",
     gate: { hasBundles: true },
+    planNote: `Free includes ${FREE_BUNDLE_LIMIT} bundle. Advance: unlimited.`,
   },
   {
     number: "04",
@@ -166,8 +173,8 @@ export const ONEAPP_FEATURES: OneAppFeature[] = [
     icon: MegaphoneIcon,
     image: "/features/smart-announcements.svg",
     to: "/app/features/smart-announcements",
-    plan: "Advance",
-    gate: { hasAssistant: true },
+    plan: "Free",
+    gate: { hasAnnouncements: true },
   },
   {
     number: "07",
@@ -194,8 +201,9 @@ export const ONEAPP_FEATURES: OneAppFeature[] = [
     icon: EmailNewsletterIcon,
     image: "/features/subscribe-boost.svg",
     to: "/app/features/subscribe-boost",
-    plan: "Advance",
-    gate: { hasAssistant: true },
+    plan: "Free",
+    gate: { hasSubscribePopup: true },
+    planNote: `Free includes ${FREE_POPUP_SIGNUP_LIMIT} signups a month. Advance: unlimited.`,
   },
   {
     number: "09",
@@ -222,8 +230,10 @@ export const ONEAPP_FEATURES: OneAppFeature[] = [
     icon: DeliveryIcon,
     image: "/features/delivery.svg",
     to: "/app/delivery",
-    plan: "Advance",
-    gate: { hasShippingDiscounts: true },
+    plan: "Free",
+    gate: { hasDeliveryZones: true },
+    planNote:
+      "Free includes zones and the zip checker. Advance adds the calendar and checkout rates.",
   },
 ];
 

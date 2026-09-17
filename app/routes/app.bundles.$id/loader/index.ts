@@ -16,6 +16,13 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 
   try {
     if (id === "new") {
+      // The plan may include bundles but only so many (Free: one).
+      const bundleAmount = await db.bundle.count({ where: { shop: session.shop } });
+      await gatekeepRoute(
+        { authAdminContext, amounts: { bundleAmount } },
+        { bundleLimit: true },
+        "redirect",
+      ); // * Redirects
       return handleApiSuccess<BundleLoaderData>({
         payload: { bundle: null },
         code: "loaded",

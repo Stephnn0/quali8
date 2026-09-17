@@ -1,3 +1,8 @@
+/** Bundles a Free shop can keep. */
+export const FREE_BUNDLE_LIMIT = 1;
+/** Popup signups a Free shop can collect per calendar month. */
+export const FREE_POPUP_SIGNUP_LIMIT = 200;
+
 export const APP_PLANS = {
   FREE: {
     price: 0,
@@ -14,9 +19,16 @@ export const APP_PLANS = {
 
     hasQualifiers: true,
     hasShippingDiscounts: false,
-    hasBundles: false,
+    hasBundles: true,
     hasRecommendations: false,
     hasAssistant: false,
+    hasAnnouncements: true,
+    hasDeliveryZones: true,
+    hasSubscribePopup: true,
+    // Free is limited, not locked: one bundle and a monthly signup cap, so
+    // merchants set things up first and hit the upgrade moment in the flow.
+    bundleLimit: FREE_BUNDLE_LIMIT,
+    popupSignupLimit: FREE_POPUP_SIGNUP_LIMIT,
   },
 
   // The only paid plan: every feature, including the AI assistant.
@@ -39,6 +51,11 @@ export const APP_PLANS = {
     hasBundles: true,
     hasRecommendations: true,
     hasAssistant: true,
+    hasAnnouncements: true,
+    hasDeliveryZones: true,
+    hasSubscribePopup: true,
+    bundleLimit: null,
+    popupSignupLimit: null,
   },
 } as const;
 

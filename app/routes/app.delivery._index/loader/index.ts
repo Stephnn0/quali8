@@ -2,6 +2,7 @@ import type { LoaderFunctionArgs } from "react-router";
 import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
 import { gatekeepRoute } from "app/services/subscriptions/gatekeepRoute";
+import { getShopPlan } from "app/services/subscriptions/shopPlan.server";
 import type { DeliveryConfig } from "app/components/Delivery/types";
 import { loadDeliveryConfig } from "app/services/delivery/deliveryZones.server";
 import { loadDeliverySchedule } from "app/services/delivery/deliverySchedule.server";
@@ -26,6 +27,12 @@ import { handleApiSuccess } from "app/utils/handleApiSuccess";
 import { handleApiError } from "app/utils/server/handleApiResponse/handleApiError.server";
 
 export type DeliveryPageData = {
+  /**
+   * `zones` = the plan includes zones and the zip checker only (Free);
+   * `full` = the calendar, checkout rates, and the rest as well (Advance).
+   */
+  access: "zones" | "full";
+  planName: string;
   carrier: CarrierDetectStatus;
   /** The checkout function that keeps only the method chosen in the cart. */
   methodFilter: DeliveryMethodFilterStatus;
@@ -47,11 +54,14 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const authAdminContext = await authenticate.admin(request);
   const { session, admin } = authAdminContext;
 
-  await gatekeepRoute(
-    { authAdminContext },
-    { hasShippingDiscounts: true },
-    "redirect",
-  );
+  // Zones and the zip checker are on every plan; the rest of the hub needs
+  // Advance. The page loads either way and shows what the plan includes.
+  await gatekeepRoute({ authAdminContext }, { hasDeliveryZones: true }, "redirect");
+  const [advanceCode, plan] = await Promise.all([
+    gatekeepRoute({ authAdminContext }, { hasShippingDiscounts: true }, "return"),
+    getShopPlan(session.shop, db),
+  ]);
+  const access: DeliveryPageData["access"] = advanceCode ? "zones" : "full";
 
   try {
     const [carrier, methodFilter, rate, delivery, schedule, timezone, timeWindows, cartOptions] = await Promise.all([
@@ -67,6 +77,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
     return handleApiSuccess<DeliveryPageData>({
       payload: {
+        access,
+        planName: plan.name,
         carrier,
         methodFilter,
         rate: {

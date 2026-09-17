@@ -10,7 +10,8 @@ import {
 } from "app/models/shopify.server/discounts/bundleDiscounts.server";
 import { handleApiError } from "app/utils/server/handleApiResponse/handleApiError.server";
 import { buildBundleDiscountConfig } from "./bundleDiscountConfig";
-import { shopHasBundles } from "./bundleEntitlement.server";
+import { getShopPlan } from "app/services/subscriptions/shopPlan.server";
+import { applyBundleLimit } from "app/services/subscriptions/planLimits";
 
 /**
  * Keeps the shop's single automatic app discount (backed by the
@@ -31,15 +32,18 @@ export async function syncBundleDiscounts(session: Session, db: PrismaClient) {
   }
   const credentials: AdminCredentials = { shop, accessToken };
 
-  const [bundles, store, entitled] = await Promise.all([
+  const [bundles, store, plan] = await Promise.all([
     getActiveBundlesForShop(shop, db),
     getShopifyStore({ where: { shop } }, db),
-    shopHasBundles(shop, db),
+    getShopPlan(shop, db),
   ]);
-  // A shop that lost the Advance plan keeps its bundles in our DB, but the
-  // checkout discount is torn down like there were none.
-  const activeBundles = entitled
-    ? bundles.filter((bundle) => bundle.items.length > 0)
+  // A shop that downgraded keeps its bundles in our DB, but only the ones its
+  // plan includes (Free: the oldest one) keep their checkout discount.
+  const activeBundles = plan.hasBundles
+    ? applyBundleLimit(
+        bundles.filter((bundle) => bundle.items.length > 0),
+        plan.bundleLimit,
+      )
     : [];
   const currentDiscountId = store?.bundleDiscountId ?? null;
 

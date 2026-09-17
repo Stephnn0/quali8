@@ -5,6 +5,7 @@ import { verifyCarrierRequest } from "app/services/carrier/hmac.server";
 import { buildRates, type ShippingRate } from "app/services/carrier/rates";
 import { TIMED_PROPERTY, findWindow, windowLabel } from "app/services/delivery/timedDelivery";
 import { loadTimeWindows } from "app/services/delivery/timedDelivery.server";
+import { getShopPlan } from "app/services/subscriptions/shopPlan.server";
 
 /**
  * Carrier service callback. Shopify POSTs the cart's origin, destination,
@@ -131,6 +132,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     const { destination, currency, items } = parsed.data.rate;
     const postalCode = destination.postal_code ?? "";
     if (!postalCode) return respond(shop, [], "no destination postal code", startedAt);
+
+    // Checkout rates are an Advance feature; a downgraded shop keeps its
+    // settings but Shopify gets no rates from us.
+    const plan = await getShopPlan(shop, db);
+    if (!plan.hasShippingDiscounts) {
+      return respond(shop, [], `the ${plan.name} plan does not include checkout rates`, startedAt);
+    }
 
     const timedCode = timedPropertyOf(items ?? []);
     const [config, zones, timeWindows] = await Promise.all([

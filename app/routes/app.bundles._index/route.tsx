@@ -2,12 +2,15 @@ import { useCallback, useState } from "react";
 import { useFetcher, useLoaderData, useNavigate, useSearchParams } from "react-router";
 import {
   Badge,
+  Banner,
+  BlockStack,
   Button,
   ButtonGroup,
   Layout,
   Modal,
   Page,
   Pagination,
+  Text,
 } from "@shopify/polaris";
 import { DeleteIcon, EditIcon, ImageIcon } from "@shopify/polaris-icons";
 import { useAppBridge } from "@shopify/app-bridge-react";
@@ -15,6 +18,8 @@ import { loader } from "./loader";
 import { action } from "./action";
 import { BundleTypeModal } from "./components/BundleTypeModal";
 import { FeatureHeader } from "app/components/OneApp";
+import { APP } from "app/constants/app.constants";
+import { limitReached } from "app/services/subscriptions/planLimits";
 import { computeBundlePricing } from "app/utils/bundlePricing";
 import illustration from "app/assets/bundle-card.svg";
 import styles from "./bundles.module.css";
@@ -85,13 +90,19 @@ export default function Bundles() {
   const hasPrevious = currentPage > 1;
   const goToPage = (page: number) => setSearchParams({ page: String(page) });
 
+  // ==================================== plan limit (Free: one bundle)
+
+  const bundleLimit = loaderData?.payload?.bundleLimit ?? null;
+  const planName = loaderData?.payload?.planName ?? "";
+  const atLimit = limitReached(bundleLimit, totalItems);
+
   return (
     <Page>
       <FeatureHeader
         featureKey="bundle-builder"
         tagline="Frequently-bought-together sets at a discount, shown on the page of every product they include."
         actions={
-          <Button variant="primary" onClick={openTypeModal}>
+          <Button variant="primary" onClick={openTypeModal} disabled={atLimit}>
             Create bundle
           </Button>
         }
@@ -99,6 +110,29 @@ export default function Bundles() {
 
       <Layout>
         <Layout.Section>
+          {bundleLimit !== null ? (
+            <div style={{ marginBottom: "1rem" }}>
+              {atLimit ? (
+                <Banner
+                  tone="info"
+                  title={`Your ${planName} plan includes ${bundleLimit} ${bundleLimit === 1 ? "bundle" : "bundles"}`}
+                  action={{ content: "Upgrade to Advance", onAction: APP.OPEN_APP_PLANS_PAGE }}
+                >
+                  <p>
+                    Edit the one you have, or upgrade for unlimited bundles. Deleting a
+                    bundle frees the slot.
+                  </p>
+                </Banner>
+              ) : (
+                <BlockStack gap="100">
+                  <Text as="p" tone="subdued">
+                    {totalItems} of {bundleLimit} {bundleLimit === 1 ? "bundle" : "bundles"} used on
+                    the {planName} plan. Advance has no limit.
+                  </Text>
+                </BlockStack>
+              )}
+            </div>
+          ) : null}
           {bundles.length > 0 ? (
             <>
               <div className={styles.stats}>
@@ -278,7 +312,7 @@ export default function Bundles() {
                   </li>
                 </ol>
                 <div className={styles.emptyActions}>
-                  <Button variant="primary" onClick={openTypeModal}>
+                  <Button variant="primary" onClick={openTypeModal} disabled={atLimit}>
                     Create bundle
                   </Button>
                 </div>

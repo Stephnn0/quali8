@@ -44,4 +44,17 @@ export async function seedPlans(db: PrismaClient) {
       })
     )
   );
+
+  // Legacy Pro rows are not re-seeded, but a paid legacy tier must include
+  // everything the Free plan now does (announcements, zones, popup, unlimited).
+  await db.recurringPlan.updateMany({
+    where: { code: { in: ['pro-monthly', 'pro-annual'] } },
+    data: {
+      hasAnnouncements: true,
+      hasDeliveryZones: true,
+      hasSubscribePopup: true,
+      bundleLimit: null,
+      popupSignupLimit: null,
+    },
+  });
 }

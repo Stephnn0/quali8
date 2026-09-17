@@ -13,41 +13,47 @@ import {
 } from "@shopify/polaris";
 import { CheckIcon } from "@shopify/polaris-icons";
 import { APP } from "app/constants/app.constants";
-import { APP_PLANS } from "app/constants/plans";
+import {
+  APP_PLANS,
+  FREE_BUNDLE_LIMIT,
+  FREE_POPUP_SIGNUP_LIMIT,
+} from "app/constants/plans";
 import { useAppSubscription } from "app/services/subscriptions/hooks/useAppSubscription";
 
 const PRICING_PAGE_URL = `shopify://admin/charges/${APP.APP_HANDLE}/pricing_plans`;
 
 /**
  * The public plan cards. Feature lists cover everything the app currently
- * offers; entitlements must match the seeded `RecurringPlan` flags
- * (`hasQualifiers` / `hasShippingDiscounts` / `hasBundles` /
- * `hasRecommendations` / `hasAssistant`). There are two plans: Free and Advance.
+ * offers; entitlements must match the seeded `RecurringPlan` flags and
+ * limits (see `APP_PLANS`). There are two plans: Free and Advance. Free is
+ * limited rather than locked: one bundle and a monthly popup signup cap.
  */
 const PLAN_CARDS = [
   {
     name: APP_PLANS.FREE.name,
     price: "Free",
     priceDetail: "No credit card required",
-    description: "Get to know your customers and dress up your storefront.",
+    description: "Set up your storefront and grow your list before you pay a cent.",
     features: [
-      "Audiences — group customers by tags, order count, spending, and more",
-      "Free shipping progress bar theme block",
-      "Product star ratings theme block",
+      "Customer Insights — audiences by tags, order count, spending, and more",
+      "Announcement bar above the header, scheduled on its own",
+      "Delivery zones and the zip code checker in the header bar",
+      `Subscribe Boost popup, up to ${FREE_POPUP_SIGNUP_LIMIT} signups a month`,
+      `Bundle Builder — ${FREE_BUNDLE_LIMIT} frequently-bought-together bundle with its checkout discount`,
+      "Free shipping progress bar and product star ratings theme blocks",
     ],
   },
   {
     name: APP_PLANS.ADVANCE.name,
     price: "$25/month",
     priceDetail: `${APP_PLANS.ADVANCE.trialDays}-day free trial`,
-    description: "Every OneApp feature, including the AI tools.",
+    description: "Everything in Free without limits, plus the revenue and AI features.",
     features: [
-      "Everything in the Free plan",
+      "Unlimited bundles and unlimited popup signups",
       "Smart Shipping — shipping discounts at checkout, automatic or code-based, targeted at your Audiences",
-      "Bundle Builder — frequently-bought-together bundles with automatic checkout discounts",
-      "Occasion Match — occasion recommendations with your products",
-      "Sales Calendar with Smart Announcements, Subscribe Boost, and SEO AI",
-      "FAQ Collections drafted by AI for your collection pages",
+      "Delivery calendar, same-day cutoffs, timed windows, and checkout rates by zone",
+      "Smart Recommendations on the home page and Occasions + Gift Recommendations",
+      "SEO AI and FAQ Collections drafted by AI",
     ],
   },
 ] as const;

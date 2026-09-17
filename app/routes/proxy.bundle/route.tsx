@@ -2,7 +2,9 @@ import type { LoaderFunctionArgs } from "react-router";
 import { authenticate } from "app/shopify.server";
 import db from "app/db.server";
 import { getActiveBundleOffer } from "app/services/storefront/bundleOffer.server";
-import { shopHasBundles } from "app/services/bundles/bundleEntitlement.server";
+import { getActiveBundlesForShop } from "app/models/app.server/bundles/bundles.server";
+import { getShopPlan } from "app/services/subscriptions/shopPlan.server";
+import { applyBundleLimit } from "app/services/subscriptions/planLimits";
 
 /**
  * App Proxy endpoint for the storefront "Frequently Bought Together" theme
@@ -30,12 +32,23 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 
   try {
-    // Bundles are an Advance-plan feature — render nothing for other plans.
-    if (!(await shopHasBundles(shop, db))) {
+    const plan = await getShopPlan(shop, db);
+    if (!plan.hasBundles) {
       return Response.json({ bundle: null }, { headers });
     }
 
     const bundle = await getActiveBundleOffer(db, shop, productId);
+
+    // On a capped plan only the oldest bundles are live (same rule as the
+    // checkout discount), so a downgraded shop never shows a bundle that
+    // checkout would charge at full price.
+    if (bundle && plan.bundleLimit !== null) {
+      const live = applyBundleLimit(await getActiveBundlesForShop(shop, db), plan.bundleLimit);
+      if (!live.some((entry) => entry.id === bundle.id)) {
+        return Response.json({ bundle: null }, { headers });
+      }
+    }
+
     return Response.json({ bundle }, { headers });
   } catch (error) {
     console.error("Error in /proxy/bundle:", error); // eslint-disable-line no-console

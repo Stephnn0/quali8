@@ -130,6 +130,9 @@
       })
       .then(function (result) {
         if (result && result.savedInShopify) return;
+        // The shop's plan cap is used up: the app declined on purpose, so
+        // the theme form must not collect the signup either.
+        if (result && result.limitReached) return;
         return subscribeViaContactForm(email, firstName);
       })
       .catch(function () {

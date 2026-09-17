@@ -368,6 +368,14 @@ model RecurringPlan {
   hasBundles           Boolean                @default(false)
   hasRecommendations   Boolean                @default(false)
   hasAssistant         Boolean                @default(false)
+  hasAnnouncements     Boolean                @default(false) /// Announcement bar (feature 06)
+  hasDeliveryZones     Boolean                @default(false) /// Delivery zones + zip checker (features 06 and 10); the calendar and checkout rates need hasShippingDiscounts
+  hasSubscribePopup    Boolean                @default(false) /// Subscribe popup (feature 08)
+  //
+  // Limits: null means unlimited. The gatekeeper pairs `<name>Limit` with a
+  // `<name>Amount` in the current context (see gatekeep/types.ts).
+  bundleLimit          Int? /// Max bundles a shop can keep (Free: 1)
+  popupSignupLimit     Int? /// Max popup signups per calendar month (Free: capped)
   //
   //
   read_generalApis     Boolean /// Whether the merchant can read general APIs

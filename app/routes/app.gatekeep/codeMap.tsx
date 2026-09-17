@@ -64,6 +64,9 @@ export function codeMap(code?: GateKeepCode | null): GatekeepContent {
     case "AP014":
     case "AP015":
     case "AP016":
+    case "AP017":
+    case "AP018":
+    case "AP019":
       return {
         page: {
           title: defaultPage.title,
@@ -73,6 +76,30 @@ export function codeMap(code?: GateKeepCode | null): GatekeepContent {
           image: dashboardCorner,
           heading: `Upgrade your plan to use this ${APP_CONSTANTS.SHORT_NAME} feature`,
           children: `We offer a Free plan for you to get started. We also have a ${APP_CONSTANTS.TRIAL_DAYS}-day trial for our paid plans.`,
+          action: {
+            icon: IncentiveIcon,
+            content: "Upgrade",
+            onAction: APP_CONSTANTS.OPEN_APP_PLANS_PAGE,
+          },
+        },
+      };
+    case "AP020":
+    case "AP021":
+      return {
+        page: {
+          title: "You've reached your plan's limit",
+          subtitle:
+            code === "AP020"
+              ? "The Free plan includes one bundle."
+              : "The Free plan includes a set number of popup signups a month.",
+        },
+        card: {
+          image: dashboardCorner,
+          heading:
+            code === "AP020"
+              ? "Upgrade to create more bundles"
+              : "Upgrade to keep collecting signups",
+          children: `${APP_CONSTANTS.SHORT_NAME} Advance removes every limit, with a ${APP_CONSTANTS.TRIAL_DAYS}-day trial.`,
           action: {
             icon: IncentiveIcon,
             content: "Upgrade",
