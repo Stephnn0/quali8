@@ -68,14 +68,26 @@ export async function loadOwnerOverview(
         firstName: true,
         lastName: true,
         accountOwner: true,
+        isOnline: true,
+        expires: true,
+        refreshToken: true,
       },
     }),
   ]);
 
-  const sessionsByShop = new Map<string, typeof sessions>();
+  type SessionInput = Parameters<typeof classifyStore>[0]["sessions"][number];
+  const sessionsByShop = new Map<string, SessionInput[]>();
   for (const session of sessions) {
     const list = sessionsByShop.get(session.shop) ?? [];
-    list.push(session);
+    list.push({
+      email: session.email,
+      firstName: session.firstName,
+      lastName: session.lastName,
+      accountOwner: session.accountOwner,
+      isOnline: session.isOnline,
+      expires: session.expires,
+      hasRefreshToken: Boolean(session.refreshToken),
+    });
     sessionsByShop.set(session.shop, list);
   }
 

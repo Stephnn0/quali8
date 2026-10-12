@@ -31,7 +31,11 @@ export async function getSubscription(
     searchParams.has("subscribed") || searchParams.has("charge_id");
 
   if (justSubscribed) {
-    subscription = await syncShopifyToAppSubscription(authAdminContext);
+    try {
+      subscription = await syncShopifyToAppSubscription(authAdminContext);
+    } catch (error) {
+      console.error("Could not sync the subscription after checkout:", error); // eslint-disable-line no-console
+    }
   }
 
   // If an active subscription is not found, we default probably to the Free sub (see flow of shopifySubscriptionModel.findActiveSubscription)

@@ -5,6 +5,7 @@ import {
   isOwnerShop,
   isTestStore,
   summarizeStores,
+  tokenStateOf,
   type OwnerStoreInput,
   type OwnerStoreRow,
 } from "./ownerOverview";
@@ -204,6 +205,20 @@ describe("classifyStore", () => {
     expect(row.plan).toBe("Advance");
     expect(row.state).toBe("paid");
     expect(row.monthlyPrice).toBe(0);
+  });
+});
+
+describe("tokenStateOf", () => {
+  const offline = { email: null, firstName: null, lastName: null, accountOwner: false, isOnline: false };
+  it("tells a live, refreshable, expired and missing offline token apart", () => {
+    expect(tokenStateOf([], NOW)).toBe("none");
+    expect(tokenStateOf([{ ...offline, isOnline: true }], NOW)).toBe("none");
+    expect(tokenStateOf([{ ...offline, expires: null }], NOW)).toBe("valid");
+    expect(tokenStateOf([{ ...offline, expires: new Date(NOW.getTime() + 1000) }], NOW)).toBe("valid");
+    expect(
+      tokenStateOf([{ ...offline, expires: new Date(NOW.getTime() - 1000), hasRefreshToken: true }], NOW),
+    ).toBe("refreshable");
+    expect(tokenStateOf([{ ...offline, expires: new Date(NOW.getTime() - 1000) }], NOW)).toBe("expired");
   });
 });
 

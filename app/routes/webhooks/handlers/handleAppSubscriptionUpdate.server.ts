@@ -4,6 +4,7 @@ import { appSubscriptionModel } from "app/models/shopify.server/appSubscription"
 import { shopifySubscriptionModel } from "app/models/app.server/shopifySubscriptions/subscriptions.server";
 import type { ZodType } from "zod";
 import { z } from "zod";
+import { syncSubscriptionFromPayload } from "app/services/billing.server/syncSubscriptionFromPayload.server";
 
 export async function handleAppSubscriptionUpdateWebhook(
   db: PrismaClient,
@@ -42,6 +43,22 @@ export async function handleAppSubscriptionUpdateWebhook(
       `${webhookId} - Error in appSubscriptionUpdateWebhookHandler`,
       error,
     );
+    // The enriched sync needs a working offline token (it fails with a
+    // 401 when the token expired and could not be refreshed). Keep the
+    // plan from the payload so the merchant is not gated out meanwhile.
+    try {
+      const result = await syncSubscriptionFromPayload(
+        db,
+        authWebhookContext.shop,
+        unsafePayload,
+        webhookId,
+      );
+      if (!result.ok) {
+        console.warn(`${webhookId} - Payload fallback skipped: ${result.reason}`); // eslint-disable-line no-console
+      }
+    } catch (fallbackError) {
+      console.error(`${webhookId} - Payload fallback failed`, fallbackError); // eslint-disable-line no-console
+    }
   }
 }
 
@@ -55,6 +72,9 @@ export const zodAppSubscriptionPayload = z.object({
     capped_amount: z.string().nullable(),
     admin_graphql_api_id: z.string(),
     admin_graphql_api_shop_id: z.string(),
+    price: z.string().nullish(),
+    interval: z.string().nullish(),
+    plan_handle: z.string().nullish(),
   }),
 }) satisfies ZodType<AppSubscriptionUpdatePayload>;
 
@@ -68,5 +88,8 @@ export type AppSubscriptionUpdatePayload = {
     capped_amount: string | null;
     admin_graphql_api_id: string;
     admin_graphql_api_shop_id: string;
+    price?: string | null;
+    interval?: string | null;
+    plan_handle?: string | null;
   };
 };

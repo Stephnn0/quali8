@@ -67,6 +67,18 @@ export const action = async ({ request }: ActionFunctionArgs): Promise<ResyncRes
 
   try {
     const shopContext = await unauthenticated.admin(shop);
+    const expires = shopContext.session.expires;
+    const refreshToken = (shopContext.session as { refreshToken?: string }).refreshToken;
+    if (expires && expires.getTime() < Date.now() && !refreshToken) {
+      return {
+        ok: false,
+        shop,
+        error:
+          `This shop's offline access token expired on ${expires.toISOString()} and no refresh token is stored, ` +
+          "so the app cannot ask Shopify on its own. The plan is picked up when the merchant next opens the app " +
+          "(setup / pricing-page return) or from the next APP_SUBSCRIPTIONS_UPDATE webhook payload.",
+      };
+    }
     const synced = await syncShopifyToAppSubscription(shopContext);
     if (!synced) {
       return { ok: false, shop, error: "Shopify reports no active subscription for this shop." };
@@ -101,6 +113,13 @@ const formatDate = (value: string | null | undefined) =>
         day: "numeric",
       })
     : "—";
+
+const TOKEN_LABEL: Record<Row["tokenState"], { label: string; tone?: "success" | "critical" | "subdued" }> = {
+  valid: { label: "token live", tone: "success" },
+  refreshable: { label: "token refreshable", tone: "subdued" },
+  expired: { label: "token expired", tone: "critical" },
+  none: { label: "no session", tone: "subdued" },
+};
 
 const money = (amount: number) =>
   amount.toLocaleString(undefined, { style: "currency", currency: "USD" });
@@ -313,16 +332,25 @@ export default function OwnerOverview() {
                     <IndexTable.Cell>{row.appVersion}</IndexTable.Cell>
                     <IndexTable.Cell>
                       {row.installed ? (
-                        <Button
-                          size="slim"
-                          loading={resyncingShop === row.shop}
-                          disabled={resyncingShop !== null && resyncingShop !== row.shop}
-                          onClick={() =>
-                            resync.submit({ intent: "resync", shop: row.shop }, { method: "post" })
-                          }
-                        >
-                          Resync
-                        </Button>
+                        <BlockStack gap="050" inlineAlign="start">
+                          <Button
+                            size="slim"
+                            loading={resyncingShop === row.shop}
+                            disabled={
+                              (resyncingShop !== null && resyncingShop !== row.shop) ||
+                              row.tokenState === "expired" ||
+                              row.tokenState === "none"
+                            }
+                            onClick={() =>
+                              resync.submit({ intent: "resync", shop: row.shop }, { method: "post" })
+                            }
+                          >
+                            Resync
+                          </Button>
+                          <Text as="span" variant="bodySm" tone={TOKEN_LABEL[row.tokenState].tone}>
+                            {TOKEN_LABEL[row.tokenState].label}
+                          </Text>
+                        </BlockStack>
                       ) : null}
                     </IndexTable.Cell>
                   </IndexTable.Row>

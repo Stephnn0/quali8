@@ -40,7 +40,24 @@ export type OwnerSessionInput = {
   firstName: string | null;
   lastName: string | null;
   accountOwner: boolean;
+  isOnline?: boolean;
+  expires?: Date | null;
+  hasRefreshToken?: boolean;
 };
+
+/**
+ * Whether the app can call Shopify for this shop right now without the
+ * merchant: a live offline token, an expired one with a refresh token, an
+ * expired one without (merchant must open the app), or no session at all.
+ */
+export type OwnerTokenState = "valid" | "refreshable" | "expired" | "none";
+
+export function tokenStateOf(sessions: OwnerSessionInput[], now: Date): OwnerTokenState {
+  const offline = sessions.find((session) => session.isOnline === false) ?? null;
+  if (!offline) return "none";
+  if (!offline.expires || offline.expires.getTime() > now.getTime()) return "valid";
+  return offline.hasRefreshToken ? "refreshable" : "expired";
+}
 
 export type OwnerStoreInput = {
   shop: string;
@@ -111,6 +128,7 @@ export type OwnerStoreRow = {
   currentPeriodEnd: Date | null;
   /** What the shop pays per 30 days (0 for Free and test subscriptions). */
   monthlyPrice: number;
+  tokenState: OwnerTokenState;
   /** The most relevant subscription row: the active one, else the newest. */
   lastSubscription: {
     name: string;
@@ -222,6 +240,7 @@ export function classifyStore(store: OwnerStoreInput, now: Date): OwnerStoreRow 
     trialDaysLeft,
     currentPeriodEnd: active?.currentPeriodEnd ?? null,
     monthlyPrice: installed && state !== "free" ? monthlyPriceOf(active) : 0,
+    tokenState: tokenStateOf(store.sessions, now),
     lastSubscription: latest
       ? { name: latest.name, status: latest.status, cancelMethod: latest.cancelMethod }
       : null,

@@ -4,6 +4,7 @@ import { handleAppUninstalledWebhook } from "./handlers/handleAppUninstalledWebh
 import { handleAppSubscriptionUpdateWebhook } from "./handlers/handleAppSubscriptionUpdate.server";
 import db from "app/db.server";
 import { handleShopRedactWebhook } from "./handlers/handleShopRedactWebhook.server";
+import { syncSubscriptionFromPayload } from "app/services/billing.server/syncSubscriptionFromPayload.server";
 
 export const action = async ({ request }: ActionFunctionArgs) => {
   const authWebhookContext = await authenticate.webhook(request);
@@ -28,10 +29,17 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     //
     // It is also missing when the shop has no offline session *yet* (the
     // merchant subscribed before the app finished installing). We must
-    // answer 200 so Shopify stops retrying, but the event is lost: the app
-    // reconciles the subscription at setup and on the return from the
-    // pricing page, and the owner overview can resync a shop by hand.
-    console.warn(`${webhookId} - Dropping ${topic} for ${shop}: no offline session`); // eslint-disable-line no-console
+    // answer 200 so Shopify stops retrying, so a subscription event is
+    // saved from its payload instead of being lost; everything else is
+    // dropped with a warning.
+    if (topic === "APP_SUBSCRIPTIONS_UPDATE") {
+      const result = await syncSubscriptionFromPayload(db, shop, payload, webhookId);
+      if (!result.ok) {
+        console.warn(`${webhookId} - ${topic} for ${shop} not saved from payload: ${result.reason}`); // eslint-disable-line no-console
+      }
+    } else {
+      console.warn(`${webhookId} - Dropping ${topic} for ${shop}: no offline session`); // eslint-disable-line no-console
+    }
     throw new Response();
   }
 

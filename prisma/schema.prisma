@@ -23,6 +23,12 @@ model Session {
   locale        String?
   collaborator  Boolean?  @default(false)
   emailVerified Boolean?  @default(false)
+  /// Refresh token for expiring offline access tokens (future flag
+  /// `expiringOfflineAccessTokens`). The stock Prisma session storage drops
+  /// it; `app/sessionStorage.server.ts` persists it so `unauthenticated.admin`
+  /// can refresh a shop's token when the merchant is not in the app.
+  refreshToken        String?
+  refreshTokenExpires DateTime?
 }
 
 model ShopifyStore {
