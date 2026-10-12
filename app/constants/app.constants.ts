@@ -54,6 +54,10 @@ export const APP = {
 
   STORES_WHITELIST: ["quali8-dev-gamma.myshopify.com"],
 
+  // The app owner's own stores: the only shops that can open the owner
+  // overview (/app/owner) with every merchant's subscription data.
+  OWNER_SHOPS: ["electronics-shopicode.myshopify.com"],
+
   OPEN_APP_PLANS_PAGE: () =>
     open(`shopify://admin/charges/${APP_HANDLE}/pricing_plans`, "_top"),
 };

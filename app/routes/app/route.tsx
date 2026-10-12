@@ -9,6 +9,7 @@ import { getAppStatus } from "app/services/setup/getAppStatus";
 import db from "app/db.server";
 import { getSubscription } from "./getSubscription";
 import { ONEAPP_CATEGORIES, categoryPath } from "app/components/OneApp";
+import { isOwnerShop } from "app/services/owner/ownerOverview";
 //
 //
 import { AppProvider as PolarisProvider } from "@shopify/polaris";
@@ -47,11 +48,13 @@ export const loader = async (loaderContext: LoaderFunctionArgs) => {
     shopifyStore,
     subscription,
     apiKey: process.env.SHOPIFY_API_KEY || "",
+    // The owner overview (/app/owner) is only linked for the app owner's shops
+    isOwner: isOwnerShop(shop),
   }
 };
 
 export default function App() {
-  const { apiKey } = useLoaderData<typeof loader>();
+  const { apiKey, isOwner } = useLoaderData<typeof loader>();
 
   return (
     <AppProvider embedded={true} apiKey={apiKey} >
@@ -75,6 +78,7 @@ export default function App() {
         <Link to="/app/delivery">Delivery</Link>
         <Link to="/app/request-feature">Request a Feature</Link>
         <Link to="/app/settings">Plans & billing</Link>
+        {isOwner ? <Link to="/app/owner">Owner overview</Link> : null}
       </NavMenu>
       <Outlet />
       </PolarisProvider>
