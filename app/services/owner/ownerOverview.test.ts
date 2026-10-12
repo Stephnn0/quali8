@@ -3,6 +3,7 @@ import {
   classifyStore,
   filterStores,
   isOwnerShop,
+  isTestStore,
   summarizeStores,
   type OwnerStoreInput,
   type OwnerStoreRow,
@@ -51,6 +52,23 @@ describe("isOwnerShop", () => {
     expect(isOwnerShop("Electronics-Shopicode.myshopify.com")).toBe(true);
     expect(isOwnerShop("someone-else.myshopify.com")).toBe(false);
     expect(isOwnerShop(undefined)).toBe(false);
+  });
+});
+
+describe("isTestStore", () => {
+  it("flags owner, whitelisted, app-review and development-plan stores", () => {
+    expect(isTestStore("electronics-shopicode.myshopify.com", "Developer Preview")).toBe(true);
+    expect(isTestStore("quali8-dev-gamma.myshopify.com", "Basic")).toBe(true);
+    expect(isTestStore("app-review-99b19030-r100168-a0.myshopify.com", "Basic")).toBe(true);
+    expect(isTestStore("demo-store-oneapp.myshopify.com", "Shopify Plus App Development")).toBe(true);
+    expect(isTestStore("oroa-development.myshopify.com", "Developer Preview")).toBe(true);
+  });
+
+  it("keeps real merchants", () => {
+    expect(isTestStore("flowers-of-palm-beach.myshopify.com", "Shopify Plus")).toBe(false);
+    expect(isTestStore("e515dh-1m.myshopify.com", "Shopify")).toBe(false);
+    expect(isTestStore("0yw1e7-e9.myshopify.com", "Basic")).toBe(false);
+    expect(isTestStore("0yw1e7-e9.myshopify.com", null)).toBe(false);
   });
 });
 
@@ -167,6 +185,26 @@ describe("classifyStore", () => {
   it("reports days since install", () => {
     expect(classifyStore(baseStore(), NOW).daysInstalled).toBe(40);
   });
+
+  it("marks a development store as a test store but still classifies its plan", () => {
+    const row = classifyStore(
+      baseStore({
+        shop: "demo-store-oneapp.myshopify.com",
+        shopData: { ...baseStore().shopData!, planDisplayName: "Shopify Plus App Development" },
+        subscriptions: [
+          advanceSub({
+            startDate: new Date(NOW.getTime() - 10 * DAY),
+            shopifyRecurringPricing: { price: 0, discountPriceAfter: null, interval: "EVERY_30_DAYS" },
+          }),
+        ],
+      }),
+      NOW,
+    );
+    expect(row.testStore).toBe(true);
+    expect(row.plan).toBe("Advance");
+    expect(row.state).toBe("paid");
+    expect(row.monthlyPrice).toBe(0);
+  });
 });
 
 describe("summarizeStores", () => {
@@ -188,9 +226,16 @@ describe("summarizeStores", () => {
       NOW,
     ),
     classifyStore(baseStore({ shop: "e.myshopify.com", status: "UNINSTALLED" }), NOW),
+    classifyStore(
+      baseStore({
+        shop: "electronics-shopicode.myshopify.com",
+        subscriptions: [advanceSub({ startDate: new Date(NOW.getTime() - 10 * DAY) })],
+      }),
+      NOW,
+    ),
   ];
 
-  it("counts every bucket", () => {
+  it("counts every bucket and keeps test stores out of the business numbers", () => {
     expect(summarizeStores(rows)).toEqual({
       total: 5,
       installed: 4,
@@ -200,12 +245,13 @@ describe("summarizeStores", () => {
       trial: 1,
       paying: 2,
       test: 1,
+      testStores: 1,
       monthlyRevenue: 25,
     });
   });
 
   it("filters by bucket and by text", () => {
-    expect(filterStores(rows, "all", "").map((r) => r.shop)).toHaveLength(5);
+    expect(filterStores(rows, "all", "").map((r) => r.shop)).toHaveLength(6);
     expect(filterStores(rows, "advance", "").map((r) => r.shop)).toEqual([
       "b.myshopify.com",
       "c.myshopify.com",
@@ -214,8 +260,11 @@ describe("summarizeStores", () => {
     expect(filterStores(rows, "trial", "").map((r) => r.shop)).toEqual(["b.myshopify.com"]);
     expect(filterStores(rows, "free", "").map((r) => r.shop)).toEqual(["a.myshopify.com"]);
     expect(filterStores(rows, "uninstalled", "").map((r) => r.shop)).toEqual(["e.myshopify.com"]);
-    expect(filterStores(rows, "test", "").map((r) => r.shop)).toEqual(["d.myshopify.com"]);
-    expect(filterStores(rows, "all", "  E.MYSHOPIFY ").map((r) => r.shop)).toEqual(["e.myshopify.com"]);
-    expect(filterStores(rows, "all", "shop@one").map((r) => r.shop)).toHaveLength(5);
+    expect(filterStores(rows, "test", "").map((r) => r.shop)).toEqual([
+      "d.myshopify.com",
+      "electronics-shopicode.myshopify.com",
+    ]);
+    expect(filterStores(rows, "all", "  D.MYSHOPIFY ").map((r) => r.shop)).toEqual(["d.myshopify.com"]);
+    expect(filterStores(rows, "all", "shop@one").map((r) => r.shop)).toHaveLength(6);
   });
 });

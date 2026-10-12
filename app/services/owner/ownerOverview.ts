@@ -61,6 +61,26 @@ export type OwnerStoreInput = {
   subscriptions: OwnerSubscriptionInput[];
 };
 
+/**
+ * Shopify plan display names of stores that never pay: development and
+ * partner stores, Shopify's app-review stores, staff stores.
+ */
+const TEST_STORE_PLAN_PATTERN = /development|developer preview|sandbox|staff|affiliate|partner/i;
+
+/**
+ * True for the owner's own stores, whitelisted dev stores, Shopify's
+ * app-review stores and any store on a development plan. Their
+ * subscriptions are real rows but never revenue, so the overview keeps
+ * them out of the business counts.
+ */
+export function isTestStore(shop: string, shopifyPlan: string | null | undefined): boolean {
+  const domain = shop.trim().toLowerCase();
+  if (isOwnerShop(domain)) return true;
+  if (APP.STORES_WHITELIST.some((item) => item.toLowerCase() === domain)) return true;
+  if (domain.startsWith("app-review-")) return true;
+  return Boolean(shopifyPlan && TEST_STORE_PLAN_PATTERN.test(shopifyPlan));
+}
+
 export type OwnerPlanLabel = "Free" | "Advance" | "Pro (legacy)";
 
 /** One bucket per store: the first that applies, top to bottom. */
@@ -81,7 +101,10 @@ export type OwnerStoreRow = {
   daysInstalled: number;
   plan: OwnerPlanLabel;
   state: OwnerStoreState;
+  /** The active subscription is a Shopify test charge. */
   test: boolean;
+  /** A dev / review / owner store (see `isTestStore`); excluded from the business counts. */
+  testStore: boolean;
   /** When the running trial ends, or when a finished one ended. */
   trialEndsAt: Date | null;
   trialDaysLeft: number | null;
@@ -96,6 +119,7 @@ export type OwnerStoreRow = {
   } | null;
 };
 
+/** Business counts exclude test stores; `testStores` counts them separately. */
 export type OwnerSummary = {
   total: number;
   installed: number;
@@ -104,8 +128,10 @@ export type OwnerSummary = {
   advance: number;
   trial: number;
   paying: number;
+  /** Real stores whose active subscription is a Shopify test charge. */
   test: number;
-  /** Sum of `monthlyPrice` over installed, non-test paying shops. */
+  testStores: number;
+  /** Sum of `monthlyPrice` over installed, paying, non-test shops. */
   monthlyRevenue: number;
 };
 
@@ -117,7 +143,7 @@ export const OWNER_FILTERS: { id: OwnerFilter; label: string }[] = [
   { id: "trial", label: "In trial" },
   { id: "free", label: "Free" },
   { id: "uninstalled", label: "Uninstalled" },
-  { id: "test", label: "Test charges" },
+  { id: "test", label: "Test stores" },
 ];
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -170,6 +196,7 @@ export function classifyStore(store: OwnerStoreInput, now: Date): OwnerStoreRow 
 
   const ownerSession =
     store.sessions.find((session) => session.accountOwner) ?? store.sessions[0] ?? null;
+  const shopifyPlan = store.shopData?.planDisplayName ?? null;
 
   return {
     shop: store.shop,
@@ -181,7 +208,7 @@ export function classifyStore(store: OwnerStoreInput, now: Date): OwnerStoreRow 
     contactEmail: ownerSession?.email ?? store.shopData?.email ?? null,
     country: store.shopData?.country ?? null,
     currency: store.shopData?.currency ?? null,
-    shopifyPlan: store.shopData?.planDisplayName ?? null,
+    shopifyPlan,
     appVersion: store.appVersion,
     installed,
     installedAt: store.createdAt,
@@ -190,6 +217,7 @@ export function classifyStore(store: OwnerStoreInput, now: Date): OwnerStoreRow 
     plan,
     state,
     test: active?.test ?? false,
+    testStore: isTestStore(store.shop, shopifyPlan),
     trialEndsAt,
     trialDaysLeft,
     currentPeriodEnd: active?.currentPeriodEnd ?? null,
@@ -202,7 +230,7 @@ export function classifyStore(store: OwnerStoreInput, now: Date): OwnerStoreRow 
 
 export function summarizeStores(rows: OwnerStoreRow[]): OwnerSummary {
   const summary: OwnerSummary = {
-    total: rows.length,
+    total: 0,
     installed: 0,
     uninstalled: 0,
     free: 0,
@@ -210,9 +238,15 @@ export function summarizeStores(rows: OwnerStoreRow[]): OwnerSummary {
     trial: 0,
     paying: 0,
     test: 0,
+    testStores: 0,
     monthlyRevenue: 0,
   };
   for (const row of rows) {
+    if (row.testStore) {
+      summary.testStores += 1;
+      continue;
+    }
+    summary.total += 1;
     if (row.installed) summary.installed += 1;
     else summary.uninstalled += 1;
     if (row.state === "free") summary.free += 1;
@@ -231,15 +265,15 @@ function matchesFilter(row: OwnerStoreRow, filter: OwnerFilter): boolean {
     case "all":
       return true;
     case "advance":
-      return row.installed && row.plan !== "Free";
+      return !row.testStore && row.installed && row.plan !== "Free";
     case "free":
-      return row.state === "free";
+      return !row.testStore && row.state === "free";
     case "trial":
-      return row.state === "trial";
+      return !row.testStore && row.state === "trial";
     case "uninstalled":
-      return !row.installed;
+      return !row.testStore && !row.installed;
     case "test":
-      return row.test;
+      return row.testStore || row.test;
   }
 }
 

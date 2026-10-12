@@ -22,12 +22,15 @@ export async function getSubscription(
 
   let subscription: ActiveSubscription | null = null;
 
-  const subscribedParam = new URL(loaderContext.request.url).searchParams.get(
-    "subscribed",
-  );
+  const searchParams = new URL(loaderContext.request.url).searchParams;
+  // Our own return URL carries `subscribed`; Shopify's managed pricing page
+  // sends the merchant back to /app with `charge_id`. Either means they just
+  // changed plan, so pull the subscription from Shopify instead of trusting
+  // the webhook alone (it is dropped when the shop has no session yet).
+  const justSubscribed =
+    searchParams.has("subscribed") || searchParams.has("charge_id");
 
-  // This means they just subscribed, so we might need to check the subscription status
-  if (subscribedParam) {
+  if (justSubscribed) {
     subscription = await syncShopifyToAppSubscription(authAdminContext);
   }
 

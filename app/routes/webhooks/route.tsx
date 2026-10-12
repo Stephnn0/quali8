@@ -25,6 +25,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     // The admin context isn't returned if the webhook fired after a shop was uninstalled.
     // The SHOP_REDACT webhook will be fired up to 48 hours after a shop uninstalls the app.
     // Because of this, no admin context is available.
+    //
+    // It is also missing when the shop has no offline session *yet* (the
+    // merchant subscribed before the app finished installing). We must
+    // answer 200 so Shopify stops retrying, but the event is lost: the app
+    // reconciles the subscription at setup and on the return from the
+    // pricing page, and the owner overview can resync a shop by hand.
+    console.warn(`${webhookId} - Dropping ${topic} for ${shop}: no offline session`); // eslint-disable-line no-console
     throw new Response();
   }
 

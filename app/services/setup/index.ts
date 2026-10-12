@@ -9,6 +9,7 @@ import {
   getShopifyFunctions,
 } from "app/models/shopify.server/functions/functions.server";
 import { APP } from "app/constants/app.constants";
+import { syncShopifyToAppSubscription } from "app/services/billing.server/syncShopifyToAppSubscription";
 
 export function assertNonNullable<T>(
   value: T,
@@ -60,6 +61,16 @@ export async function setupApp(
     shopInfo,
     status: "SETUP",
   });
+
+  // A shop can already hold a paid subscription when its store row is
+  // created (reinstall, or the APP_SUBSCRIPTIONS_UPDATE webhook arrived
+  // before the first session existed and was dropped). Pull it now so the
+  // merchant is not gated out of what they pay for. Never fatal for setup.
+  try {
+    await syncShopifyToAppSubscription(authAdminContext);
+  } catch (error) {
+    console.error("Setup: could not sync the subscription from Shopify", error); // eslint-disable-line no-console
+  }
 
   console.log("App setup complete");
 }
