@@ -6,9 +6,18 @@ import db from "app/db.server";
 import { handleShopRedactWebhook } from "./handlers/handleShopRedactWebhook.server";
 import { syncSubscriptionFromPayload } from "app/services/billing.server/syncSubscriptionFromPayload.server";
 
+/**
+ * Shopify counts every non-2xx answer as a failed delivery, retries it up
+ * to 19 times over 48 hours, and surfaces the failure rate in the Partner
+ * Dashboard. So this route answers 200 for every authenticated webhook,
+ * including topics it has no handler for, and keeps handler failures out
+ * of the status code: they are logged, and the data is reconciled by the
+ * sync paths described in CLAUDE.md. Only an invalid HMAC (401, thrown by
+ * `authenticate.webhook`) is a real failure.
+ */
 export const action = async ({ request }: ActionFunctionArgs) => {
   const authWebhookContext = await authenticate.webhook(request);
-  const { topic, admin, shop, webhookId, payload, apiVersion } =
+  const { topic, admin, shop, webhookId, payload, apiVersion, session } =
     authWebhookContext;
 
   const webhookObject = {
@@ -43,38 +52,50 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     throw new Response();
   }
 
-  // TODO - better error handling strategy for webhooks
-  switch (topic) {
-    case "APP_UNINSTALLED":
-      await handleAppUninstalledWebhook(authWebhookContext);
-      break;
+  try {
+    switch (topic) {
+      case "APP_UNINSTALLED":
+        await handleAppUninstalledWebhook(authWebhookContext);
+        break;
 
-    case "APP_SUBSCRIPTIONS_UPDATE":
-      await handleAppSubscriptionUpdateWebhook(db, authWebhookContext);
-      break;
+      case "APP_SUBSCRIPTIONS_UPDATE":
+        await handleAppSubscriptionUpdateWebhook(db, authWebhookContext);
+        break;
 
-    case "SHOP_REDACT":
-      console.log("Received SHOP_REDACT webhook");
-      await handleShopRedactWebhook(authWebhookContext);
-      break;
-
-    case "CUSTOMERS_REDACT":
-      return {
-        message: "Customer data redaction processed successfully.",
-        status: 200,
+      case "APP_SCOPES_UPDATE": {
+        // The merchant granted (or lost) scopes: keep the offline session's
+        // scope list current so `session.scope` checks see the new grant.
+        const current = (payload as { current?: unknown }).current;
+        if (session && Array.isArray(current)) {
+          await db.session.update({
+            where: { id: session.id },
+            data: { scope: current.map(String).join(",") },
+          });
+        }
+        break;
       }
 
-    case "CUSTOMERS_DATA_REQUEST":
-      return {
-        message: "Customer data request processed successfully.",
-        status: 200,
-      }
+      case "SHOP_REDACT":
+        console.log("Received SHOP_REDACT webhook");
+        await handleShopRedactWebhook(authWebhookContext);
+        break;
 
-    default:
-      throw new Response("Unhandled webhook topic", { status: 404 });
+      case "CUSTOMERS_REDACT":
+      case "CUSTOMERS_DATA_REQUEST":
+        // The app stores no customer data beyond what Shopify already holds
+        // for the shop; nothing to export or erase.
+        break;
+
+      default:
+        // A topic the config subscribes to but this route does not handle
+        // yet. A 404 here is counted as a failed delivery and retried for
+        // two days, so acknowledge it and log it instead.
+        console.warn(`${webhookId} - No handler for webhook topic ${topic} (${shop})`); // eslint-disable-line no-console
+    }
+  } catch (error) {
+    console.error(`${webhookId} - Webhook handler for ${topic} failed (${shop})`, error); // eslint-disable-line no-console
   }
 
-  // ? Should we return or throw the response here?
   return new Response();
 };
 

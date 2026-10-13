@@ -18,9 +18,18 @@ type RefreshableSession = Session & {
  * shop whose merchant has not opened the app for an hour run on a dead
  * token (401), which is how a paid subscription went unrecorded.
  */
+/**
+ * The stock storage probes the session table at module load with 2 retries
+ * 5 s apart and caches the failure for the life of the process, which on a
+ * cold Cloud Run instance answered every request (webhooks included) with
+ * a 500 until the instance was recycled. Give the database time to come up
+ * instead, and let `/healthz` re-probe (see `isReady`).
+ */
+const STARTUP_PROBE = { connectionRetries: 12, connectionRetryIntervalMs: 2500 };
+
 export class RefreshingPrismaSessionStorage extends PrismaSessionStorage<PrismaClient> {
   constructor(private readonly db: PrismaClient) {
-    super(db);
+    super(db, STARTUP_PROBE);
   }
 
   async storeSession(session: Session): Promise<boolean> {
