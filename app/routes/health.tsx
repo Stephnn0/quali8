@@ -1,7 +1,9 @@
 import { sessionStorage } from "app/shopify.server";
 
 /**
- * Startup / readiness probe for Cloud Run. Returns 200 only once the
+ * Startup / readiness probe for Cloud Run, served at `/health`. (Not
+ * `/healthz`: Google's front end answers that path itself with a 404 on
+ * *.run.app, so it never reaches the container.) Returns 200 only once the
  * Prisma session storage can reach the `Session` table, which is what
  * every authenticated request and every webhook needs first. `isReady()`
  * re-runs the table probe and replaces the cached result, so an instance

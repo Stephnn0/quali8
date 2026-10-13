@@ -23,7 +23,7 @@ type RefreshableSession = Session & {
  * 5 s apart and caches the failure for the life of the process, which on a
  * cold Cloud Run instance answered every request (webhooks included) with
  * a 500 until the instance was recycled. Give the database time to come up
- * instead, and let `/healthz` re-probe (see `isReady`).
+ * instead, and let `/health` re-probe (see `isReady`).
  */
 const STARTUP_PROBE = { connectionRetries: 12, connectionRetryIntervalMs: 2500 };
 
